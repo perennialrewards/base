@@ -1,0 +1,658 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Perennial — Rep Roster</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,600;1,9..144,400&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --primary: #1C1409;
+  --accent:  #C17F24;
+  --bg:      #F5ECD4;
+  --surface: #FFFFFF;
+  --border:  rgba(61,43,26,0.15);
+  --text:    #1C1409;
+  --muted:   #8A7A68;
+  --purple:  #5B3F8A;
+  --purple-light: #F3F0FA;
+  --green:   #10B981;
+  --green-light: #D4EDDA;
+  --red:     #EF4444;
+  --red-light: #FEE2E2;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+
+/* ── BANNER ── */
+.banner{background:var(--primary);padding:1.5rem 2rem;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.banner-left{display:flex;align-items:center;gap:14px}
+.banner-logo img{height:40px;width:auto}
+.banner-title{font-family:'Fraunces',serif;font-size:18px;color:#fff}
+.banner-sub{font-size:12px;color:rgba(255,255,255,0.55);margin-top:2px}
+.banner-right{display:flex;align-items:center;gap:10px}
+.lock-btn{font-size:12px;font-weight:500;color:rgba(255,255,255,0.7);background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);padding:7px 14px;border-radius:8px;cursor:pointer;border:none;font-family:inherit}
+
+/* ── AUTH ── */
+.auth-screen{min-height:80vh;display:flex;align-items:center;justify-content:center;padding:2rem}
+.auth-card{background:var(--surface);border:0.5px solid var(--border);border-radius:16px;padding:2rem;max-width:360px;width:100%;text-align:center}
+.auth-icon{font-size:32px;margin-bottom:.75rem}
+.auth-title{font-family:'Fraunces',serif;font-size:1.4rem;color:var(--text);margin-bottom:6px}
+.auth-sub{font-size:13px;color:var(--muted);margin-bottom:1.25rem}
+.auth-input{width:100%;padding:10px 14px;font-size:15px;border:1.5px solid var(--border);border-radius:9px;font-family:monospace;letter-spacing:4px;text-align:center;outline:none;background:var(--bg);color:var(--text);margin-bottom:10px;transition:border-color .15s}
+.auth-input:focus{border-color:var(--purple)}
+.auth-input.error{border-color:var(--red);animation:shake .3s}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
+.auth-btn{width:100%;padding:11px;font-size:14px;font-weight:600;color:#fff;background:var(--primary);border:none;border-radius:9px;cursor:pointer;font-family:inherit}
+.auth-error{font-size:12px;color:var(--red);min-height:16px;margin-bottom:6px}
+
+/* ── MAIN ── */
+.main{display:none;max-width:800px;margin:0 auto;padding:1.75rem 1rem 3rem}
+
+/* ── STATS BAR ── */
+.stats-bar{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:1.75rem}
+.stat-card{background:var(--surface);border:0.5px solid var(--border);border-radius:12px;padding:1rem;text-align:center}
+.stat-val{font-family:'Fraunces',serif;font-size:1.8rem;color:var(--text)}
+.stat-label{font-size:11px;color:var(--muted);margin-top:3px;text-transform:uppercase;letter-spacing:.5px}
+
+/* ── ADD REP FORM ── */
+.add-section{background:var(--surface);border:0.5px solid var(--border);border-radius:14px;overflow:hidden;margin-bottom:1.5rem}
+.add-header{background:var(--primary);padding:.875rem 1.25rem}
+.add-header-title{font-size:13px;font-weight:600;color:#fff}
+.add-body{padding:1.25rem}
+.add-row{display:grid;grid-template-columns:1fr 1fr auto;gap:10px;align-items:end}
+.field-wrap{display:flex;flex-direction:column;gap:5px}
+.field-label{font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.5px}
+.field-input{padding:9px 12px;font-size:13px;border:1px solid var(--border);border-radius:8px;background:var(--bg);color:var(--text);font-family:inherit;outline:none;transition:border-color .15s}
+.field-input:focus{border-color:var(--purple)}
+.add-btn{padding:9px 20px;font-size:13px;font-weight:600;color:#fff;background:var(--purple);border:none;border-radius:8px;cursor:pointer;font-family:inherit;white-space:nowrap;height:38px}
+.add-btn:hover{opacity:.88}
+.add-error{font-size:12px;color:var(--red);margin-top:6px;min-height:16px}
+
+/* ── REP TABLE ── */
+.roster-card{background:var(--surface);border:0.5px solid var(--border);border-radius:14px;overflow:hidden}
+.roster-header{padding:.875rem 1.25rem;display:flex;align-items:center;justify-content:space-between;border-bottom:0.5px solid var(--border)}
+.roster-header-title{font-size:13px;font-weight:600;color:var(--text)}
+.roster-actions{display:flex;gap:8px}
+.copy-btn{font-size:12px;font-weight:500;color:var(--purple);background:var(--purple-light);border:none;padding:6px 12px;border-radius:7px;cursor:pointer;font-family:inherit}
+.export-btn{font-size:12px;font-weight:500;color:var(--muted);background:var(--bg);border:1px solid var(--border);padding:6px 12px;border-radius:7px;cursor:pointer;font-family:inherit}
+.roster-empty{text-align:center;padding:3rem 1rem;color:var(--muted);font-size:13px}
+.roster-row{display:grid;grid-template-columns:1fr 1.2fr 110px 130px auto;gap:10px;align-items:center;padding:11px 1.25rem;border-bottom:0.5px solid var(--border);transition:background .1s}
+.roster-row:last-child{border-bottom:none}
+.roster-row:hover{background:var(--bg)}
+.rep-name-cell{font-size:13px;font-weight:500;color:var(--text);display:flex;align-items:center;gap:8px}
+.rep-avatar{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0}
+.rep-email-cell{font-size:12px;color:var(--muted)}
+.rep-actions{display:flex;gap:6px}
+.del-btn{font-size:11px;color:var(--red);background:var(--red-light);border:none;padding:4px 10px;border-radius:6px;cursor:pointer;font-family:inherit}
+.pin-badge{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:600;padding:2px 8px;border-radius:10px;background:var(--purple-light);color:var(--purple)}
+.pin-set-btn{font-size:11px;color:var(--purple);background:var(--purple-light);border:none;padding:4px 10px;border-radius:7px;cursor:pointer;font-family:inherit}
+.del-btn:hover{opacity:.8}
+
+  .pin-badge{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:600;padding:2px 8px;border-radius:10px;background:var(--purple-light);color:var(--purple)}
+  .pin-set-btn{font-size:11px;color:var(--purple);background:var(--purple-light);border:none;padding:3px 10px;border-radius:7px;cursor:pointer;font-family:inherit}
+  .pin-input-wrap{display:flex;gap:6px;align-items:center}
+  .pin-inline-input{width:80px;padding:5px 8px;font-size:13px;border:1px solid var(--border);border-radius:7px;background:var(--bg);color:var(--text);font-family:monospace;letter-spacing:3px;text-align:center;outline:none}
+  .pin-inline-input:focus{border-color:var(--purple)}
+  .pin-save-btn{font-size:11px;font-weight:600;color:#fff;background:var(--purple);border:none;padding:5px 10px;border-radius:7px;cursor:pointer}
+
+
+/* ── NOTIFY SECTION ── */
+.notify-section{background:var(--surface);border:0.5px solid var(--border);border-radius:14px;overflow:hidden;margin-top:1.5rem}
+.notify-header{background:linear-gradient(135deg,#2D1B69,#5B3F8A);padding:.875rem 1.25rem;display:flex;align-items:center;justify-content:space-between}
+.notify-header-title{font-size:13px;font-weight:600;color:#fff}
+.notify-badge{font-size:11px;color:rgba(255,255,255,0.7);background:rgba(255,255,255,0.1);padding:3px 10px;border-radius:20px}
+.notify-body{padding:1.25rem}
+.notify-preview{background:var(--bg);border:0.5px solid var(--border);border-radius:10px;padding:1rem;margin-bottom:1rem;font-size:13px;line-height:1.6;color:var(--text)}
+.notify-preview-subject{font-weight:600;color:var(--purple);margin-bottom:6px;font-size:12px;text-transform:uppercase;letter-spacing:.5px}
+.notify-input{width:100%;padding:9px 12px;font-size:13px;border:1px solid var(--border);border-radius:8px;background:var(--bg);color:var(--text);font-family:inherit;outline:none;margin-bottom:10px}
+.notify-input:focus{border-color:var(--purple)}
+.notify-btn{width:100%;padding:11px;font-size:14px;font-weight:600;color:#fff;background:linear-gradient(135deg,#2D1B69,#5B3F8A);border:none;border-radius:9px;cursor:pointer;font-family:inherit}
+.notify-btn:hover{opacity:.88}
+.notify-btn:disabled{opacity:.5;cursor:not-allowed}
+.notify-status{font-size:12px;color:var(--muted);text-align:center;margin-top:8px;min-height:16px}
+.notify-service-note{font-size:12px;color:var(--muted);background:var(--bg);border:0.5px solid var(--border);border-radius:8px;padding:.75rem;margin-top:10px;line-height:1.5}
+.notify-service-note strong{color:var(--text);display:block;margin-bottom:2px}
+
+.section-divider{border:none;border-top:0.5px solid var(--border);margin:1.5rem 0}
+
+/* ── SQUADS ── */
+.squads-section{background:var(--surface);border:0.5px solid var(--border);border-radius:14px;overflow:hidden;margin-bottom:1.5rem}
+.squads-header{background:linear-gradient(135deg,#2D1B69,#5B3F8A);padding:.875rem 1.25rem;display:flex;align-items:center;justify-content:space-between}
+.squads-header-title{font-size:13px;font-weight:600;color:#fff}
+.squads-toggle{display:flex;align-items:center;gap:8px;font-size:12px;color:rgba(255,255,255,0.85)}
+.squads-switch{position:relative;width:36px;height:20px;background:rgba(255,255,255,0.25);border-radius:20px;cursor:pointer;transition:background .15s;border:none}
+.squads-switch.on{background:#fff}
+.squads-switch::after{content:'';position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;background:#fff;transition:left .15s}
+.squads-switch.on::after{left:18px;background:#5B3F8A}
+.squads-body{padding:1.25rem;display:none}
+.squads-body.visible{display:block}
+.squad-row{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:0.5px solid var(--border)}
+.squad-row:last-child{border-bottom:none}
+.squad-color-dot{width:14px;height:14px;border-radius:50%;flex-shrink:0}
+.squad-name-input{flex:1;padding:7px 10px;font-size:13px;border:1px solid var(--border);border-radius:7px;background:var(--bg);color:var(--text);font-family:inherit;outline:none}
+.squad-name-input:focus{border-color:var(--purple)}
+.squad-del-btn{font-size:11px;color:var(--red);background:var(--red-light);border:none;padding:5px 10px;border-radius:6px;cursor:pointer;font-family:inherit}
+.squad-add-btn{margin-top:10px;font-size:12px;font-weight:500;color:var(--purple);background:var(--purple-light);border:none;padding:7px 14px;border-radius:7px;cursor:pointer;font-family:inherit}
+.squad-prize-wrap{margin-top:14px}
+.rep-squad-select{width:100%;padding:6px 8px;font-size:12px;border:1px solid var(--border);border-radius:7px;background:var(--bg);color:var(--text);font-family:inherit;outline:none}
+.rep-squad-select:focus{border-color:var(--purple)}
+
+  /* ── Hamburger nav drawer ────────────────────────────── */
+  .ham-btn{position:absolute;top:14px;left:14px;width:40px;height:40px;border-radius:10px;background:rgba(255,255,255,0.12);border:none;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;z-index:200;transition:background .15s}
+  .ham-btn:hover{background:rgba(255,255,255,0.2)}
+  .ham-line{width:18px;height:2px;background:#fff;border-radius:2px;transition:all .25s}
+  .ham-btn.open .ham-line:nth-child(1){transform:translateY(7px) rotate(45deg)}
+  .ham-btn.open .ham-line:nth-child(2){opacity:0;transform:scaleX(0)}
+  .ham-btn.open .ham-line:nth-child(3){transform:translateY(-7px) rotate(-45deg)}
+  .ham-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:300;opacity:0;pointer-events:none;transition:opacity .25s}
+  .ham-overlay.visible{opacity:1;pointer-events:all}
+  .ham-drawer{position:fixed;top:0;left:0;width:280px;height:100%;background:#fff;z-index:400;transform:translateX(-100%);transition:transform .3s cubic-bezier(.4,0,.2,1);display:flex;flex-direction:column;box-shadow:4px 0 24px rgba(0,0,0,0.12)}
+  .ham-drawer.open{transform:translateX(0)}
+  .ham-drawer-header{background:var(--nav-primary,#1C1409);padding:1.25rem 1.25rem 1rem;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+  .ham-drawer-logo{font-family:'Fraunces',serif;font-size:18px;font-weight:600;color:#fff;display:flex;align-items:center;gap:6px}
+  .ham-drawer-logo-dot{width:6px;height:6px;border-radius:50%;background:var(--nav-accent,#C17F24);flex-shrink:0}
+  .ham-drawer-shop{font-size:11px;color:rgba(255,255,255,0.45);margin-top:2px}
+  .ham-close-btn{width:32px;height:32px;border-radius:8px;background:rgba(255,255,255,0.1);border:none;cursor:pointer;color:#fff;font-size:16px;display:flex;align-items:center;justify-content:center}
+  .ham-close-btn:hover{background:rgba(255,255,255,0.2)}
+  .ham-nav{flex:1;overflow-y:auto;padding:.75rem 0}
+  .ham-section-label{font-size:10px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:#8A7A68;padding:.5rem 1.25rem .375rem;margin-top:.5rem}
+  .ham-nav-item{display:flex;align-items:center;gap:12px;padding:.875rem 1.25rem;text-decoration:none;color:#1C1409;transition:background .12s;cursor:pointer;border:none;background:none;width:100%;font-family:inherit;text-align:left}
+  .ham-nav-item:hover{background:#F5ECD4}
+  .ham-nav-item.active{background:#F3F0FA;color:#5B3F8A}
+  .ham-nav-item.active .ham-nav-icon{background:#5B3F8A}
+  .ham-nav-icon{width:34px;height:34px;border-radius:9px;background:#1C1409;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0}
+  .ham-nav-text{flex:1}
+  .ham-nav-label{font-size:14px;font-weight:500;color:inherit}
+  .ham-nav-sub{font-size:11px;color:#8A7A68;margin-top:1px}
+  .ham-nav-badge{font-size:10px;font-weight:600;color:#5B3F8A;background:#F3F0FA;padding:2px 8px;border-radius:10px;white-space:nowrap}
+  .ham-nav-item.mgr-item .ham-nav-label{color:#5B3F8A}
+  .ham-divider{height:1px;background:#F0EEE8;margin:.5rem 0}
+  .ham-footer{padding:1rem 1.25rem;border-top:1px solid #F0EEE8;flex-shrink:0}
+  .ham-footer-brand{font-size:11px;color:#8A7A68}
+  .ham-footer-brand span{color:#5B3F8A;font-weight:600}
+</style>
+</head>
+<script type="module">
+  import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+  import { getDatabase, ref, set } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js';
+
+  const firebaseConfig = {
+    apiKey:            'PASTE_API_KEY_HERE',
+    authDomain:        'PASTE_AUTH_DOMAIN_HERE',
+    databaseURL:       'PASTE_DATABASE_URL_HERE',
+    projectId:         'PASTE_PROJECT_ID_HERE',
+    storageBucket:     'PASTE_STORAGE_BUCKET_HERE',
+    messagingSenderId: 'PASTE_MESSAGING_SENDER_ID_HERE',
+    appId:             'PASTE_APP_ID_HERE',
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db  = getDatabase(app);
+
+  window._fbSetPin = async function(shopKey, name, pin){
+    await set(ref(db, 'pins/' + shopKey + '/' + name.replace(/\s/g,'_')), pin);
+  };
+  window._fbSetSquad = async function(shopKey, name, squadId){
+    await set(ref(db, 'squadAssign/' + shopKey + '/' + name.replace(/\s/g,'_')), squadId || null);
+  };
+  window._fbSaveSquads = async function(shopKey, squads){
+    await set(ref(db, 'teamRewards/squads/' + shopKey + '/list'), squads);
+  };
+  window._fbSetSquadsConfig = async function(shopKey, config){
+    await set(ref(db, 'teamRewards/squads/' + shopKey + '/config'), config);
+  };
+</script>
+<body>
+<!-- Hamburger overlay + drawer -->
+<div class="ham-overlay" id="ham-overlay" onclick="closeDrawer()"></div>
+<div class="ham-drawer" id="ham-drawer">
+  <div class="ham-drawer-header">
+    <div>
+      <div class="ham-drawer-logo">Rewards Program</div>
+      <div class="ham-drawer-shop" id="ham-shop-name"></div>
+    </div>
+    <button class="ham-close-btn" onclick="closeDrawer()">X</button>
+  </div>
+  <nav class="ham-nav">
+    <a class="ham-nav-item" id="ham-hub" href="https://perennialrewards.github.io/base/">
+      <div class="ham-nav-icon">&#127942;</div>
+      <div class="ham-nav-text"><div class="ham-nav-label">Current Competitions</div><div class="ham-nav-sub">Live team rankings</div></div>
+    </a>
+    <a class="ham-nav-item" id="ham-myrep" href="https://perennialrewards.github.io/base/points.html">
+      <div class="ham-nav-icon">&#11088;</div>
+      <div class="ham-nav-text"><div class="ham-nav-label">My Rewards</div><div class="ham-nav-sub">Your personal stats &amp; progress</div></div>
+    </a>
+    <a class="ham-nav-item" id="ham-trophies" href="https://perennialrewards.github.io/base/trophies.html">
+      <div class="ham-nav-icon">&#129351;</div>
+      <div class="ham-nav-text"><div class="ham-nav-label">Trophies</div><div class="ham-nav-sub">Shop-wide milestone badges</div></div>
+    </a>
+    <div class="ham-divider"></div>
+    <a class="ham-nav-item mgr-item" id="ham-roster" href="https://perennialrewards.github.io/base/roster.html">
+      <div class="ham-nav-icon">&#128101;</div>
+      <div class="ham-nav-text"><div class="ham-nav-label">Rep Roster</div><div class="ham-nav-sub">Manage reps &amp; set PINs</div></div>
+      <div class="ham-nav-badge">Lock</div>
+    </a>
+  </nav>
+  <div class="ham-footer">
+    <div class="ham-footer-brand">Shop Rewards Program</div>
+  </div>
+</div>
+
+
+
+<!-- Banner -->
+<div class="banner" style="position:relative">
+  <button class="ham-btn" id="ham-btn" onclick="openDrawer()" aria-label="Open menu"><div class="ham-line"></div><div class="ham-line"></div><div class="ham-line"></div></button>
+  <div class="banner-left">
+    <div class="banner-logo"><img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQwIiBoZWlnaHQ9IjcyIiB2aWV3Qm94PSIwIDAgMjQwIDcyIiBmaWxsPSJub25lIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxnIHRyYW5zZm9ybT0idHJhbnNsYXRlKDM2LDM2KSI+PGVsbGlwc2UgY3g9IjAiIGN5PSItMjgiIHJ4PSI1IiByeT0iOSIgZmlsbD0iI0MxN0YyNCIgdHJhbnNmb3JtPSJyb3RhdGUoMCkiLz48ZWxsaXBzZSBjeD0iMCIgY3k9Ii0yOCIgcng9IjUiIHJ5PSI5IiBmaWxsPSIjQzk0QjFFIiBvcGFjaXR5PSIwLjk1IiB0cmFuc2Zvcm09InJvdGF0ZSgzMCkiLz48ZWxsaXBzZSBjeD0iMCIgY3k9Ii0yOCIgcng9IjUiIHJ5PSI5IiBmaWxsPSIjQjg1QzM4IiBvcGFjaXR5PSIwLjkiIHRyYW5zZm9ybT0icm90YXRlKDYwKSIvPjxlbGxpcHNlIGN4PSIwIiBjeT0iLTI4IiByeD0iNSIgcnk9IjkiIGZpbGw9IiNENDk1MkEiIG9wYWNpdHk9IjAuODUiIHRyYW5zZm9ybT0icm90YXRlKDkwKSIvPjxlbGxpcHNlIGN4PSIwIiBjeT0iLTI4IiByeD0iNSIgcnk9IjkiIGZpbGw9IiNBNjNEMkYiIG9wYWNpdHk9IjAuODUiIHRyYW5zZm9ybT0icm90YXRlKDEyMCkiLz48ZWxsaXBzZSBjeD0iMCIgY3k9Ii0yOCIgcng9IjUiIHJ5PSI5IiBmaWxsPSIjRThBQzJEIiBvcGFjaXR5PSIwLjgiIHRyYW5zZm9ybT0icm90YXRlKDE1MCkiLz48ZWxsaXBzZSBjeD0iMCIgY3k9Ii0yOCIgcng9IjUiIHJ5PSI5IiBmaWxsPSIjNkIzQTJBIiBvcGFjaXR5PSIwLjgiIHRyYW5zZm9ybT0icm90YXRlKDE4MCkiLz48ZWxsaXBzZSBjeD0iMCIgY3k9Ii0yOCIgcng9IjUiIHJ5PSI5IiBmaWxsPSIjQzA1QzJDIiBvcGFjaXR5PSIwLjgiIHRyYW5zZm9ybT0icm90YXRlKDIxMCkiLz48ZWxsaXBzZSBjeD0iMCIgY3k9Ii0yOCIgcng9IjUiIHJ5PSI5IiBmaWxsPSIjNkI3QzNFIiBvcGFjaXR5PSIwLjc1IiB0cmFuc2Zvcm09InJvdGF0ZSgyNDApIi8+PGVsbGlwc2UgY3g9IjAiIGN5PSItMjgiIHJ4PSI1IiByeT0iOSIgZmlsbD0iI0Q0QTgzMiIgb3BhY2l0eT0iMC44IiB0cmFuc2Zvcm09InJvdGF0ZSgyNzApIi8+PGVsbGlwc2UgY3g9IjAiIGN5PSItMjgiIHJ4PSI1IiByeT0iOSIgZmlsbD0iIzhCMjUxOCIgb3BhY2l0eT0iMC44IiB0cmFuc2Zvcm09InJvdGF0ZSgzMDApIi8+PGVsbGlwc2UgY3g9IjAiIGN5PSItMjgiIHJ4PSI1IiByeT0iOSIgZmlsbD0iI0Q0NzIxQSIgb3BhY2l0eT0iMC44NSIgdHJhbnNmb3JtPSJyb3RhdGUoMzMwKSIvPjxjaXJjbGUgY3g9IjAiIGN5PSIwIiByPSIxOCIgc3Ryb2tlPSIjQzE3RjI0IiBzdHJva2Utd2lkdGg9IjAuNSIgZmlsbD0ibm9uZSIgb3BhY2l0eT0iMC4yNSIvPjx0ZXh0IHg9Ii04IiB5PSIxMCIgZm9udC1mYW1pbHk9IkZyYXVuY2VzLEdlb3JnaWEsc2VyaWYiIGZvbnQtc2l6ZT0iMjgiIGZvbnQtd2VpZ2h0PSI2MDAiIGZpbGw9IiNGNUVDRDQiPlA8L3RleHQ+PC9nPjx0ZXh0IHg9IjgyIiB5PSI0NyIgZm9udC1mYW1pbHk9IkZyYXVuY2VzLEdlb3JnaWEsc2VyaWYiIGZvbnQtc2l6ZT0iMzAiIGZvbnQtd2VpZ2h0PSI2MDAiIGZpbGw9IiNGNUVDRDQiIGxldHRlci1zcGFjaW5nPSItMC41Ij5lcmVubmlhbDwvdGV4dD48L3N2Zz4=" alt="Perennial"></div>
+    <div>
+      <div class="banner-title">Rep Roster</div>
+      <div class="banner-sub">Perennial · Rewards Manager</div>
+    </div>
+  </div>
+  <div class="banner-right">
+    <button class="lock-btn" onclick="lockPage()">🔒 Lock</button>
+  </div>
+</div>
+
+<!-- Auth screen -->
+<div class="auth-screen" id="auth-screen">
+  <div class="auth-card">
+    <div class="auth-icon">🔐</div>
+    <div class="auth-title">Manager access</div>
+    <div class="auth-sub">Enter your manager password to manage the rep roster.</div>
+    <div class="auth-error" id="auth-error"></div>
+    <input class="auth-input" type="password" id="auth-input" placeholder="••••••••" maxlength="30"
+      onkeydown="if(event.key==='Enter')checkAuth()">
+    <button class="auth-btn" onclick="checkAuth()">Unlock Roster</button>
+  </div>
+</div>
+
+<!-- Main content -->
+<div class="main" id="main-content">
+
+  <!-- Stats -->
+  <div class="stats-bar">
+    <div class="stat-card"><div class="stat-val" id="stat-total">0</div><div class="stat-label">Total Reps</div></div>
+    <div class="stat-card"><div class="stat-val" id="stat-email">0</div><div class="stat-label">With Email</div></div>
+    <div class="stat-card"><div class="stat-val" id="stat-shop">Perennial</div><div class="stat-label">Location</div></div>
+  </div>
+
+  <!-- Add rep -->
+  <div class="add-section">
+    <div class="add-header"><div class="add-header-title">➕ Add rep to roster</div></div>
+    <div class="add-body">
+      <div class="add-row">
+        <div class="field-wrap">
+          <label class="field-label">Full name</label>
+          <input class="field-input" type="text" id="new-name" placeholder="As shown on leaderboard" onkeydown="if(event.key==='Enter')addRep()">
+        </div>
+        <div class="field-wrap">
+          <label class="field-label">Email address</label>
+          <input class="field-input" type="email" id="new-email" placeholder="rep@email.com" onkeydown="if(event.key==='Enter')addRep()">
+        </div>
+        <button class="add-btn" onclick="addRep()">Add rep</button>
+      </div>
+      <div class="add-error" id="add-error"></div>
+    </div>
+  </div>
+
+  <!-- Manage Squads -->
+  <div class="squads-section">
+    <div class="squads-header">
+      <div class="squads-header-title">🛡️ Team Rewards — Squads</div>
+      <div class="squads-toggle">
+        <span id="squads-toggle-label">Off</span>
+        <button class="squads-switch" id="squads-switch" onclick="toggleSquadsEnabled()"></button>
+      </div>
+    </div>
+    <div class="squads-body" id="squads-body">
+      <div id="squad-list"></div>
+      <button class="squad-add-btn" onclick="addSquad()">➕ Add squad</button>
+      <div class="squad-prize-wrap">
+        <label class="field-label" style="display:block;margin-bottom:5px">Prize for winning squad</label>
+        <input class="notify-input" type="text" id="squad-prize" placeholder="e.g. 'Winning squad picks next shift swap'" onchange="saveSquadPrize()">
+      </div>
+    </div>
+  </div>
+
+  <!-- Roster table -->
+  <div class="roster-card">
+    <div class="roster-header">
+      <div class="roster-header-title">Current roster</div>
+      <div class="roster-actions">
+        <button class="copy-btn" onclick="copyEmails()">📋 Copy all emails</button>
+        <button class="export-btn" onclick="exportCSV()">⬇ Export CSV</button>
+      </div>
+    </div>
+    <div id="roster-list">
+      <div class="roster-empty">No reps added yet. Add your first rep above.</div>
+    </div>
+  </div>
+
+  <hr class="section-divider">
+
+  <!-- Notification section -->
+  <div class="notify-section">
+    <div class="notify-header">
+      <div class="notify-header-title">⭐ Notify reps — new data uploaded</div>
+      <div class="notify-badge">Email all reps</div>
+    </div>
+    <div class="notify-body">
+      <div class="notify-preview">
+        <div class="notify-preview-subject">Preview — what reps will receive</div>
+        <strong>Subject:</strong> 🏆 Your Perennial leaderboard just updated<br><br>
+        Hey [Rep Name],<br><br>
+        The <strong>Perennial</strong> leaderboard has been updated with the latest data.<br><br>
+        👀 <strong>Your current rank: [#X of Y]</strong><br>
+        Check the leaderboard to see where you stand and how close you are to your next reward.<br><br>
+        <a href="https://perennialrewards.github.io/base/" style="color:#5B3F8A">👉 View the leaderboard →</a><br><br>
+        Keep pushing — rewards are waiting! 🎁<br><br>
+        — The Rewards Team
+      </div>
+
+      <div class="notify-service-note">
+        <strong>📧 Email service setup required</strong>
+        To send notifications, connect an email service below. Recommended: <strong>EmailJS</strong> (free, no backend needed) or <strong>SendGrid</strong> (free tier). Add your service credentials and uncomment the send function in the code.
+      </div>
+
+      <div style="margin-top:12px">
+        <label class="field-label" style="font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:5px">Custom message (optional)</label>
+        <input class="notify-input" type="text" id="custom-message" placeholder="e.g. 'Big push this week — gift cards on the line!'">
+      </div>
+
+      <button class="notify-btn" id="notify-btn" onclick="sendNotifications()">
+        📨 Send update to all reps (<span id="rep-count">0</span>)
+      </button>
+      <div class="notify-status" id="notify-status"></div>
+    </div>
+  </div>
+
+</div><!-- /main -->
+
+<script>
+// ── CONFIG ─────────────────────────────────────────────────────
+const MANAGER_PASSWORD = 'PERENNIAL2026';
+const SHOP_NAME        = 'Perennial';
+const LEADERBOARD_URL  = 'https://perennialrewards.github.io/base/';
+const STORAGE_KEY      = 'perennial_base';
+
+// ── EMAIL SERVICE ───────────────────────────────────────────────
+// When ready to connect EmailJS or SendGrid, implement this function:
+async function sendEmail(toEmail, toName, rank, total, customMsg) {
+  // ── EmailJS example (uncomment and fill in your credentials):
+  // await emailjs.send('YOUR_SERVICE_ID', 'YOUR_TEMPLATE_ID', {
+  //   to_email: toEmail,
+  //   to_name: toName,
+  //   shop_name: SHOP_NAME,
+  //   rank: rank,
+  //   total: total,
+  //   custom_message: customMsg,
+  //   leaderboard_url: LEADERBOARD_URL,
+  // });
+
+  // ── Placeholder — logs to console until service is connected:
+  console.log('Would send to:', toEmail, '| Rank:', rank, 'of', total);
+  return true; // Remove this line once real service is connected
+}
+// ───────────────────────────────────────────────────────────────
+
+const COLORS = ['#C17F24','#C94B1E','#B85C38','#6B7C3E','#5B3F8A','#D4A832','#A63D2F','#C05C2C'];
+const ini = n => n.split(' ').map(p=>p[0]).join('').toUpperCase().slice(0,2);
+
+// ── Auth ──────────────────────────────────────────────────────
+function checkAuth(){
+  const val = document.getElementById('auth-input').value;
+  if(val === MANAGER_PASSWORD){
+    document.getElementById('auth-screen').style.display = 'none';
+    document.getElementById('main-content').style.display = 'block';
+    renderSquadsPanel();
+  } else {
+    const inp = document.getElementById('auth-input');
+    document.getElementById('auth-error').textContent = 'Incorrect password.';
+    inp.classList.add('error'); inp.value = '';
+    setTimeout(()=>inp.classList.remove('error'), 400);
+  }
+}
+function lockPage(){
+  document.getElementById('auth-screen').style.display = 'flex';
+  document.getElementById('main-content').style.display = 'none';
+  document.getElementById('auth-input').value = '';
+}
+document.getElementById('auth-input').addEventListener('keydown', e=>{ if(e.key==='Enter') checkAuth(); });
+
+// ── Squads (Team Rewards) ────────────────────────────────────────
+const SQUADS_KEY  = 'squads_' + STORAGE_KEY;
+const SQUADS_EN_KEY = 'squadsEnabled_' + STORAGE_KEY;
+const SQUAD_PRIZE_KEY = 'squadPrize_' + STORAGE_KEY;
+const SQUAD_COLORS = ['#C17F24','#C94B1E','#B85C38','#6B7C3E','#5B3F8A','#D4A832'];
+
+function getSquads(){ try{ return JSON.parse(localStorage.getItem(SQUADS_KEY)||'[]'); }catch(e){ return []; } }
+function saveSquads(list){
+  localStorage.setItem(SQUADS_KEY, JSON.stringify(list));
+  window._fbSaveSquads(SHOP_NAME.replace(/\s/g,'_'), list).catch(e=>console.error('Squad sync failed:', e));
+}
+function squadsEnabled(){ return localStorage.getItem(SQUADS_EN_KEY) === '1'; }
+function toggleSquadsEnabled(){
+  const next = !squadsEnabled();
+  localStorage.setItem(SQUADS_EN_KEY, next ? '1' : '0');
+  window._fbSetSquadsConfig(SHOP_NAME.replace(/\s/g,'_'), { enabled: next, prize: localStorage.getItem(SQUAD_PRIZE_KEY) || '' })
+    .catch(e=>console.error('Squad config sync failed:', e));
+  renderSquadsPanel();
+}
+function saveSquadPrize(){
+  const prize = document.getElementById('squad-prize').value.trim();
+  localStorage.setItem(SQUAD_PRIZE_KEY, prize);
+  window._fbSetSquadsConfig(SHOP_NAME.replace(/\s/g,'_'), { enabled: squadsEnabled(), prize })
+    .catch(e=>console.error('Squad config sync failed:', e));
+}
+function addSquad(){
+  const list = getSquads();
+  const id = 'sq_' + Date.now();
+  list.push({ id, name: 'Squad ' + (list.length+1), color: SQUAD_COLORS[list.length % SQUAD_COLORS.length] });
+  saveSquads(list);
+  renderSquadsPanel();
+}
+function renameSquad(id, name){
+  const list = getSquads();
+  const sq = list.find(s=>s.id===id);
+  if(sq){ sq.name = name; saveSquads(list); renderRoster(); }
+}
+function deleteSquad(id){
+  if(!confirm('Delete this squad? Reps assigned to it will become unassigned.')) return;
+  saveSquads(getSquads().filter(s=>s.id!==id));
+  const roster = getRoster();
+  roster.forEach(r=>{ if(r.squad===id) r.squad = ''; });
+  saveRoster(roster);
+  renderSquadsPanel();
+  renderRoster();
+}
+function renderSquadsPanel(){
+  const enabled = squadsEnabled();
+  document.getElementById('squads-switch').classList.toggle('on', enabled);
+  document.getElementById('squads-toggle-label').textContent = enabled ? 'On' : 'Off';
+  document.getElementById('squads-body').classList.toggle('visible', enabled);
+  document.getElementById('squad-prize').value = localStorage.getItem(SQUAD_PRIZE_KEY) || '';
+
+  const list = getSquads();
+  const listEl = document.getElementById('squad-list');
+  listEl.innerHTML = list.length ? list.map(sq=>`
+    <div class="squad-row">
+      <div class="squad-color-dot" style="background:${sq.color}"></div>
+      <input class="squad-name-input" value="${sq.name}" onchange="renameSquad('${sq.id}', this.value.trim() || 'Squad')">
+      <button class="squad-del-btn" onclick="deleteSquad('${sq.id}')">Remove</button>
+    </div>`).join('') : '<div style="font-size:12px;color:var(--muted);padding:6px 0">No squads yet — add one below.</div>';
+
+  renderRoster(); // squad dropdowns depend on current squad list
+}
+
+// ── Roster storage ────────────────────────────────────────────
+function getRoster(){ return JSON.parse(localStorage.getItem(STORAGE_KEY)||'[]'); }
+function saveRoster(r){ localStorage.setItem(STORAGE_KEY, JSON.stringify(r)); }
+
+function addRep(){
+  const name  = document.getElementById('new-name').value.trim();
+  const email = document.getElementById('new-email').value.trim();
+  const errEl = document.getElementById('add-error');
+  if(!name)  { errEl.textContent = 'Please enter a name.'; return; }
+  if(!email) { errEl.textContent = 'Please enter an email.'; return; }
+  if(!/^[^@]+@[^@]+\.[^@]+$/.test(email)) { errEl.textContent = 'Please enter a valid email.'; return; }
+  const roster = getRoster();
+  if(roster.find(r=>r.name.toLowerCase()===name.toLowerCase())){ errEl.textContent = 'A rep with this name already exists.'; return; }
+  roster.push({ name, email, addedAt: new Date().toISOString() });
+  saveRoster(roster);
+  document.getElementById('new-name').value = '';
+  document.getElementById('new-email').value = '';
+  errEl.textContent = '';
+  renderRoster();
+  document.getElementById('new-name').focus();
+}
+
+function deleteRep(name){
+  if(!confirm('Remove ' + name + ' from the roster?')) return;
+  saveRoster(getRoster().filter(r=>r.name !== name));
+  renderRoster();
+}
+
+function getPinKey(name){ return 'rep_pin_' + SHOP_NAME.replace(/\s/g,'_') + '_' + name.replace(/\s/g,'_'); }
+function getPin(name){ return localStorage.getItem(getPinKey(name)) || ''; }
+async function setPin(name, pin){
+  localStorage.setItem(getPinKey(name), pin);
+  try {
+    await window._fbSetPin(SHOP_NAME.replace(/\s/g,'_'), name, pin);
+  } catch(e) {
+    console.error('Firebase PIN sync failed:', e);
+    alert('PIN saved on this device, but failed to sync to the cloud. Other devices may not see it yet — check your connection and try again.');
+  }
+}
+function assignSquad(name, squadId){
+  const roster = getRoster();
+  const rep = roster.find(r=>r.name===name);
+  if(!rep) return;
+  rep.squad = squadId;
+  saveRoster(roster);
+  window._fbSetSquad(SHOP_NAME.replace(/\s/g,'_'), name, squadId).catch(e=>console.error('Squad assign sync failed:', e));
+}
+async function editPin(name){
+  const existing = getPin(name);
+  const pin = prompt('Set a 4-6 digit PIN for ' + name + ':' + (existing ? ' (current: '+existing+')' : ''), existing || '');
+  if(pin === null) return;
+  if(pin.length < 4 || pin.length > 6 || !/^\d+$/.test(pin)){ alert('PIN must be 4-6 digits only.'); return; }
+  await setPin(name, pin);
+  renderRoster();
+}
+function renderRoster(){
+  const roster = getRoster();
+  const listEl = document.getElementById('roster-list');
+  document.getElementById('stat-total').textContent = roster.length;
+  document.getElementById('stat-email').textContent = roster.filter(r=>r.email).length;
+  document.getElementById('rep-count').textContent = roster.length;
+
+  if(!roster.length){
+    listEl.innerHTML = '<div class="roster-empty">No reps added yet. Add your first rep above.</div>';
+    return;
+  }
+  const squads = getSquads();
+  const showSquadCol = squadsEnabled();
+  listEl.innerHTML = roster.map((rep,i)=>{
+    const color = COLORS[i%COLORS.length];
+    const safeName = rep.name.replace(/'/g,String.fromCharCode(92,39));
+    const squadCell = showSquadCol
+      ? `<select class="rep-squad-select" onchange="assignSquad('${safeName}', this.value)">
+           <option value="">— None —</option>
+           ${squads.map(sq=>`<option value="${sq.id}" ${rep.squad===sq.id?'selected':''}>${sq.name}</option>`).join('')}
+         </select>`
+      : `<div style="font-size:11px;color:var(--muted)">—</div>`;
+    return `<div class="roster-row" style="${showSquadCol?'':'grid-template-columns:1fr 1.2fr 130px auto'}">
+      <div class="rep-name-cell">
+        <div class="rep-avatar" style="background:${color}22;color:${color}">${ini(rep.name)}</div>
+        ${rep.name}
+      </div>
+      <div class="rep-email-cell">${rep.email}</div>
+      ${showSquadCol ? `<div>${squadCell}</div>` : ''}
+      <div>${getPin(rep.name) ? `<span class="pin-badge">PIN: ${getPin(rep.name)}</span>` : `<button class="pin-set-btn" onclick="editPin('${safeName}')">Set PIN</button>`}</div>
+      <div class="rep-actions">
+        <button class="del-btn" onclick="deleteRep('${safeName}')">Remove</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function copyEmails(){
+  const emails = getRoster().map(r=>r.email).join(', ');
+  if(!emails){ alert('No emails in roster yet.'); return; }
+  navigator.clipboard.writeText(emails).then(()=>alert('Emails copied to clipboard!'));
+}
+
+function exportCSV(){
+  const roster = getRoster();
+  if(!roster.length){ alert('No reps to export.'); return; }
+  const csv = 'Name,Email,Added\n' + roster.map(r=>`"${r.name}","${r.email}","${r.addedAt?.slice(0,10)||''}"` ).join('\n');
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([csv],{type:'text/csv'}));
+  a.download = 'roster_' + SHOP_NAME.replace(/\s+/g,'_') + '.csv';
+  a.click();
+}
+
+async function sendNotifications(){
+  const roster = getRoster();
+  if(!roster.length){ alert('No reps in roster yet.'); return; }
+  const customMsg = document.getElementById('custom-message').value.trim();
+  const btn = document.getElementById('notify-btn');
+  const statusEl = document.getElementById('notify-status');
+  btn.disabled = true;
+  let sent = 0, failed = 0;
+  for(let i=0; i<roster.length; i++){
+    const rep = roster[i];
+    const rank = i+1; // In production, pull real rank from Firebase
+    statusEl.textContent = `Sending ${i+1} of ${roster.length}...`;
+    try{
+      await sendEmail(rep.email, rep.name, rank, roster.length, customMsg);
+      sent++;
+    } catch(e){
+      console.error('Failed to send to', rep.email, e);
+      failed++;
+    }
+    await new Promise(r=>setTimeout(r,200));
+  }
+  btn.disabled = false;
+  statusEl.textContent = sent + ' notifications sent' + (failed>0?' · '+failed+' failed':'') + ' ✅';
+  setTimeout(()=>{ statusEl.textContent=''; }, 5000);
+}
+</script>
+
+<script>
+function openDrawer(){
+  document.getElementById('ham-drawer').classList.add('open');
+  document.getElementById('ham-overlay').classList.add('visible');
+  document.getElementById('ham-btn').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeDrawer(){
+  document.getElementById('ham-drawer').classList.remove('open');
+  document.getElementById('ham-overlay').classList.remove('visible');
+  document.getElementById('ham-btn').classList.remove('open');
+  document.body.style.overflow = '';
+}
+document.addEventListener('keydown', function(e){ if(e.key==='Escape') closeDrawer(); });
+(function(){
+  var page = window.location.pathname.split('/').pop() || 'index.html';
+  var map = {
+    'index.html':'ham-hub', '':'ham-hub',
+    'leaderboard.html':'ham-hub',
+    'points.html':'ham-myrep',
+    'roster.html':'ham-roster',
+  };
+  var activeId = map[page] || '';
+  if(activeId){ var el=document.getElementById(activeId); if(el) el.classList.add('active'); }
+  var shopEl = document.getElementById('ham-shop-name');
+  if(shopEl){
+    var sn = (typeof SHOP_NAME !== 'undefined') ? SHOP_NAME : '';
+    shopEl.textContent = sn;
+  }
+})();
+</script>
+
+</body>
+</html>

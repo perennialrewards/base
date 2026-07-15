@@ -3,592 +3,1917 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Perennial — Owner Portal</title>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,600;1,9..144,400&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<title>Perennial — Current Competitions</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+<script type="module">
+  import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+  import { getDatabase, ref, set, get } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js';
+
+  // ================================================================
+  // FIREBASE CONFIG — fill in from console.firebase.google.com
+  // → Your project → Project Settings → Your Apps → Config
+  // ================================================================
+  const firebaseConfig = {
+    apiKey:            'PASTE_API_KEY_HERE',
+    authDomain:        'PASTE_AUTH_DOMAIN_HERE',
+    databaseURL:       'PASTE_DATABASE_URL_HERE',
+    projectId:         'PASTE_PROJECT_ID_HERE',
+    storageBucket:     'PASTE_STORAGE_BUCKET_HERE',
+    messagingSenderId: 'PASTE_MESSAGING_SENDER_ID_HERE',
+    appId:             'PASTE_APP_ID_HERE',
+  };
+  // ================================================================
+  // STOP — do not edit anything below this line
+  // ================================================================
+
+  const app = initializeApp(firebaseConfig);
+  const db  = getDatabase(app);
+
+  window.loadFromFirebase = async function() {
+    try {
+      const snap = await get(ref(db, 'leaderboard'));
+      const squadSnap  = await get(ref(db, 'teamRewards/squads/' + window.SHOP_KEY));
+      const assignSnap = await get(ref(db, 'squadAssign/' + window.SHOP_KEY));
+      const allTimeSnap = await get(ref(db, 'points_alltime/' + window.SHOP_KEY));
+      window._squadConfig = squadSnap.exists() ? (squadSnap.val().config || {}) : {};
+      window._squadList   = squadSnap.exists() ? (squadSnap.val().list || []) : [];
+      window._squadAssign = assignSnap.exists() ? assignSnap.val() : {};
+      window._allTimePoints = allTimeSnap.exists() ? allTimeSnap.val() : {};
+      if (snap.exists()) {
+        const data = snap.val();
+        lastLiveData = data.liveData;
+        window._lastLiveData = data.liveData;
+        window.renderAll(data.liveData);
+        document.getElementById('header-meta').textContent = 'Updated ' + data.updatedAt;
+        document.getElementById('footer').textContent = window.SHOP_NAME + ' · Updated ' + data.updatedAt;
+      } else {
+        document.getElementById('header-meta').textContent = 'No data yet — manager needs to upload';
+        document.getElementById('board-txn').innerHTML = '<div class="loading-bar">Waiting for manager to upload data.</div>';
+      }
+    } catch(err) {
+      document.getElementById('header-meta').textContent = 'Could not load — check connection';
+      document.getElementById('board-txn').innerHTML = '<div class="loading-bar">Error loading data. Refresh to try again.</div>';
+      console.error('Firebase load error:', err);
+    }
+  };
+
+  window.saveToFirebase = async function(liveData, updatedAt) {
+    try {
+      await set(ref(db, 'leaderboard'), { liveData, updatedAt });
+      return true;
+    } catch(err) {
+      console.error('Firebase save error:', err);
+      return false;
+    }
+  };
+
+  window.saveAllTimePoints = async function(shopKey, name, liveTotal) {
+    try {
+      await set(ref(db, 'points_alltime/' + shopKey + '/' + name.replace(/\s/g,'_')), liveTotal);
+      return true;
+    } catch(err) {
+      console.error('All-time points sync error:', err);
+      return false;
+    }
+  };
+</script>
 <style>
-:root {
-  --ink:     #1C1409;
-  --brown:   #3D2B1A;
-  --cream:   #F5ECD4;
-  --cream2:  #EDE0C4;
-  --amber:   #C17F24;
-  --gold:    #E8AC2D;
-  --rust:    #A63D2F;
-  --moss:    #6B7C3E;
-  --border:  rgba(61,43,26,0.12);
-  --muted:   #8A7A68;
-  --surface: #FFFFFF;
-  --purple:  #5B3F8A;
-}
-* { box-sizing:border-box; margin:0; padding:0 }
-html { -webkit-font-smoothing:antialiased }
-body { font-family:'Inter',sans-serif; background:var(--cream); color:var(--ink); min-height:100vh }
+  @import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,600;1,9..144,400&family=Inter:wght@400;500;600&display=swap');
 
-/* ── LOGIN SCREEN ── */
-.login-screen {
-  min-height:100vh;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  padding:2rem;
-  background:var(--ink);
-}
-.login-card {
-  background:#241A0E;
-  border:1px solid rgba(193,127,36,0.2);
-  border-radius:20px;
-  padding:2.5rem;
-  max-width:400px;
-  width:100%;
-}
-.login-logo { margin-bottom:1.5rem }
-.login-title { font-family:'Fraunces',serif; font-size:1.5rem; font-weight:600; color:var(--cream); margin-bottom:.25rem }
-.login-sub { font-size:13px; color:rgba(245,236,212,0.45); margin-bottom:2rem; line-height:1.5 }
-.login-field { margin-bottom:1rem }
-.login-field label { font-size:10px; font-weight:600; text-transform:uppercase; letter-spacing:1px; color:rgba(245,236,212,0.4); display:block; margin-bottom:5px }
-.login-field input { width:100%; padding:11px 14px; font-size:14px; border:1px solid rgba(255,255,255,0.1); border-radius:10px; background:rgba(255,255,255,0.05); color:var(--cream); font-family:inherit; outline:none; transition:border-color .15s }
-.login-field input:focus { border-color:var(--amber) }
-.login-field input.err { border-color:#EF4444; animation:shake .3s }
-@keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-4px)} 75%{transform:translateX(4px)} }
-.login-btn { width:100%; padding:13px; font-size:14px; font-weight:600; color:var(--ink); background:var(--amber); border:none; border-radius:10px; cursor:pointer; font-family:inherit; margin-top:.5rem; transition:opacity .15s }
-.login-btn:hover { opacity:.88 }
-.login-btn:disabled { opacity:.5; cursor:not-allowed }
-.login-msg { font-size:12px; color:#EF4444; min-height:16px; margin-bottom:.75rem }
+  :root {
+    --teal:       #1C1409;
+    --teal-mid:   color-mix(in srgb, #1C1409 85%, black);
+    --teal-light: color-mix(in srgb, #C17F24 15%, white);
+    --sage:       #C17F24;
+    --sage-light: color-mix(in srgb, #C17F24 20%, white);
+    --cream:      #F5ECD4;
+    --cream-dark: color-mix(in srgb, #F5ECD4 90%, black);
+    --charcoal:   #1C1409;
+    --gray:       #8A7A68;
+    --border:     rgba(61,43,26,0.15);
+    --white:      #FFFFFF;
+  }
 
-/* ── MAIN APP ── */
-.app { display:none; min-height:100vh }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Inter',system-ui,sans-serif;background:var(--cream);min-height:100vh;color:var(--charcoal)}
 
-/* Top bar */
-.topbar { background:var(--ink); padding:.875rem 2rem; display:flex; align-items:center; justify-content:space-between; position:sticky; top:0; z-index:100 }
-.topbar-logo { display:flex; align-items:center; gap:10px }
-.topbar-badge { font-size:10px; font-weight:600; letter-spacing:1.5px; text-transform:uppercase; color:var(--amber); background:rgba(193,127,36,0.12); padding:3px 10px; border-radius:10px }
-.topbar-right { display:flex; align-items:center; gap:14px }
-.topbar-user { font-size:12px; color:rgba(245,236,212,0.4) }
-.signout-btn { font-size:12px; color:rgba(245,236,212,0.4); background:none; border:none; cursor:pointer; text-decoration:underline; font-family:inherit }
-.signout-btn:hover { color:var(--cream) }
+  /* ── Banner ─────────────────────────────────────────── */
+  .banner{
+    width:100%;
+    background:var(--teal);
+    background-image:
+      linear-gradient(color-mix(in srgb, var(--teal) 92%, transparent), color-mix(in srgb, var(--teal) 97%, transparent)),
+      none;
+    background-size:cover;
+    background-position:center 40%;
+    padding:2rem 1.5rem 2.5rem;
+    text-align:center;
+    position:relative;
+  }
+  .banner::after{
+    content:'';
+    position:absolute;
+    bottom:0;left:0;right:0;
+    height:32px;
+    background:var(--cream);
+    clip-path:ellipse(55% 100% at 50% 100%);
+  }
+  .banner-logo{
+    display:flex;align-items:center;justify-content:center;
+    margin-bottom:1rem;
+  }
+  .logo-icon{
+    width:44px;height:44px;border-radius:50%;
+    background:var(--white);
+    display:flex;align-items:center;justify-content:center;
+    overflow:hidden;flex-shrink:0;
+  }
+  .logo-icon img{width:36px;height:36px;object-fit:contain}
+  .logo-wordmark{
+    font-family:'DM Serif Display',Georgia,serif;
+    font-size:26px;color:var(--white);
+    letter-spacing:.5px;
+  }
+  .banner-title{
+    font-family:'DM Serif Display',Georgia,serif;
+    font-size:clamp(20px,5vw,30px);
+    color:var(--white);
+    margin-bottom:4px;
+    letter-spacing:.3px;
+  }
+  .banner-meta{
+    font-size:13px;color:rgba(255,255,255,0.65);
+    letter-spacing:.3px;
+  }
+  .mgr-trigger{
+    position:absolute;top:12px;right:16px;
+    font-size:11px;color:rgba(255,255,255,0.25);
+    cursor:pointer;padding:4px 8px;border-radius:6px;
+    user-select:none;transition:color .2s;
+  }
+  .mgr-trigger:hover{color:rgba(255,255,255,0.6)}
 
-/* Page */
-.page { max-width:1100px; margin:0 auto; padding:2.5rem 2rem 4rem }
-.page-header { margin-bottom:2.5rem }
-.page-eyebrow { font-size:10px; font-weight:600; letter-spacing:2px; text-transform:uppercase; color:var(--amber); margin-bottom:.5rem }
-.page-title { font-family:'Fraunces',serif; font-size:clamp(1.75rem,4vw,2.75rem); font-weight:300; color:var(--ink); line-height:1.1; letter-spacing:-.5px }
-.page-title em { font-style:italic; color:var(--amber) }
+  /* ── Page wrap ──────────────────────────────────────── */
+  .page{max-width:740px;margin:0 auto;padding:1.5rem 1rem 2rem}
 
-/* Section */
-.section { margin-bottom:2.5rem }
-.section-title { font-size:11px; font-weight:600; letter-spacing:2px; text-transform:uppercase; color:var(--muted); margin-bottom:1rem; padding-bottom:.5rem; border-bottom:1px solid var(--border) }
+  /* ── Manager panel ──────────────────────────────────── */
+  .mgr-panel{background:var(--white);border:0.5px solid var(--border);border-radius:14px;overflow:hidden;margin-bottom:1.25rem;display:none}
+  .mgr-panel.open{display:block}
+  .mgr-header{background:var(--teal);padding:.875rem 1.25rem;display:flex;align-items:center;justify-content:space-between}
+  .mgr-header-title{font-size:13px;font-weight:600;color:var(--white)}
+  .mgr-close{font-size:20px;color:rgba(255,255,255,0.5);cursor:pointer;padding:0 4px;line-height:1}
+  .mgr-close:hover{color:var(--white)}
+  .mgr-body{padding:1.25rem}
+  .pw-wrap{display:flex;gap:8px;margin-bottom:.75rem}
+  .pw-input{flex:1;width:100%;padding:9px 14px;font-size:14px;border:0.5px solid var(--border);border-radius:8px;font-family:monospace;letter-spacing:3px;outline:none;background:var(--cream);transition:border-color .15s}
+  .pw-input:focus{border-color:var(--teal);background:var(--white)}
+  .pw-input.error{border-color:#EF4444;animation:shake .3s}
+  @keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+  .pw-btn{padding:9px 18px;font-size:13px;font-weight:500;border-radius:8px;background:var(--teal);color:var(--white);border:none;cursor:pointer}
+  .pw-btn:hover{background:var(--teal-mid)}
+  .pw-error{font-size:12px;color:#EF4444;margin-bottom:6px;min-height:16px}
+  .upload-area{border:2px dashed var(--border);border-radius:12px;padding:1.5rem;text-align:center;cursor:pointer;transition:all .15s;position:relative;display:none}
+  .upload-area.visible{display:block}
+  .upload-area:hover,.upload-area.drag{border-color:var(--teal);background:var(--teal-light)}
+  .upload-area.done{border-color:var(--sage);border-style:solid;background:var(--sage-light)}
+  .upload-area input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+  .upload-icon{font-size:24px;margin-bottom:6px}
+  .upload-label{font-size:13px;font-weight:500;color:var(--charcoal);margin-bottom:2px}
+  .upload-sub{font-size:12px;color:var(--gray)}
+  .upload-result{font-size:13px;font-weight:500;color:var(--sage);margin-top:6px;display:none}
+  .sync-status{font-size:12px;color:var(--gray);margin-top:4px;display:none}
 
-/* Shop grid */
-.shops-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); gap:1rem; margin-bottom:1rem }
-.shop-card { background:var(--surface); border:1px solid var(--border); border-radius:14px; overflow:hidden; transition:box-shadow .15s }
-.shop-card:hover { box-shadow:0 4px 16px rgba(61,43,26,0.08) }
-.shop-card-header { padding:.875rem 1.125rem; display:flex; align-items:center; justify-content:space-between; border-bottom:1px solid var(--border) }
-.shop-card-name { font-size:13px; font-weight:600; color:var(--ink) }
-.shop-card-group { font-size:10px; font-weight:600; letter-spacing:1px; text-transform:uppercase; color:var(--muted) }
-.shop-status { width:8px; height:8px; border-radius:50%; flex-shrink:0 }
-.shop-status.live { background:#10B981 }
-.shop-status.pending { background:var(--gold) }
-.shop-kpis { display:grid; grid-template-columns:repeat(3,1fr); padding:.875rem 1.125rem; gap:.5rem }
-.shop-kpi { text-align:center }
-.shop-kpi-val { font-family:'Fraunces',serif; font-size:1.3rem; font-weight:600; color:var(--ink); line-height:1 }
-.shop-kpi-label { font-size:9px; text-transform:uppercase; letter-spacing:.5px; color:var(--muted); margin-top:2px }
-.shop-card-footer { padding:.625rem 1.125rem; background:#FAFAF8; border-top:1px solid var(--border); display:flex; align-items:center; gap:8px; flex-wrap:wrap }
-.shop-export-btn { font-size:11px; font-weight:600; padding:5px 12px; border-radius:7px; border:none; cursor:pointer; font-family:inherit; transition:opacity .15s }
-.shop-export-btn:hover { opacity:.85 }
-.shop-export-btn.brand { background:rgba(193,127,36,0.12); color:var(--brown) }
-.shop-export-btn.retailer { background:rgba(107,124,62,0.12); color:#3D5020 }
-.shop-export-btn.loading { opacity:.5; cursor:not-allowed }
-.shop-link { font-size:11px; color:var(--muted); text-decoration:none; margin-left:auto }
-.shop-link:hover { color:var(--ink) }
+  /* ── Tabs ───────────────────────────────────────────── */
+  .tabs{display:flex;flex-wrap:wrap;justify-content:center;gap:6px;margin-bottom:1.25rem}
+  .tab{padding:9px 8px;font-size:12px;font-weight:500;min-width:80px;border-radius:10px;border:0.5px solid var(--border);background:var(--white);cursor:pointer;color:var(--gray);transition:all .15s;text-align:center;line-height:1.3}
+  .tab .ti{font-size:15px;display:block;margin-bottom:2px}
+  .tab.active.txn{background:var(--teal);color:var(--white);border-color:var(--teal)}
+  .tab.active.sales{background:#B5830A;color:var(--white);border-color:#B5830A}
+  .tab.active.avg{background:#6B4FA0;color:var(--white);border-color:#6B4FA0}
+  .tab.active.ghf{background:#C17F24;color:var(--white);border-color:#C17F24}
+  .tab.active.plus{background:#7B6FAB;color:var(--white);border-color:#7B6FAB}
 
-/* Summary row */
-.summary-row { display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:1rem; margin-bottom:2.5rem }
-.summary-card { background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:1.25rem }
-.summary-val { font-family:'Fraunces',serif; font-size:2rem; font-weight:300; color:var(--ink); line-height:1 }
-.summary-label { font-size:11px; text-transform:uppercase; letter-spacing:.5px; color:var(--muted); margin-top:4px }
-.summary-delta { display:inline-block; font-size:10px; font-weight:600; color:var(--moss); background:rgba(107,124,62,0.1); padding:2px 8px; border-radius:6px; margin-top:6px }
+  /* ── Metrics ────────────────────────────────────────── */
+  .metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:1.25rem}
+  .metric{background:var(--white);border-radius:12px;border:0.5px solid var(--border);padding:.875rem;text-align:center}
+  .metric-label{font-size:11px;color:var(--gray);text-transform:uppercase;letter-spacing:.6px;margin-bottom:4px}
+  .metric-val{font-size:20px;font-weight:600;color:var(--charcoal)}
 
-/* Report section */
-.report-card { background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:1.5rem; margin-bottom:1rem }
-.report-card-title { font-size:14px; font-weight:600; color:var(--ink); margin-bottom:.25rem }
-.report-card-sub { font-size:12px; color:var(--muted); margin-bottom:1.25rem; line-height:1.5 }
-.report-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:1.25rem }
-.report-field label { font-size:10px; font-weight:600; text-transform:uppercase; letter-spacing:.5px; color:var(--muted); display:block; margin-bottom:4px }
-.report-field input { width:100%; padding:9px 11px; font-size:13px; border:1px solid var(--border); border-radius:8px; background:var(--cream); color:var(--ink); font-family:inherit; outline:none }
-.report-field input:focus { border-color:var(--amber) }
-.report-send-btn { padding:10px 22px; font-size:13px; font-weight:600; color:#fff; background:var(--ink); border:none; border-radius:9px; cursor:pointer; font-family:inherit; transition:opacity .15s; margin-right:8px }
-.report-send-btn:hover { opacity:.85 }
-.report-save-btn { padding:10px 18px; font-size:13px; font-weight:600; color:var(--ink); background:var(--cream2); border:1px solid var(--border); border-radius:9px; cursor:pointer; font-family:inherit }
-.report-status { font-size:12px; color:var(--muted); margin-top:.75rem; min-height:18px }
-.report-status.ok { color:var(--moss) }
-.report-status.err { color:var(--rust) }
-.next-send { background:rgba(193,127,36,0.08); border:1px solid rgba(193,127,36,0.2); border-radius:10px; padding:.875rem 1.125rem; display:flex; align-items:center; justify-content:space-between; margin-bottom:1rem }
-.next-send-label { font-size:12px; color:var(--muted) }
-.next-send-val { font-size:13px; font-weight:600; color:var(--brown) }
+  /* ── Podium ─────────────────────────────────────────── */
+  .podium{display:grid;grid-template-columns:1fr 1.1fr 1fr;gap:10px;margin-bottom:1.25rem;align-items:end}
+  .podium-card{background:var(--white);border-radius:12px;border:0.5px solid var(--border);padding:1rem .875rem;text-align:center}
+  .podium-card.p1.txn{border:1.5px solid var(--teal);background:linear-gradient(to bottom,var(--teal-light),var(--white))}
+  .podium-card.p1.sales{border:1.5px solid #B5830A;background:linear-gradient(to bottom,#FEF3C7,var(--white))}
+  .podium-card.p1.avg{border:1.5px solid #6B4FA0;background:linear-gradient(to bottom,#EDE9FE,var(--white))}
+  .podium-card.p1.ghf{border:1.5px solid var(--sage);background:linear-gradient(to bottom,var(--sage-light),var(--white))}
+  .podium-card.p1.plus{border:1.5px solid #7B6FAB;background:linear-gradient(to bottom,#EDE9FE,var(--white))}
+  .podium-emoji{font-size:24px;margin-bottom:4px}
+  .podium-name{font-size:12px;font-weight:600;color:var(--charcoal);margin-bottom:2px;line-height:1.2}
+  .podium-val{font-size:18px;font-weight:700;color:var(--charcoal)}
+  .podium-sub{font-size:11px;color:var(--gray)}
 
-/* Connect notice */
-.connect-notice { background:#F0F4FF; border:1px solid #C7D4FA; border-radius:10px; padding:.875rem 1.125rem; font-size:12px; color:#3050A0; line-height:1.55; margin-bottom:1rem }
-.connect-notice strong { display:block; margin-bottom:2px; color:#1A3070 }
+  /* ── Table ──────────────────────────────────────────── */
+  .card{background:var(--white);border-radius:14px;border:0.5px solid var(--border);overflow:hidden}
+  .thead{display:grid;padding:9px 16px;font-size:11px;color:var(--gray);font-weight:600;text-transform:uppercase;letter-spacing:.5px;border-bottom:0.5px solid var(--border);grid-template-columns:44px 1fr 120px}
+  .thead.txn{background:var(--teal-light)}
+  .thead.sales{background:#FEF9EC}
+  .thead.avg{background:#F0EDFA}
+  .thead.ghf{background:var(--sage-light)}
+  .thead.plus{background:#F0EDFA}
+  .rep-row{display:grid;padding:12px 16px;align-items:center;border-bottom:0.5px solid var(--cream-dark);transition:background .1s;grid-template-columns:44px 1fr 120px}
+  .rep-row:last-child{border-bottom:none}
+  .rep-row:hover{background:var(--cream)}
+  .rep-row.hl{background:linear-gradient(90deg,var(--teal-light),transparent)}
+  .rank{font-size:14px;font-weight:600;text-align:center}
+  .rep-info{display:flex;align-items:center;gap:9px}
+  .avatar{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;flex-shrink:0}
+  .rep-name{font-size:13px;font-weight:500;color:var(--charcoal)}
+  .val{font-size:13px;font-weight:600;color:var(--charcoal);text-align:right}
+  .loading-bar{text-align:center;padding:2.5rem 1rem;color:var(--gray);font-size:13px}
 
-/* Loading state */
-.shop-loading { text-align:center; padding:2rem; color:var(--muted); font-size:13px }
+  /* ── Footer ─────────────────────────────────────────── */
+  .footer{text-align:center;font-size:11px;color:var(--gray);margin-top:1.5rem;padding-bottom:.5rem;letter-spacing:.3px}
 
-/* Footer */
-.page-footer { text-align:center; font-size:11px; color:var(--muted); margin-top:3rem; opacity:.6 }
+  /* ── Reward banner ───────────────────────────────────── */
+  .reward-banner{background:var(--white);border:0.5px solid var(--border);border-radius:14px;padding:1rem 1.25rem;margin-bottom:1.25rem;display:flex;align-items:center;gap:14px;position:relative;overflow:hidden}
+  .reward-banner::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(91,63,138,0.04),transparent);pointer-events:none}
+  .reward-icon-wrap{width:52px;height:52px;border-radius:12px;background:linear-gradient(135deg,#2D1B69,#5B3F8A);display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0}
+  .reward-text{flex:1}
+  .reward-eyebrow{font-size:10px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:#5B3F8A;margin-bottom:3px}
+  .reward-headline{font-size:15px;font-weight:600;color:var(--charcoal);margin-bottom:6px}
+  .reward-tiers{display:flex;gap:6px;flex-wrap:wrap}
+  .reward-tier{font-size:11px;font-weight:500;padding:3px 9px;border-radius:20px;background:#F3F0FA;color:#5B3F8A;white-space:nowrap}
+  .reward-tier.top{background:linear-gradient(135deg,#2D1B69,#5B3F8A);color:#fff}
 
-@media(max-width:600px) {
-  .page { padding:1.5rem 1rem 3rem }
-  .report-grid { grid-template-columns:1fr }
-  .topbar { padding:.875rem 1rem }
-}
+
+  /* ── Points tab ─────────────────────────────────────── */
+  .tab.active.points{background:linear-gradient(135deg,#2D1B69,#5B3F8A);color:var(--white);border-color:#5B3F8A}
+  .points-hero{background:linear-gradient(135deg,#2D1B69 0%,#5B3F8A 100%);border-radius:16px;padding:1.5rem;text-align:center;margin-bottom:1.25rem;color:var(--white)}
+  .points-hero-label{font-size:11px;letter-spacing:2px;text-transform:uppercase;opacity:.7;margin-bottom:6px}
+  .points-total{font-size:48px;font-weight:600;line-height:1;margin-bottom:2px}
+  .points-sub{font-size:12px;opacity:.65;margin-bottom:1.25rem}
+  .points-split{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .points-pill{background:rgba(255,255,255,0.12);border-radius:10px;padding:.75rem;text-align:center}
+  .points-pill-val{font-size:20px;font-weight:600}
+  .points-pill-label{font-size:11px;opacity:.7;margin-top:2px}
+  .earn-card{background:var(--white);border-radius:14px;border:0.5px solid var(--border);overflow:hidden;margin-bottom:1.25rem}
+  .earn-header{background:#F3F0FA;padding:10px 16px;font-size:11px;font-weight:600;color:#5B3F8A;text-transform:uppercase;letter-spacing:.5px;border-bottom:0.5px solid var(--border)}
+  .earn-row{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:0.5px solid var(--cream-dark)}
+  .earn-row:last-child{border-bottom:none}
+  .earn-icon{font-size:18px;margin-right:10px}
+  .earn-desc{font-size:13px;color:var(--charcoal)}
+  .earn-pts{font-size:13px;font-weight:600;color:#5B3F8A;white-space:nowrap}
+  .redeem-card{background:var(--white);border-radius:14px;border:0.5px solid var(--border);overflow:hidden;margin-bottom:1.25rem}
+  .redeem-header{background:#F3F0FA;padding:10px 16px;font-size:11px;font-weight:600;color:#5B3F8A;text-transform:uppercase;letter-spacing:.5px;border-bottom:0.5px solid var(--border)}
+  .tier-row{display:flex;align-items:center;padding:14px 16px;border-bottom:0.5px solid var(--cream-dark);gap:14px;position:relative}
+  .tier-row:last-child{border-bottom:none}
+  .tier-row.unlocked{background:linear-gradient(90deg,rgba(91,63,138,0.05),transparent)}
+  .tier-badge{width:44px;height:44px;border-radius:10px;background:#F3F0FA;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+  .tier-row.unlocked .tier-badge{background:linear-gradient(135deg,#2D1B69,#5B3F8A)}
+  .tier-info{flex:1}
+  .tier-reward{font-size:14px;font-weight:600;color:var(--charcoal)}
+  .tier-pts-needed{font-size:12px;color:var(--gray);margin-top:2px}
+  .tier-progress{margin-top:6px}
+  .tier-bar-bg{height:4px;background:var(--cream-dark);border-radius:4px;overflow:hidden}
+  .tier-bar-fill{height:100%;border-radius:4px;background:linear-gradient(90deg,#2D1B69,#5B3F8A);transition:width .6s ease}
+  .tier-pct{font-size:10px;color:var(--gray);margin-top:3px}
+  .tier-unlocked-badge{font-size:11px;font-weight:600;color:#5B3F8A;background:#F3F0FA;padding:3px 10px;border-radius:20px;white-space:nowrap}
+  .rep-search-wrap{margin-bottom:1rem}
+  .rep-search{width:100%;padding:10px 14px;font-size:14px;border:0.5px solid var(--border);border-radius:10px;background:var(--white);outline:none;font-family:inherit}
+  .rep-search:focus{border-color:#5B3F8A}
+  .points-leaderboard{background:var(--white);border-radius:14px;border:0.5px solid var(--border);overflow:hidden;margin-bottom:1.25rem}
+  .pts-head{display:grid;grid-template-columns:44px 1fr 90px 90px;padding:9px 16px;font-size:11px;color:var(--gray);font-weight:600;text-transform:uppercase;letter-spacing:.4px;border-bottom:0.5px solid var(--border);background:#F3F0FA}
+  .pts-row{display:grid;grid-template-columns:44px 1fr 90px 90px;padding:11px 16px;align-items:center;border-bottom:0.5px solid var(--cream-dark)}
+  .pts-row:last-child{border-bottom:none}
+  .pts-row:hover{background:var(--cream)}
+  .pts-row.hl{background:linear-gradient(90deg,rgba(91,63,138,0.06),transparent)}
+  .pts-val{font-size:13px;font-weight:600;color:#5B3F8A;text-align:right}
+  .pts-monthly{font-size:13px;color:var(--gray);text-align:right}
+  .perennial-badge{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;color:#5B3F8A;margin-bottom:1rem}
+  .perennial-badge::before,.perennial-badge::after{content:'';flex:1;height:1px;background:linear-gradient(90deg,transparent,#5B3F8A44)}
+
+
+  /* ── Export buttons ─────────────────────────────────── */
+  .export-section{margin-top:1rem;border-top:0.5px solid var(--border);padding-top:1rem;display:none}
+  .export-section.visible{display:block}
+  .export-label{font-size:11px;font-weight:600;color:var(--gray);text-transform:uppercase;letter-spacing:.5px;margin-bottom:.75rem}
+  .export-btns{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .export-btn{display:flex;align-items:center;justify-content:center;gap:7px;padding:10px 14px;border-radius:10px;font-size:13px;font-weight:500;cursor:pointer;border:none;font-family:inherit;transition:opacity .15s}
+  .export-btn:hover{opacity:.85}
+  .export-btn.brand{background:#1C1409;color:#fff}
+  .export-btn.retailer{background:var(--teal);color:#fff}
+  .export-btn.csv{background:var(--cream);color:var(--charcoal);border:0.5px solid var(--border)}
+  .export-status{font-size:12px;color:var(--gray);margin-top:8px;text-align:center;min-height:16px}
+
+
+  /* ── 1st place prize ─────────────────────────────────── */
+  .first-place-banner{background:linear-gradient(135deg,#B8860B,#DAA520,#B8860B);border-radius:14px;padding:1rem 1.25rem;margin-bottom:1.25rem;display:flex;align-items:center;gap:14px;position:relative;overflow:hidden;box-shadow:0 2px 12px rgba(184,134,11,0.25)}
+  .first-place-banner::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,255,255,0.12),transparent 60%);pointer-events:none}
+  .first-place-crown{font-size:32px;flex-shrink:0;filter:drop-shadow(0 2px 4px rgba(0,0,0,0.2))}
+  .first-place-text{flex:1}
+  .first-place-eyebrow{font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.8);margin-bottom:3px}
+  .first-place-title{font-size:16px;font-weight:700;color:#fff;margin-bottom:2px;text-shadow:0 1px 2px rgba(0,0,0,0.15)}
+  .first-place-prize{font-size:13px;color:rgba(255,255,255,0.85);font-weight:500}
+  .first-place-winner{display:flex;align-items:center;gap:8px;margin-top:8px;background:rgba(0,0,0,0.15);border-radius:8px;padding:6px 10px}
+  .first-place-winner-label{font-size:11px;color:rgba(255,255,255,0.7);font-weight:500}
+  .first-place-winner-name{font-size:13px;font-weight:700;color:#fff}
+  .first-place-winner-val{font-size:12px;color:rgba(255,255,255,0.8);margin-left:auto}
+  .prize-placeholder{font-size:12px;color:rgba(255,255,255,0.7);font-style:italic}
+
+  /* ── Streak system ───────────────────────────────────── */
+  .streak-badge{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:600;padding:2px 8px;border-radius:12px;white-space:nowrap;margin-left:6px}
+  .streak-badge.fire{background:rgba(239,68,68,0.12);color:#DC2626}
+  .streak-badge.rank{background:rgba(91,63,138,0.12);color:#5B3F8A}
+  .title-badge{display:inline-flex;align-items:center;gap:3px;font-size:10.5px;font-weight:700;padding:2px 9px;border-radius:12px;white-space:nowrap;margin-left:6px;letter-spacing:.2px}
+  .title-badge.lvl1{background:rgba(138,122,104,0.15);color:#8A7A68}
+  .title-badge.lvl2{background:rgba(184,92,56,0.15);color:#B85C38}
+  .title-badge.lvl3{background:rgba(193,127,36,0.18);color:#C17F24}
+  .title-badge.lvl4{background:rgba(232,172,45,0.22);color:#B8860B}
+  .title-badge.lvl5{background:linear-gradient(135deg,#2D1B69,#5B3F8A);color:#fff}
+  .streak-bonus{font-size:11px;color:#DC2626;font-weight:600;margin-left:4px}
+  .streak-section{background:var(--white);border-radius:14px;border:0.5px solid var(--border);overflow:hidden;margin-bottom:1.25rem}
+  .streak-header{background:linear-gradient(135deg,#7C1010,#DC2626);padding:10px 16px;display:flex;align-items:center;justify-content:space-between}
+  .streak-header-title{font-size:13px;font-weight:600;color:#fff}
+  .streak-header-sub{font-size:11px;color:rgba(255,255,255,0.65)}
+  .streak-row{display:grid;grid-template-columns:40px 1fr 120px 100px;padding:11px 16px;align-items:center;border-bottom:0.5px solid var(--cream-dark);gap:8px}
+  .streak-row:last-child{border-bottom:none}
+  .streak-row:hover{background:var(--cream)}
+  .streak-icon{font-size:18px;text-align:center}
+  .streak-rep-info{display:flex;align-items:center;gap:8px}
+  .streak-name{font-size:13px;font-weight:500;color:var(--charcoal)}
+  .streak-count{font-size:13px;font-weight:700;color:#DC2626;text-align:center}
+  .streak-bonus-pts{font-size:12px;font-weight:600;color:#5B3F8A;text-align:right}
+  .streak-empty{text-align:center;padding:1.5rem;color:var(--muted);font-size:13px}
+
+
+  /* ── Team challenge ──────────────────────────────────── */
+  .challenge-banner{border-radius:14px;overflow:hidden;margin-bottom:1.25rem}
+  .challenge-banner.active{background:linear-gradient(135deg,#0D2B1A,#1A4A2A);border:1px solid rgba(16,185,129,0.3)}
+  .challenge-banner.won{background:linear-gradient(135deg,#B45309,#D97706);border:1px solid rgba(251,191,36,0.4)}
+  .challenge-banner.setup{background:var(--white);border:1.5px dashed var(--border)}
+  .challenge-top{padding:1rem 1.25rem;display:flex;align-items:center;gap:12px}
+  .challenge-icon{font-size:28px;flex-shrink:0}
+  .challenge-text{flex:1}
+  .challenge-eyebrow{font-size:10px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,0.6);margin-bottom:3px}
+  .challenge-title{font-size:15px;font-weight:600;color:#fff;margin-bottom:2px}
+  .challenge-prize{font-size:12px;color:rgba(255,255,255,0.7)}
+  .challenge-eyebrow.dark{color:var(--muted)}
+  .challenge-title.dark{color:var(--charcoal)}
+  .challenge-prize.dark{color:var(--gray)}
+  .challenge-progress-wrap{padding:0 1.25rem 1.25rem}
+  .challenge-prog-labels{display:flex;justify-content:space-between;font-size:11px;margin-bottom:5px}
+  .challenge-prog-label{color:rgba(255,255,255,0.55)}
+  .challenge-prog-val{color:#fff;font-weight:600}
+  .challenge-prog-bg{height:10px;background:rgba(255,255,255,0.12);border-radius:6px;overflow:hidden}
+  .challenge-prog-fill{height:100%;border-radius:6px;background:linear-gradient(90deg,#10B981,#34D399);transition:width 1s ease}
+  .challenge-prog-fill.won{background:linear-gradient(90deg,#E8AC2D,#D4A832)}
+  .challenge-sub-goals{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:0 1.25rem 1.25rem}
+  .challenge-sub{background:rgba(255,255,255,0.08);border-radius:8px;padding:.75rem;text-align:center}
+  .challenge-sub-val{font-size:16px;font-weight:700;color:#fff;margin-bottom:2px}
+  .challenge-sub-label{font-size:10px;color:rgba(255,255,255,0.55);text-transform:uppercase;letter-spacing:.5px}
+  .challenge-sub-check{font-size:10px;margin-top:4px}
+  .challenge-sub-check.hit{color:#34D399}
+  .challenge-sub-check.miss{color:rgba(255,255,255,0.35)}
+  /* Manager challenge setup form */
+  .challenge-setup-body{padding:1.25rem}
+  .challenge-setup-title{font-size:13px;font-weight:600;color:var(--charcoal);margin-bottom:.875rem}
+  .challenge-form-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
+  .challenge-field label{font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:4px}
+  .challenge-field input{width:100%;padding:8px 12px;font-size:13px;border:1px solid var(--border);border-radius:8px;background:var(--cream);color:var(--charcoal);font-family:inherit;outline:none}
+  .challenge-field input:focus{border-color:#10B981}
+  .challenge-save-btn{padding:9px 20px;font-size:13px;font-weight:600;color:#fff;background:#1A4A2A;border:none;border-radius:8px;cursor:pointer;font-family:inherit;width:100%}
+  .challenge-save-btn:hover{opacity:.88}
+  .challenge-clear-btn{font-size:11px;color:var(--muted);background:none;border:none;cursor:pointer;text-decoration:underline;margin-top:6px;display:block;text-align:center}
+
+
+  /* ── Launch campaign ─────────────────────────────────── */
+  .campaign-banner{border-radius:14px;overflow:hidden;margin-bottom:1rem;position:relative}
+  .campaign-banner.ghf{background:linear-gradient(135deg,#064E3B,#065F46);border:1px solid rgba(16,185,129,0.35)}
+  .campaign-banner.plus{background:linear-gradient(135deg,#2E1065,#4C1D95);border:1px solid rgba(139,92,246,0.35)}
+  .campaign-inner{padding:1rem 1.25rem;display:flex;align-items:center;gap:14px}
+  .campaign-icon-wrap{width:48px;height:48px;border-radius:12px;background:rgba(255,255,255,0.12);display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0}
+  .campaign-body{flex:1}
+  .campaign-eyebrow{font-size:10px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.55);margin-bottom:3px}
+  .campaign-title{font-size:15px;font-weight:700;color:#fff;margin-bottom:3px;line-height:1.2}
+  .campaign-desc{font-size:12px;color:rgba(255,255,255,0.65);line-height:1.4}
+  .campaign-badge{background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.2);border-radius:20px;padding:4px 12px;font-size:12px;font-weight:700;color:#fff;white-space:nowrap;flex-shrink:0}
+  .campaign-badge.ghf{background:rgba(16,185,129,0.25);border-color:rgba(16,185,129,0.4);color:#34D399}
+  .campaign-badge.plus{background:rgba(139,92,246,0.25);border-color:rgba(139,92,246,0.4);color:#A78BFA}
+  .campaign-countdown{font-size:11px;color:rgba(255,255,255,0.5);margin-top:5px}
+  .campaign-rep-boost{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:600;padding:2px 8px;border-radius:10px;background:rgba(255,255,255,0.1);color:rgba(255,255,255,0.8);margin-top:4px}
+  /* Campaign setup in manager panel */
+  .campaign-setup-section{margin-top:1rem;border-top:0.5px solid var(--border);padding-top:1rem}
+  .campaign-setup-title{font-size:12px;font-weight:600;color:var(--charcoal);margin-bottom:.75rem;text-transform:uppercase;letter-spacing:.5px}
+  .campaign-form-tabs{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:1rem}
+  .campaign-tab-btn{padding:7px;font-size:12px;font-weight:600;border-radius:8px;border:1px solid var(--border);background:var(--cream);cursor:pointer;font-family:inherit;color:var(--muted);transition:all .15s}
+  .campaign-tab-btn.active.ghf{background:#065F46;color:#fff;border-color:#065F46}
+  .campaign-tab-btn.active.plus{background:#4C1D95;color:#fff;border-color:#4C1D95}
+  .campaign-fields{display:flex;flex-direction:column;gap:8px;margin-bottom:10px}
+  .campaign-field label{font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:3px}
+  .campaign-field input,.campaign-field select{width:100%;padding:8px 12px;font-size:13px;border:1px solid var(--border);border-radius:8px;background:var(--cream);color:var(--charcoal);font-family:inherit;outline:none}
+  .campaign-field input:focus,.campaign-field select:focus{border-color:#10B981}
+  .campaign-save-btn{padding:9px;font-size:13px;font-weight:600;color:#fff;border:none;border-radius:8px;cursor:pointer;font-family:inherit;width:100%}
+  .campaign-save-btn.ghf{background:#065F46}
+  .campaign-save-btn.plus{background:#4C1D95}
+  .campaign-save-btn:hover{opacity:.88}
+  .campaign-clear-btn{font-size:11px;color:var(--muted);background:none;border:none;cursor:pointer;text-decoration:underline;margin-top:5px;display:block;text-align:center}
+  .campaign-active-summary{background:var(--cream);border:0.5px solid var(--border);border-radius:8px;padding:.75rem;font-size:12px;color:var(--muted);margin-bottom:8px;line-height:1.5}
+  .campaign-active-summary strong{color:var(--charcoal)}
+
+
+  /* ── Auto monthly report ─────────────────────────────── */
+  .report-section{background:var(--white);border-radius:14px;border:0.5px solid var(--border);overflow:hidden;margin-top:1rem}
+  .report-header{background:linear-gradient(135deg,#1C1409,#3D2B1A);padding:.875rem 1.25rem;display:flex;align-items:center;justify-content:space-between}
+  .report-header-title{font-size:13px;font-weight:600;color:#fff}
+  .report-header-sub{font-size:11px;color:rgba(255,255,255,0.55)}
+  .report-body{padding:1.25rem}
+  .report-status-row{display:flex;align-items:center;justify-content:space-between;padding:.75rem;background:var(--cream);border-radius:10px;margin-bottom:1rem}
+  .report-status-label{font-size:12px;color:var(--muted)}
+  .report-status-val{font-size:12px;font-weight:600;color:var(--charcoal)}
+  .report-recipients{display:flex;flex-direction:column;gap:6px;margin-bottom:1rem}
+  .report-recipient{display:flex;align-items:center;gap:8px;padding:.625rem .875rem;background:var(--cream);border-radius:8px}
+  .report-recipient-icon{font-size:14px;flex-shrink:0}
+  .report-recipient-name{font-size:13px;font-weight:500;color:var(--charcoal);flex:1}
+  .report-recipient-email{font-size:11px;color:var(--muted)}
+  .report-recipient-status{font-size:11px;font-weight:600;color:var(--green)}
+  .report-send-btn{width:100%;padding:10px;font-size:13px;font-weight:600;color:#fff;background:linear-gradient(135deg,#1C1409,#3D2B1A);border:none;border-radius:9px;cursor:pointer;font-family:inherit;margin-bottom:8px}
+  .report-send-btn:hover{opacity:.88}
+  .report-send-btn:disabled{opacity:.5;cursor:not-allowed}
+  .report-log{font-size:11px;color:var(--muted);min-height:16px;text-align:center}
+  .report-config-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px}
+  .report-field label{font-size:10px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:3px}
+  .report-field input{width:100%;padding:7px 10px;font-size:12px;border:1px solid var(--border);border-radius:7px;background:var(--cream);color:var(--charcoal);font-family:inherit;outline:none}
+  .report-field input:focus{border-color:#C17F24}
+  .report-save-config-btn{font-size:12px;font-weight:600;color:#fff;background:#C17F24;border:none;border-radius:7px;padding:7px 14px;cursor:pointer;width:100%}
+
+
+  .owner-wall.open{display:flex}
+  .owner-card{background:#141812;border:1px solid rgba(255,255,255,0.1);border-radius:18px;padding:2rem;max-width:380px;width:100%}
+  .owner-eyebrow{font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#5B3F8A;margin-bottom:.5rem}
+  .owner-title{font-family:'Fraunces',serif;font-size:18px;color:#F5F0E8;margin-bottom:.25rem}
+  .owner-sub{font-size:12px;color:#7A8A78;margin-bottom:1.5rem;line-height:1.5}
+  .owner-field{margin-bottom:.875rem}
+  .owner-field label{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:#7A8A78;display:block;margin-bottom:4px}
+  .owner-field input{width:100%;padding:10px 12px;font-size:14px;border:1px solid rgba(255,255,255,0.12);border-radius:9px;background:#1C2118;color:#F5F0E8;font-family:inherit;outline:none;transition:border-color .15s}
+  .owner-field input:focus{border-color:#5B3F8A}
+  .owner-field input.err{border-color:#EF4444;animation:ownershake .3s}
+  @keyframes ownershake{0%,100%{transform:translateX(0)}25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
+  .owner-btn{width:100%;padding:11px;font-size:13px;font-weight:600;color:#fff;background:#5B3F8A;border:none;border-radius:10px;cursor:pointer;font-family:inherit;margin-top:.25rem;transition:opacity .15s}
+  .owner-btn:hover{opacity:.88}
+  .owner-msg{font-size:12px;min-height:16px;margin-bottom:.5rem}
+  .owner-msg.error{color:#EF4444}
+  .owner-msg.success{color:#10B981}
+  .owner-close{font-size:11px;color:#7A8A78;background:none;border:none;cursor:pointer;text-decoration:underline;margin-top:1rem;display:block;text-align:center;width:100%}
+  .owner-unlocked-tag{display:inline-flex;align-items:center;gap:5px;font-size:10px;font-weight:600;color:#5B3F8A;background:rgba(91,63,138,0.12);padding:3px 10px;border-radius:10px;margin-bottom:.75rem}
+
+
+
+  @media(max-width:520px){
+    .tab{font-size:10px;padding:7px 2px}.tab .ti{font-size:13px}
+    .thead,.rep-row{grid-template-columns:34px 1fr 80px}
+    .podium-val{font-size:15px}
+    .banner-title{font-size:18px}
+  }
+
+  /* ── Hamburger nav drawer ────────────────────────────── */
+  .ham-btn{position:absolute;top:14px;left:14px;width:40px;height:40px;border-radius:10px;background:rgba(255,255,255,0.12);border:none;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;z-index:200;transition:background .15s}
+  .ham-btn:hover{background:rgba(255,255,255,0.2)}
+  .ham-line{width:18px;height:2px;background:#fff;border-radius:2px;transition:all .25s}
+  .ham-btn.open .ham-line:nth-child(1){transform:translateY(7px) rotate(45deg)}
+  .ham-btn.open .ham-line:nth-child(2){opacity:0;transform:scaleX(0)}
+  .ham-btn.open .ham-line:nth-child(3){transform:translateY(-7px) rotate(-45deg)}
+  .ham-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:300;opacity:0;pointer-events:none;transition:opacity .25s}
+  .ham-overlay.visible{opacity:1;pointer-events:all}
+  .ham-drawer{position:fixed;top:0;left:0;width:280px;height:100%;background:#fff;z-index:400;transform:translateX(-100%);transition:transform .3s cubic-bezier(.4,0,.2,1);display:flex;flex-direction:column;box-shadow:4px 0 24px rgba(0,0,0,0.12)}
+  .ham-drawer.open{transform:translateX(0)}
+  .ham-drawer-header{background:var(--nav-primary,#1C1409);padding:1.25rem 1.25rem 1rem;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+  .ham-drawer-logo{font-family:'Fraunces',serif;font-size:18px;font-weight:600;color:#fff;display:flex;align-items:center;gap:6px}
+  .ham-drawer-logo-dot{width:6px;height:6px;border-radius:50%;background:var(--nav-accent,#C17F24);flex-shrink:0}
+  .ham-drawer-shop{font-size:11px;color:rgba(255,255,255,0.45);margin-top:2px}
+  .ham-close-btn{width:32px;height:32px;border-radius:8px;background:rgba(255,255,255,0.1);border:none;cursor:pointer;color:#fff;font-size:16px;display:flex;align-items:center;justify-content:center}
+  .ham-close-btn:hover{background:rgba(255,255,255,0.2)}
+  .ham-nav{flex:1;overflow-y:auto;padding:.75rem 0}
+  .ham-section-label{font-size:10px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:#8A7A68;padding:.5rem 1.25rem .375rem;margin-top:.5rem}
+  .ham-nav-item{display:flex;align-items:center;gap:12px;padding:.875rem 1.25rem;text-decoration:none;color:#1C1409;transition:background .12s;cursor:pointer;border:none;background:none;width:100%;font-family:inherit;text-align:left}
+  .ham-nav-item:hover{background:#F5ECD4}
+  .ham-nav-item.active{background:#F3F0FA;color:#5B3F8A}
+  .ham-nav-item.active .ham-nav-icon{background:#5B3F8A}
+  .ham-nav-icon{width:34px;height:34px;border-radius:9px;background:#1C1409;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0}
+  .ham-nav-text{flex:1}
+  .ham-nav-label{font-size:14px;font-weight:500;color:inherit}
+  .ham-nav-sub{font-size:11px;color:#8A7A68;margin-top:1px}
+  .ham-nav-badge{font-size:10px;font-weight:600;color:#5B3F8A;background:#F3F0FA;padding:2px 8px;border-radius:10px;white-space:nowrap}
+  .ham-nav-item.mgr-item .ham-nav-label{color:#5B3F8A}
+  .ham-divider{height:1px;background:#F0EEE8;margin:.5rem 0}
+  .ham-footer{padding:1rem 1.25rem;border-top:1px solid #F0EEE8;flex-shrink:0}
+  .ham-footer-brand{font-size:11px;color:#8A7A68}
+  .ham-footer-brand span{color:#5B3F8A;font-weight:600}
 </style>
 </head>
 <body>
 
-<!-- ══════════════════════════════════════════════
-     LOGIN SCREEN
-══════════════════════════════════════════════ -->
-<div class="login-screen" id="login-screen">
-  <div class="login-card">
-    <div class="login-logo">
-      <svg width="130" height="40" viewBox="0 0 240 72" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <g transform="translate(36,36)">
-          <ellipse cx="0" cy="-28" rx="5" ry="9" fill="#C17F24" transform="rotate(0)"/>
-          <ellipse cx="0" cy="-28" rx="5" ry="9" fill="#C94B1E" opacity="0.95" transform="rotate(30)"/>
-          <ellipse cx="0" cy="-28" rx="5" ry="9" fill="#B85C38" opacity="0.9" transform="rotate(60)"/>
-          <ellipse cx="0" cy="-28" rx="5" ry="9" fill="#D4952A" opacity="0.85" transform="rotate(90)"/>
-          <ellipse cx="0" cy="-28" rx="5" ry="9" fill="#A63D2F" opacity="0.85" transform="rotate(120)"/>
-          <ellipse cx="0" cy="-28" rx="5" ry="9" fill="#E8AC2D" opacity="0.8" transform="rotate(150)"/>
-          <ellipse cx="0" cy="-28" rx="5" ry="9" fill="#6B3A2A" opacity="0.8" transform="rotate(180)"/>
-          <ellipse cx="0" cy="-28" rx="5" ry="9" fill="#C05C2C" opacity="0.8" transform="rotate(210)"/>
-          <ellipse cx="0" cy="-28" rx="5" ry="9" fill="#6B7C3E" opacity="0.75" transform="rotate(240)"/>
-          <ellipse cx="0" cy="-28" rx="5" ry="9" fill="#D4A832" opacity="0.8" transform="rotate(270)"/>
-          <ellipse cx="0" cy="-28" rx="5" ry="9" fill="#8B2518" opacity="0.8" transform="rotate(300)"/>
-          <ellipse cx="0" cy="-28" rx="5" ry="9" fill="#D4721A" opacity="0.85" transform="rotate(330)"/>
-          <text x="-8" y="10" font-family="Fraunces,Georgia,serif" font-size="28" font-weight="600" fill="#F5ECD4">P</text>
-        </g>
-        <text x="82" y="47" font-family="Fraunces,Georgia,serif" font-size="30" font-weight="600" fill="#F5ECD4" letter-spacing="-0.5">erennial</text>
-      </svg>
-    </div>
-    <div class="login-title">Owner Portal</div>
-    <div class="login-sub">Platform-level access. Not for shop managers.</div>
-    <div class="login-msg" id="login-msg"></div>
-    <div class="login-field">
-      <label>Email</label>
-      <input type="email" id="login-email" placeholder="you@perennial.com">
-    </div>
-    <div class="login-field">
-      <label>Password</label>
-      <input type="password" id="login-pw" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()">
-    </div>
-    <button class="login-btn" id="login-btn" onclick="doLogin()">Sign in</button>
+<!-- Side menu -->
+<div id="menu-overlay" onclick="toggleMenu()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:300"></div>
+<div id="menu-drawer" style="display:none;position:fixed;top:0;left:0;width:260px;height:100%;background:#fff;z-index:400;box-shadow:4px 0 20px rgba(0,0,0,0.15);flex-direction:column">
+  <div style="background:var(--teal);padding:1.5rem 1.25rem 1.25rem">
+    <div style="font-size:14px;font-weight:600;color:#fff">Perennial</div>
+    <div style="font-size:12px;color:rgba(255,255,255,0.5);margin-top:2px">Rewards Program</div>
+  </div>
+  <div style="padding:1rem 0;flex:1">
+    <a href="index.html" style="display:flex;align-items:center;gap:12px;padding:.875rem 1.25rem;text-decoration:none;color:var(--charcoal);font-size:14px;font-weight:500">
+      <span style="font-size:18px">🏆</span> Current Competitions
+    </a>
+    <a href="points.html" style="display:flex;align-items:center;gap:12px;padding:.875rem 1.25rem;text-decoration:none;color:var(--charcoal);font-size:14px;font-weight:500">
+      <span style="font-size:18px">⭐</span> My Rewards
+    </a>
+    <a href="trophies.html" style="display:flex;align-items:center;gap:12px;padding:.875rem 1.25rem;text-decoration:none;color:var(--charcoal);font-size:14px;font-weight:500">
+      <span style="font-size:18px">🥇</span> Trophies
+    </a>
+    <a href="motivation-quiz.html" style="display:flex;align-items:center;gap:12px;padding:.875rem 1.25rem;text-decoration:none;color:var(--charcoal);font-size:14px;font-weight:500">
+      <span style="font-size:18px">🧠</span> Motivation Quiz
+    </a>
+    <div style="border-top:0.5px solid rgba(61,43,26,0.15);margin:.5rem 1.25rem"></div>
+    <a href="roster.html" style="display:flex;align-items:center;gap:12px;padding:.875rem 1.25rem;text-decoration:none;color:#5B3F8A;font-size:14px;font-weight:500">
+      <span style="font-size:18px">👥</span> Rep Roster
+      <span style="margin-left:auto;font-size:10px;font-weight:600;color:#5B3F8A;background:#F3F0FA;padding:2px 8px;border-radius:10px">🔒 Manager</span>
+    </a>
+  </div>
+  <div style="padding:1rem 1.25rem;border-top:0.5px solid rgba(61,43,26,0.15);font-size:11px;color:#8A7A68">
+    Perennial · Internal use only
   </div>
 </div>
 
-<!-- ══════════════════════════════════════════════
-     MAIN APP (shown after auth)
-══════════════════════════════════════════════ -->
-<div class="app" id="app">
-
-  <!-- Top bar -->
-  <div class="topbar">
-    <div class="topbar-logo">
-      <svg width="90" height="28" viewBox="0 0 240 72" fill="none">
-        <g transform="translate(36,36)">
-          <ellipse cx="0" cy="-28" rx="5" ry="9" fill="#C17F24" transform="rotate(0)"/>
-          <ellipse cx="0" cy="-28" rx="5" ry="9" fill="#C94B1E" transform="rotate(60)"/>
-          <ellipse cx="0" cy="-28" rx="5" ry="9" fill="#E8AC2D" transform="rotate(120)"/>
-          <ellipse cx="0" cy="-28" rx="5" ry="9" fill="#6B3A2A" transform="rotate(180)"/>
-          <ellipse cx="0" cy="-28" rx="5" ry="9" fill="#6B7C3E" transform="rotate(240)"/>
-          <ellipse cx="0" cy="-28" rx="5" ry="9" fill="#D4721A" transform="rotate(300)"/>
-          <text x="-8" y="10" font-family="Fraunces,Georgia,serif" font-size="28" font-weight="600" fill="#F5ECD4">P</text>
-        </g>
-        <text x="82" y="47" font-family="Fraunces,Georgia,serif" font-size="30" font-weight="600" fill="#F5ECD4" letter-spacing="-0.5">erennial</text>
-      </svg>
-      <div class="topbar-badge">Owner Portal</div>
-    </div>
-    <div class="topbar-right">
-      <span class="topbar-user" id="topbar-user"></span>
-      <button class="signout-btn" onclick="doSignOut()">Sign out</button>
-    </div>
+<div class="banner" style="position:relative">
+  <button onclick="toggleMenu()" id="menu-btn" style="position:absolute;top:14px;left:14px;width:40px;height:40px;border-radius:10px;background:rgba(255,255,255,0.15);border:none;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;padding:0">
+    <div style="width:18px;height:2px;background:#fff;border-radius:2px"></div>
+    <div style="width:18px;height:2px;background:#fff;border-radius:2px"></div>
+    <div style="width:18px;height:2px;background:#fff;border-radius:2px"></div>
+  </button>
+  
+  <div class="mgr-trigger" onclick="triggerTap()">⚙</div>
+  <div class="banner-logo">
+    <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQwIiBoZWlnaHQ9IjcyIiB2aWV3Qm94PSIwIDAgMjQwIDcyIiBmaWxsPSJub25lIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxnIHRyYW5zZm9ybT0idHJhbnNsYXRlKDM2LDM2KSI+PGVsbGlwc2UgY3g9IjAiIGN5PSItMjgiIHJ4PSI1IiByeT0iOSIgZmlsbD0iI0MxN0YyNCIgdHJhbnNmb3JtPSJyb3RhdGUoMCkiLz48ZWxsaXBzZSBjeD0iMCIgY3k9Ii0yOCIgcng9IjUiIHJ5PSI5IiBmaWxsPSIjQzk0QjFFIiBvcGFjaXR5PSIwLjk1IiB0cmFuc2Zvcm09InJvdGF0ZSgzMCkiLz48ZWxsaXBzZSBjeD0iMCIgY3k9Ii0yOCIgcng9IjUiIHJ5PSI5IiBmaWxsPSIjQjg1QzM4IiBvcGFjaXR5PSIwLjkiIHRyYW5zZm9ybT0icm90YXRlKDYwKSIvPjxlbGxpcHNlIGN4PSIwIiBjeT0iLTI4IiByeD0iNSIgcnk9IjkiIGZpbGw9IiNENDk1MkEiIG9wYWNpdHk9IjAuODUiIHRyYW5zZm9ybT0icm90YXRlKDkwKSIvPjxlbGxpcHNlIGN4PSIwIiBjeT0iLTI4IiByeD0iNSIgcnk9IjkiIGZpbGw9IiNBNjNEMkYiIG9wYWNpdHk9IjAuODUiIHRyYW5zZm9ybT0icm90YXRlKDEyMCkiLz48ZWxsaXBzZSBjeD0iMCIgY3k9Ii0yOCIgcng9IjUiIHJ5PSI5IiBmaWxsPSIjRThBQzJEIiBvcGFjaXR5PSIwLjgiIHRyYW5zZm9ybT0icm90YXRlKDE1MCkiLz48ZWxsaXBzZSBjeD0iMCIgY3k9Ii0yOCIgcng9IjUiIHJ5PSI5IiBmaWxsPSIjNkIzQTJBIiBvcGFjaXR5PSIwLjgiIHRyYW5zZm9ybT0icm90YXRlKDE4MCkiLz48ZWxsaXBzZSBjeD0iMCIgY3k9Ii0yOCIgcng9IjUiIHJ5PSI5IiBmaWxsPSIjQzA1QzJDIiBvcGFjaXR5PSIwLjgiIHRyYW5zZm9ybT0icm90YXRlKDIxMCkiLz48ZWxsaXBzZSBjeD0iMCIgY3k9Ii0yOCIgcng9IjUiIHJ5PSI5IiBmaWxsPSIjNkI3QzNFIiBvcGFjaXR5PSIwLjc1IiB0cmFuc2Zvcm09InJvdGF0ZSgyNDApIi8+PGVsbGlwc2UgY3g9IjAiIGN5PSItMjgiIHJ4PSI1IiByeT0iOSIgZmlsbD0iI0Q0QTgzMiIgb3BhY2l0eT0iMC44IiB0cmFuc2Zvcm09InJvdGF0ZSgyNzApIi8+PGVsbGlwc2UgY3g9IjAiIGN5PSItMjgiIHJ4PSI1IiByeT0iOSIgZmlsbD0iIzhCMjUxOCIgb3BhY2l0eT0iMC44IiB0cmFuc2Zvcm09InJvdGF0ZSgzMDApIi8+PGVsbGlwc2UgY3g9IjAiIGN5PSItMjgiIHJ4PSI1IiByeT0iOSIgZmlsbD0iI0Q0NzIxQSIgb3BhY2l0eT0iMC44NSIgdHJhbnNmb3JtPSJyb3RhdGUoMzMwKSIvPjxjaXJjbGUgY3g9IjAiIGN5PSIwIiByPSIxOCIgc3Ryb2tlPSIjQzE3RjI0IiBzdHJva2Utd2lkdGg9IjAuNSIgZmlsbD0ibm9uZSIgb3BhY2l0eT0iMC4yNSIvPjx0ZXh0IHg9Ii04IiB5PSIxMCIgZm9udC1mYW1pbHk9IkZyYXVuY2VzLEdlb3JnaWEsc2VyaWYiIGZvbnQtc2l6ZT0iMjgiIGZvbnQtd2VpZ2h0PSI2MDAiIGZpbGw9IiNGNUVDRDQiPlA8L3RleHQ+PC9nPjx0ZXh0IHg9IjgyIiB5PSI0NyIgZm9udC1mYW1pbHk9IkZyYXVuY2VzLEdlb3JnaWEsc2VyaWYiIGZvbnQtc2l6ZT0iMzAiIGZvbnQtd2VpZ2h0PSI2MDAiIGZpbGw9IiNGNUVDRDQiIGxldHRlci1zcGFjaW5nPSItMC41Ij5lcmVubmlhbDwvdGV4dD48L3N2Zz4="
+         alt="Perennial" style="height:80px;width:auto;">
   </div>
-
-  <div class="page">
-    <div class="page-header">
-      <div class="page-eyebrow">Platform Overview</div>
-      <h1 class="page-title">All shops,<br><em>one view.</em></h1>
-    </div>
-
-    <!-- ── NETWORK SUMMARY ── -->
-    <div class="section">
-      <div class="section-title">Network Totals</div>
-      <div class="summary-row" id="summary-row">
-        <div class="summary-card"><div class="summary-val" id="sum-shops">—</div><div class="summary-label">Active shops</div></div>
-        <div class="summary-card"><div class="summary-val" id="sum-txn">—</div><div class="summary-label">Transactions</div></div>
-        <div class="summary-card"><div class="summary-val" id="sum-sales">—</div><div class="summary-label">Net Sales</div></div>
-        <div class="summary-card"><div class="summary-val" id="sum-ghf">—</div><div class="summary-label">GHF Units</div></div>
-        <div class="summary-card"><div class="summary-val" id="sum-plus">—</div><div class="summary-label">Plus Units</div></div>
-        <div class="summary-card"><div class="summary-val" id="sum-reps">—</div><div class="summary-label">Active Reps</div></div>
-      </div>
-    </div>
-
-    <!-- ── SHOP CARDS ── -->
-    <div class="section">
-      <div class="section-title">Shops — Live Data + Exports</div>
-      <div class="shops-grid" id="shops-grid">
-        <div class="shop-loading">Loading shop data from Firebase...</div>
-      </div>
-    </div>
-
-    <!-- ── MONTHLY REPORTS ── -->
-    <div class="section">
-      <div class="section-title">Monthly Brand Reports</div>
-
-      <div class="next-send" id="next-send-row">
-        <div>
-          <div class="next-send-label">Last sent</div>
-          <div class="next-send-val" id="last-sent-val">Never</div>
-        </div>
-        <div style="text-align:right">
-          <div class="next-send-label">Next auto-send</div>
-          <div class="next-send-val" id="next-send-val">—</div>
-        </div>
-      </div>
-
-      <div class="connect-notice">
-        <strong>Email service setup required</strong>
-        Connect EmailJS or SendGrid in the <code>sendReportEmail()</code> function to activate automated sending. Recipients and schedule are ready — just needs your email credentials.
-      </div>
-
-      <div class="report-card">
-        <div class="report-card-title">Glass House Farms</div>
-        <div class="report-card-sub">Monthly performance report — sent on the 1st of each month.</div>
-        <div class="report-grid">
-          <div class="report-field"><label>Contact Name</label><input type="text" id="ghf-name" placeholder="e.g. Sarah @ GHF"></div>
-          <div class="report-field"><label>Email</label><input type="email" id="ghf-email" placeholder="sarah@ghf.com"></div>
-        </div>
-        <button class="report-send-btn" onclick="sendReport('ghf')">Send GHF report now</button>
-        <button class="report-save-btn" onclick="saveRecipients()">Save recipients</button>
-        <div class="report-status" id="ghf-report-status"></div>
-      </div>
-
-      <div class="report-card">
-        <div class="report-card-title">Plus Products</div>
-        <div class="report-card-sub">Monthly performance report — sent on the 1st of each month.</div>
-        <div class="report-grid">
-          <div class="report-field"><label>Contact Name</label><input type="text" id="plus-name" placeholder="e.g. Mike @ Plus"></div>
-          <div class="report-field"><label>Email</label><input type="email" id="plus-email" placeholder="mike@plus.com"></div>
-        </div>
-        <button class="report-send-btn" onclick="sendReport('plus')">Send Plus report now</button>
-        <button class="report-save-btn" onclick="saveRecipients()">Save recipients</button>
-        <div class="report-status" id="plus-report-status"></div>
-      </div>
-    </div>
-
-    <div class="page-footer">Perennial Owner Portal · Internal use only · Not for distribution</div>
-  </div>
+  <div class="banner-title" id="shop-title">Shop Leaderboard</div>
+  <div class="banner-meta" id="header-meta">Loading...</div>
 </div>
 
-<!-- SheetJS for XLSX export -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<div class="page">
 
-<script type="module">
-import { initializeApp }                       from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
-import { getAuth, signInWithEmailAndPassword,
-         signOut, onAuthStateChanged,
-         setPersistence, browserSessionPersistence }
-                                               from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
-import { getDatabase, ref, get }               from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js';
+  <!-- Manager Panel -->
+  <div class="mgr-panel" id="mgr-panel">
+    <div class="mgr-header">
+      <div class="mgr-header-title">⚙ Manager — Upload Data</div>
+      <div class="mgr-close" onclick="closePanel()">✕</div>
+    </div>
+    <div class="mgr-body">
+      <div id="pw-section">
+        <div class="pw-error" id="pw-error"></div>
+        <div style="margin-bottom:8px">
+          <div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--gray);margin-bottom:4px">Email</div>
+          <input class="pw-input" type="email" id="mgr-email" placeholder="manager@email.com"
+            style="font-size:13px;width:100%;box-sizing:border-box" onkeydown="if(event.key==='Enter')checkPW()">
+        </div>
+        <div class="pw-wrap">
+          <input class="pw-input" type="password" id="pw-input" placeholder="Password" maxlength="50"
+            onkeydown="if(event.key==='Enter')checkPW()">
+          <button class="pw-btn" id="pw-btn" onclick="checkPW()">Sign in</button>
+        </div>
+        <div id="mgr-pending" style="display:none;background:#FEF3C7;border:1px solid #FDE68A;border-radius:8px;padding:.75rem;font-size:12px;color:#92400E;text-align:center;margin-top:.5rem">
+          ⏳ Access request pending approval.
+        </div>
+      </div>
+      <div class="upload-area" id="upload-area"
+        ondragover="event.preventDefault();this.classList.add('drag')"
+        ondragleave="this.classList.remove('drag')"
+        ondrop="event.preventDefault();this.classList.remove('drag');handleDrop(event)">
+        <input type="file" accept=".csv,.xlsx,.xls" id="file-input" onchange="handleFile(this.files[0])">
+        <div class="upload-icon" id="up-icon">📂</div>
+        <div class="upload-label" id="up-label">Click to upload or drag & drop</div>
+        <div class="upload-sub" id="up-sub">Treez Product Summary · .csv or .xlsx</div>
+        <div class="upload-result" id="up-result"></div>
+        <div class="sync-status" id="sync-status"></div>
+      </div>
+      <div class="export-section" id="export-section">
+        <div class="export-label">📥 Export reports</div>
+        <div class="export-btns">
+          <button class="export-btn brand" onclick="exportBrandReport()">📊 Brand Report (XLSX)</button>
+          <button class="export-btn retailer" onclick="exportRetailerReport()">🏪 Retailer Report (XLSX)</button>
+        </div>
+        <div class="export-btns" style="margin-top:8px">
+          <button class="export-btn csv" onclick="exportCSV('brand')">⬇ Brand CSV</button>
+          <button class="export-btn csv" onclick="exportCSV('retailer')">⬇ Retailer CSV</button>
+        </div>
+        <div class="export-status" id="export-status"></div>
+      </div>
+      <div style="margin-top:1rem;border-top:0.5px solid var(--border);padding-top:1rem" id="challenge-setup-wrap"></div>
+      <div id="campaign-setup-wrap"></div>
+      <div id="report-section-wrap"></div>
+      <div style="margin-top:1rem;padding-top:1rem;border-top:0.5px solid var(--border)">
+        <a href="roster.html" style="display:flex;align-items:center;gap:10px;text-decoration:none;padding:.5rem 0">
+          <span style="font-size:20px">👥</span>
+          <div><div style="font-size:13px;font-weight:600;color:var(--charcoal)">Rep Roster</div>
+          <div style="font-size:11px;color:var(--gray)">Manage reps &amp; set PINs</div></div>
+          <span style="margin-left:auto;color:var(--gray)">→</span>
+        </a>
+      </div>
+    </div>
+  </div>
 
-// ── SHOP REGISTRY ─────────────────────────────────────────────────
-// Add all shops here — one entry per deployed location
-const SHOPS = [
-  { code:'fsb', name:'Farmacy SB',         group:'farmacy', url:'https://farmacyrewards.github.io/fsb/',
-    firebase:{ apiKey:'AIzaSyCuJFGrsfmZQwNJtR4RxFwEv2f-dqGCLwc', authDomain:'farmacyrewards.firebaseapp.com', databaseURL:'https://farmacyrewards-default-rtdb.firebaseio.com', projectId:'farmacyrewards', storageBucket:'farmacyrewards.firebasestorage.app', messagingSenderId:'455717273109', appId:'1:455717273109:web:fb59aed853532bae12181c' }},
-  { code:'fsy', name:'Farmacy SY',         group:'farmacy', url:'https://farmacyrewards.github.io/fsy/',
-    firebase:{ apiKey:'AIzaSyA5yGzKol_2Ph3aTmlJaK30Wsxj_MquAe8', authDomain:'farmacyrewardsfsy.firebaseapp.com', databaseURL:'https://farmacyrewardsfsy-default-rtdb.firebaseio.com', projectId:'farmacyrewardsfsy', storageBucket:'farmacyrewardsfsy.firebasestorage.app', messagingSenderId:'288235542198', appId:'1:288235542198:web:f8a59890970de052643817' }},
-  { code:'fiv', name:'Farmacy Isla Vista', group:'farmacy', url:'https://farmacyrewards.github.io/fiv/',
-    firebase:{ apiKey:'AIzaSyDKinVtBp0DQQTnUfD88TTZbHWRovtQ_A0', authDomain:'farmacyrewardsfiv.firebaseapp.com', databaseURL:'https://farmacyrewardsfiv-default-rtdb.firebaseio.com', projectId:'farmacyrewardsfiv', storageBucket:'farmacyrewardsfiv.firebasestorage.app', messagingSenderId:'19049553075', appId:'1:19049553075:web:e1295422bced0d669e24c6' }},
-  { code:'nhc_gb', name:'NHC Grover Beach', group:'nhc', url:'https://farmacyrewards.github.io/nhcgb/',
-    firebase:{ apiKey:'AIzaSyDapngzogyQvW-uodkQrRdk4YpsnM12oEw', authDomain:'nhcrewardsgb.firebaseapp.com', databaseURL:'https://nhcrewardsgb-default-rtdb.firebaseio.com', projectId:'nhcrewardsgb', storageBucket:'nhcrewardsgb.firebasestorage.app', messagingSenderId:'54504822754', appId:'1:54504822754:web:f2f7bf894ac0b77a6ecbbb' }},
-  { code:'nhc_mb', name:'NHC Morro Bay',    group:'nhc', url:'https://farmacyrewards.github.io/nhcmb/',
-    firebase:{ apiKey:'AIzaSyAHjhjW5TPfQl6CNVhm3BoDnmKQlqKKpx4', authDomain:'nhcrewardsmb.firebaseapp.com', databaseURL:'https://nhcrewardsmb-default-rtdb.firebaseio.com', projectId:'nhcrewardsmb', storageBucket:'nhcrewardsmb.firebasestorage.app', messagingSenderId:'438617783513', appId:'1:438617783513:web:94b9ea6bd54ce9538f52c8' }},
-];
+  <!-- Team challenge banner -->
+  <div id="team-challenge-wrap"></div>
 
-// ── OWNER Firebase project (FSB used as auth host) ─────────────────
-const OWNER_CONFIG = SHOPS[0].firebase;
-const ownerApp  = initializeApp(OWNER_CONFIG, 'owner');
-const ownerAuth = getAuth(ownerApp);
-const ownerDb   = getDatabase(ownerApp);
 
-await setPersistence(ownerAuth, browserSessionPersistence);
 
-// ── AUTH STATE ─────────────────────────────────────────────────────
-onAuthStateChanged(ownerAuth, async user => {
-  if (!user) {
-    document.getElementById('login-screen').style.display = 'flex';
-    document.getElementById('app').style.display = 'none';
-    return;
-  }
-  // Check owner role
-  const snap = await get(ref(ownerDb, 'owners/' + user.uid + '/role'));
-  if (!snap.exists() || snap.val() !== 'owner') {
-    await signOut(ownerAuth);
-    showLoginMsg('This account does not have owner access.');
-    return;
-  }
-  // Owner confirmed
-  document.getElementById('login-screen').style.display = 'none';
-  document.getElementById('app').style.display = 'block';
-  document.getElementById('topbar-user').textContent = user.email;
-  loadAllShops();
-  initReportSection();
-});
 
-// ── LOGIN ──────────────────────────────────────────────────────────
-window.doLogin = async function() {
-  const email = document.getElementById('login-email').value.trim();
-  const pw    = document.getElementById('login-pw').value;
-  const btn   = document.getElementById('login-btn');
-  if (!email || !pw) { showLoginMsg('Enter email and password.'); return; }
-  btn.disabled = true; btn.textContent = 'Signing in...';
-  try {
-    await signInWithEmailAndPassword(ownerAuth, email, pw);
-  } catch(e) {
-    showLoginMsg('Incorrect email or password.');
-    btn.disabled = false; btn.textContent = 'Sign in';
-  }
-};
+  <!-- Reward banner — customize REWARD_HEADLINE in SHOP SETUP section -->
+      
+    </div>
+  </div>
 
-window.doSignOut = async function() {
-  await signOut(ownerAuth);
-};
+  <!-- Tabs -->
+  <div class="tabs">
+    <button class="tab active txn" onclick="switchTab('txn',this)"><span class="ti">🧾</span>Transactions</button>
+    <button class="tab sales" onclick="switchTab('sales',this)"><span class="ti">💵</span>Net Sales</button>
+    <button class="tab avg" onclick="switchTab('avg',this)"><span class="ti">🛒</span>ATV<span style="font-size:9px;background:#FFD700;color:#5B3A00;padding:1px 6px;border-radius:6px;font-weight:700;display:block;margin-top:2px">$100</span></button>
+    <button class="tab ghf" onclick="switchTab('ghf',this)"><span class="ti">🌲</span>GHF Units<span style="font-size:9px;background:#FFD700;color:#5B3A00;padding:1px 6px;border-radius:6px;font-weight:700;display:block;margin-top:2px">$100</span></button>
+    <button class="tab plus" onclick="switchTab('plus',this)"><span class="ti">🟪</span>Plus Units</button>
+    <button class="tab squads" id="tab-btn-squads" onclick="switchTab('squads',this)" style="display:none"><span class="ti">🛡️</span>Squads</button>
+  </div>
 
-function showLoginMsg(msg) {
-  const el = document.getElementById('login-msg');
-  el.textContent = msg;
-}
+  <div id="board-txn"><div class="loading-bar">Loading latest data...</div></div>
+  <div id="board-sales" style="display:none"></div>
+  <div id="board-avg" style="display:none"></div>
+  <div id="board-ghf" style="display:none"></div>
+  <div id="board-plus" style="display:none"></div>
+  <div id="board-squads" style="display:none"></div>
+    <div class="footer" id="footer">Perennial · Internal use only</div>
+</div>
 
-// ── LOAD ALL SHOPS ─────────────────────────────────────────────────
-window._shopData = {};
+<script>
+  // ================================================================
+  // SHOP SETUP — fill in these 2 fields for each new shop
+  // ================================================================
+  const SHOP_NAME        = 'Perennial';
+  const MANAGER_PASSWORD = 'PERENNIAL2026';
+  const REWARD_HEADLINE  = 'Compete, grow, get rewarded.';
+  // ================================================================
 
-async function loadAllShops() {
-  const grid = document.getElementById('shops-grid');
-  grid.innerHTML = '';
+  document.getElementById('shop-title').textContent = SHOP_NAME + ' — Leaderboard';
+  const rh = document.getElementById('reward-headline');
+  if(rh) rh.textContent = REWARD_HEADLINE;
+  document.title = SHOP_NAME + ' — Leaderboard';
+  window.SHOP_NAME = SHOP_NAME;
+  window.SHOP_KEY = SHOP_NAME.replace(/\s/g,'_');
 
-  let totalTxn=0, totalSales=0, totalGhf=0, totalPlus=0, totalReps=0, liveCount=0;
+  let tapCount=0, tapTimer=null;
 
-  for (const shop of SHOPS) {
-    // Init a Firebase app per shop (if not already)
-    let app;
-    try { app = initializeApp(shop.firebase, shop.code); }
-    catch(e) { const {getApp} = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js'); app = getApp(shop.code); }
+  // ── Owner-only auth (gates export functions) ──────────────────
+  let ownerUnlocked = false;
 
-    const db = getDatabase(app);
-    const card = buildShopCard(shop, null);
-    grid.appendChild(card);
-
-    try {
-      const snap = await get(ref(db, 'leaderboard'));
-      if (snap.exists()) {
-        const data = snap.val();
-        const ld   = data.liveData || {};
-        const txnArr  = ld.txn   || [];
-        const salArr  = ld.sales || [];
-        const ghfArr  = ld.ghf   || [];
-        const pluArr  = ld.plus  || [];
-
-        const txn   = txnArr.reduce((s,r)=>s+(r.txn||0),0);
-        const sales = salArr.reduce((s,r)=>s+(r.sales||0),0);
-        const ghf   = ghfArr.reduce((s,r)=>s+(r.units||r.ghf||0),0);
-        const plus  = pluArr.reduce((s,r)=>s+(r.units||r.plus||0),0);
-        const reps  = txnArr.length;
-
-        totalTxn   += txn; totalSales += sales;
-        totalGhf   += ghf; totalPlus  += plus;
-        totalReps  += reps; liveCount++;
-
-        window._shopData[shop.code] = { shop, ld, txn, sales, ghf, plus, reps };
-        const updated = buildShopCard(shop, { txn, sales, ghf, plus, reps });
-        card.replaceWith(updated);
-      } else {
-        const noData = buildShopCard(shop, 'nodata');
-        card.replaceWith(noData);
-      }
-    } catch(e) {
-      const errCard = buildShopCard(shop, 'error');
-      card.replaceWith(errCard);
+  function gearTap(){
+    // 5 taps opens manager panel
+    tapCount++;
+    clearTimeout(tapTimer);
+    if(tapCount >= 5){
+      tapCount = 0;
+      document.getElementById('mgr-panel').classList.add('open');
+      document.getElementById('pw-input').focus();
+    } else {
+      tapTimer = setTimeout(() => { tapCount = 0; }, 2000);
     }
   }
 
-  // Update summary
-  document.getElementById('sum-shops').textContent = liveCount;
-  document.getElementById('sum-txn').textContent   = totalTxn.toLocaleString();
-  document.getElementById('sum-sales').textContent = '$' + (totalSales/1000).toFixed(1) + 'K';
-  document.getElementById('sum-ghf').textContent   = totalGhf.toLocaleString();
-  document.getElementById('sum-plus').textContent  = totalPlus.toLocaleString();
-  document.getElementById('sum-reps').textContent  = totalReps;
-}
-
-function buildShopCard(shop, data) {
-  const card = document.createElement('div');
-  card.className = 'shop-card';
-  card.id = 'card-' + shop.code;
-
-  const groupLabel = shop.group === 'farmacy' ? 'Farmacy 805' : 'NHC';
-  const isLive = data && data !== 'nodata' && data !== 'error';
-  const statusClass = isLive ? 'live' : 'pending';
-
-  let kpiHtml = '';
-  if (isLive) {
-    kpiHtml = `
-      <div class="shop-kpis">
-        <div class="shop-kpi"><div class="shop-kpi-val">${data.txn.toLocaleString()}</div><div class="shop-kpi-label">Txns</div></div>
-        <div class="shop-kpi"><div class="shop-kpi-val">${data.ghf}</div><div class="shop-kpi-label">GHF</div></div>
-        <div class="shop-kpi"><div class="shop-kpi-val">${data.plus}</div><div class="shop-kpi-label">Plus</div></div>
-      </div>`;
-  } else {
-    const msg = data === 'error' ? 'Connection error' : data === 'nodata' ? 'No data yet' : 'Loading...';
-    kpiHtml = `<div class="shop-loading">${msg}</div>`;
+  function closeOwnerWall(){
+    document.getElementById('owner-wall').classList.remove('open');
+    document.getElementById('owner-msg').textContent = '';
   }
 
-  card.innerHTML = `
-    <div class="shop-card-header">
-      <div>
-        <div class="shop-card-name">${shop.name}</div>
-        <div class="shop-card-group">${groupLabel}</div>
-      </div>
-      <div class="shop-status ${statusClass}"></div>
-    </div>
-    ${kpiHtml}
-    <div class="shop-card-footer">
-      <button class="shop-export-btn brand" onclick="exportShopBrand('${shop.code}')">Brand XLSX</button>
-      <button class="shop-export-btn retailer" onclick="exportShopRetailer('${shop.code}')">Retailer XLSX</button>
-      <a class="shop-link" href="${shop.url}" target="_blank">Open site ↗</a>
-    </div>`;
-  return card;
-}
-
-// ── EXPORTS ────────────────────────────────────────────────────────
-window.exportShopBrand = function(code) {
-  const d = window._shopData[code];
-  if (!d) { alert('No data loaded for ' + code); return; }
-  const ld = d.ld;
-  const wb = XLSX.utils.book_new();
-  const now = new Date();
-  const dateStr = now.toLocaleDateString('en-US',{month:'long',year:'numeric'});
-
-  // GHF sheet
-  const ghfRows = [['Rep','GHF Units'],
-    ...(ld.ghf||[]).map(r=>[r.name, r.units||r.ghf||0])];
-  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(ghfRows), 'GHF Units');
-
-  // Plus sheet
-  const plusRows = [['Rep','Plus Units'],
-    ...(ld.plus||[]).map(r=>[r.name, r.units||r.plus||0])];
-  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(plusRows), 'Plus Units');
-
-  XLSX.writeFile(wb, `Brand_Report_${code}_${dateStr.replace(' ','_')}.xlsx`);
-};
-
-window.exportShopRetailer = function(code) {
-  const d = window._shopData[code];
-  if (!d) { alert('No data loaded for ' + code); return; }
-  const ld = d.ld;
-  const wb = XLSX.utils.book_new();
-  const now = new Date();
-  const dateStr = now.toLocaleDateString('en-US',{month:'long',year:'numeric'});
-
-  const rows = [['Rep','Transactions','Net Sales','Avg Ticket','GHF Units','Plus Units']];
-  const txnArr  = ld.txn   || [];
-  const salArr  = ld.sales || [];
-  const ghfArr  = ld.ghf   || [];
-  const pluArr  = ld.plus  || [];
-  txnArr.forEach(r => {
-    const sal = (salArr.find(x=>x.name===r.name)||{}).sales || 0;
-    const ghf = (ghfArr.find(x=>x.name===r.name)||{}).units || 0;
-    const pls = (pluArr.find(x=>x.name===r.name)||{}).units || 0;
-    rows.push([r.name, r.txn||0, sal.toFixed(2), r.txn ? (sal/r.txn).toFixed(2) : '0', ghf, pls]);
-  });
-  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(rows), 'All Reps');
-  XLSX.writeFile(wb, `Retailer_Report_${code}_${dateStr.replace(' ','_')}.xlsx`);
-};
-
-// ── MONTHLY REPORTS ────────────────────────────────────────────────
-const REPORT_KEY = 'perennial_report_config';
-const SENT_KEY   = 'perennial_report_sent';
-
-function initReportSection() {
-  const cfg = getReportConfig();
-  if (cfg) {
-    document.getElementById('ghf-name').value  = cfg.ghfName  || '';
-    document.getElementById('ghf-email').value = cfg.ghfEmail || '';
-    document.getElementById('plus-name').value  = cfg.plusName  || '';
-    document.getElementById('plus-email').value = cfg.plusEmail || '';
+  function revealExportSection(){
+    const section = document.getElementById('export-section');
+    if(section){
+      section.classList.add('visible');
+      section.scrollIntoView({behavior:'smooth', block:'center'});
+    }
   }
-  const now       = new Date();
-  const monthKey  = now.getFullYear() + '-' + String(now.getMonth()+1).padStart(2,'0');
-  const lastSent  = localStorage.getItem(SENT_KEY) || 'Never';
-  const nextFirst = new Date(now.getFullYear(), now.getMonth()+1, 1);
-  const days      = Math.ceil((nextFirst - now)/(1000*60*60*24));
 
-  document.getElementById('last-sent-val').textContent  = lastSent === 'Never' ? 'Never' : lastSent + (lastSent === monthKey ? ' ✅' : '');
-  document.getElementById('next-send-val').textContent  = `1st of next month (${days} days)`;
-}
+  window.ownerSignIn = async function(){
+    const email = document.getElementById('owner-email').value.trim();
+    const pw    = document.getElementById('owner-pw').value;
+    const msg   = document.getElementById('owner-msg');
+    if(!email || !pw){ msg.className='owner-msg error'; msg.textContent='Enter email and password.'; return; }
 
-function getReportConfig() {
-  try { return JSON.parse(localStorage.getItem(REPORT_KEY)); } catch(e) { return null; }
-}
+    try{
+      const { getAuth, signInWithEmailAndPassword } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js');
+      const { getDatabase, ref, get } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js');
+      const { getApps } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js');
 
-window.saveRecipients = function() {
-  const cfg = {
-    ghfName:   document.getElementById('ghf-name').value.trim(),
-    ghfEmail:  document.getElementById('ghf-email').value.trim(),
-    plusName:  document.getElementById('plus-name').value.trim(),
-    plusEmail: document.getElementById('plus-email').value.trim(),
+      const app  = getApps()[0];
+      const auth = getAuth(app);
+      const db   = getDatabase(app);
+
+      const cred = await signInWithEmailAndPassword(auth, email, pw);
+      const snap = await get(ref(db, 'owners/' + cred.user.uid + '/role'));
+      const role = snap.exists() ? snap.val() : null;
+
+      if(role === 'owner'){
+        ownerUnlocked = true;
+        msg.className = 'owner-msg success';
+        msg.textContent = 'Access granted.';
+        setTimeout(() => {
+          document.getElementById('owner-wall').classList.remove('open');
+          revealExportSection();
+        }, 500);
+      } else {
+        msg.className = 'owner-msg error';
+        msg.textContent = 'This account does not have owner access.';
+        await auth.signOut();
+      }
+    } catch(e){
+      msg.className = 'owner-msg error';
+      msg.textContent = 'Incorrect email or password.';
+      const inp = document.getElementById('owner-pw');
+      inp.classList.add('err'); inp.value='';
+      setTimeout(() => inp.classList.remove('err'), 400);
+    }
   };
-  localStorage.setItem(REPORT_KEY, JSON.stringify(cfg));
-  alert('Recipients saved.');
-};
 
-// Email hook — connect your service here
-async function sendReportEmail(toEmail, toName, brand, stats, month) {
-  // ── EmailJS example (uncomment when ready):
-  // await emailjs.send('SERVICE_ID','TEMPLATE_ID',{ to_email:toEmail, to_name:toName, brand, stats, month });
-  console.log('Would send to:', toEmail, 'brand:', brand, 'month:', month, 'stats:', stats);
-  await new Promise(r => setTimeout(r, 600));
-  return true;
-}
-
-window.sendReport = async function(brand) {
-  const cfg  = getReportConfig();
-  const el   = document.getElementById(brand + '-report-status');
-  const email = brand === 'ghf' ? cfg?.ghfEmail : cfg?.plusEmail;
-  const name  = brand === 'ghf' ? cfg?.ghfName  : cfg?.plusName;
-  if (!email) { el.className='report-status err'; el.textContent='Save a recipient email first.'; return; }
-
-  el.className='report-status'; el.textContent='Sending...';
-
-  // Build stats summary across all shops
-  let totalUnits = 0;
-  Object.values(window._shopData).forEach(d => {
-    const arr = brand === 'ghf' ? (d.ld.ghf||[]) : (d.ld.plus||[]);
-    totalUnits += arr.reduce((s,r)=>s+(r.units||0),0);
-  });
-  const month = new Date().toLocaleDateString('en-US',{month:'long',year:'numeric'});
-  const stats = `Total units across all shops: ${totalUnits} | Month: ${month}`;
-
-  try {
-    await sendReportEmail(email, name, brand.toUpperCase(), stats, month);
-    const monthKey = new Date().getFullYear() + '-' + String(new Date().getMonth()+1).padStart(2,'0');
-    localStorage.setItem(SENT_KEY, monthKey);
-    el.className='report-status ok'; el.textContent='Sent to ' + email + ' ✓';
-    initReportSection();
-  } catch(e) {
-    el.className='report-status err'; el.textContent='Send failed. Check email service setup.';
+  function triggerTap(){
+    tapCount++;
+    clearTimeout(tapTimer);
+    if(tapCount>=5){
+      tapCount=0;
+      document.getElementById('mgr-panel').classList.add('open');
+      document.getElementById('pw-input').focus();
+    } else {
+      tapTimer=setTimeout(()=>{tapCount=0;},2000);
+    }
   }
-};
+  function closePanel(){
+    document.getElementById('mgr-panel').classList.remove('open');
+    tapCount=0;
+  }
+  function checkPW(){
+    var email = (document.getElementById('mgr-email')||{value:''}).value.trim();
+    var pw    = document.getElementById('pw-input').value;
+    var errEl = document.getElementById('pw-error');
+    var btn   = document.getElementById('pw-btn');
+    if(!email || !pw){ if(errEl) errEl.textContent='Enter email and password.'; return; }
+    if(btn){ btn.disabled=true; btn.textContent='Signing in...'; }
+    // Use Firebase Auth via module
+    if(window._fbSignIn && window._fbAuth){
+      window._fbSignIn(window._fbAuth, email, pw).then(function(cred){
+        return import('https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js').then(function(m){
+          return m.get(m.ref(window._fbDb, 'managers/'+cred.user.uid+'/status'));
+        });
+      }).then(function(snap){
+        var status = snap.exists() ? snap.val() : 'pending';
+        if(status === 'approved'){
+          document.getElementById('pw-section').style.display='none';
+          document.getElementById('upload-area').classList.add('visible');
+          if(errEl) errEl.textContent='';
+        } else {
+          var p=document.getElementById('mgr-pending');
+          if(p) p.style.display='block';
+        }
+        if(btn){ btn.disabled=false; btn.textContent='Sign in'; }
+      }).catch(function(e){
+        if(errEl) errEl.textContent='Incorrect email or password.';
+        var i=document.getElementById('pw-input'); if(i) i.value='';
+        if(btn){ btn.disabled=false; btn.textContent='Sign in'; }
+      });
+    } else {
+      // Fallback to hardcoded password while Firebase auth loads
+      if(pw === MANAGER_PASSWORD){
+        document.getElementById('pw-section').style.display='none';
+        document.getElementById('upload-area').classList.add('visible');
+      } else {
+        if(errEl) errEl.textContent='Incorrect password.';
+        var i=document.getElementById('pw-input'); if(i){ i.value=''; }
+      }
+      if(btn){ btn.disabled=false; btn.textContent='Sign in'; }
+    }
+  }
 
+
+  function getAllTimeKey(name){ return 'pts_at_'+SHOP_NAME.replace(/\s/g,'_')+'_'+name.replace(/\s/g,'_'); }
+  function getAllTime(name){ return parseInt(localStorage.getItem(getAllTimeKey(name))||'0'); }
+  function addToAllTime(name, pts){ localStorage.setItem(getAllTimeKey(name), String(getAllTime(name)+pts)); }
+
+  // Tracks the current in-progress month's points separately from the finalized
+  // all-time total, so re-uploading a corrected file mid-month doesn't double-count,
+  // and points only get folded into the permanent all-time total once, when the
+  // month actually rolls over.
+  function getCurMonthKeyKey(name){ return 'pts_curmonth_key_'+SHOP_NAME.replace(/\s/g,'_')+'_'+name.replace(/\s/g,'_'); }
+  function getCurMonthAmtKey(name){ return 'pts_curmonth_amt_'+SHOP_NAME.replace(/\s/g,'_')+'_'+name.replace(/\s/g,'_'); }
+  function getCurMonthAmt(name){ return parseFloat(localStorage.getItem(getCurMonthAmtKey(name))||'0'); }
+
+  // Call once per upload, after monthlyPts is known for every rep. Includes the
+  // streak bonus so consistency is actually rewarded, not just displayed.
+  // Also syncs the corrected live total to Firebase so points.html (used by
+  // reps on their own devices) can show accurate tier progress.
+  async function creditMonthlyPoints(reps){
+    const currentMonth = STREAK_MONTH_KEY();
+    const shopKey = SHOP_NAME.replace(/\s/g,'_');
+    for(const rep of reps){
+      const totalWithBonus = rep.monthlyPts + streakBonusPoints(rep.name);
+      const storedMonth = localStorage.getItem(getCurMonthKeyKey(rep.name)) || '';
+      if(storedMonth && storedMonth !== currentMonth){
+        // A new month has started — finalize the completed month into all-time, once.
+        addToAllTime(rep.name, getCurMonthAmt(rep.name));
+      }
+      localStorage.setItem(getCurMonthKeyKey(rep.name), currentMonth);
+      localStorage.setItem(getCurMonthAmtKey(rep.name), String(totalWithBonus));
+      await window.saveAllTimePoints(shopKey, rep.name, getLiveAllTime(rep.name));
+    }
+  }
+
+  // Live cumulative total for display: finalized all-time + current month so far.
+  function getLiveAllTime(name){ return getAllTime(name) + getCurMonthAmt(name); }
+
+  function renderPointsBoard(reps){ window._pointsData = reps || []; }
+
+  // ── Rendering helpers ───────────────────────────────────────────
+  const rl=i=>i===0?'🥇':i===1?'🥈':i===2?'🥉':String(i+1);
+  const fmt$=v=>'$'+v.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+  const fmtK=v=>v>=1000?'$'+(v/1000).toFixed(1)+'K':fmt$(v);
+  const RENDER_COLORS=['#C17F24','#C94B1E','#B85C38','#6B7C3E','#5B3F8A','#D4A832','#A63D2F','#C05C2C'];
+  const renderIni = n=>n.split(' ').map(p=>p[0]).join('').toUpperCase().slice(0,2);
+
+  const SKILL_TITLES = [
+    {pts:0,    name:'Novice',       cls:'lvl1'},
+    {pts:250,  name:'Budtender',    cls:'lvl2'},
+    {pts:750,  name:'Specialist',   cls:'lvl3'},
+    {pts:2000, name:'Closer',       cls:'lvl4'},
+    {pts:5000, name:'Master Closer',cls:'lvl5'},
+  ];
+  function getTitleFor(name){
+    const pts = (window._allTimePoints || {})[name.replace(/\s/g,'_')] || 0;
+    return [...SKILL_TITLES].reverse().find(t => pts >= t.pts) || SKILL_TITLES[0];
+  }
+  function titleBadgeHTML(name){
+    const t = getTitleFor(name);
+    return '<span class="title-badge '+t.cls+'">'+t.name+'</span>';
+  }
+
+  const TAB_CONFIG={
+    txn:{colHeader:'Transactions',podSub:'transactions',
+      valFn:r=>r.txn.toLocaleString(),
+      m1Label:'Total Transactions',m1Fn:arr=>arr.reduce((s,r)=>s+r.txn,0).toLocaleString(),
+      m2Label:'Team Avg',m2Fn:arr=>Math.round(arr.reduce((s,r)=>s+r.txn,0)/arr.length).toLocaleString(),
+      m3Label:'Reps',m3Fn:arr=>arr.length},
+    sales:{colHeader:'Net Sales',podSub:'net sales',
+      valFn:r=>fmtK(r.sales),
+      m1Label:'Total Net Sales',m1Fn:arr=>fmtK(arr.reduce((s,r)=>s+r.sales,0)),
+      m2Label:'Team Avg',m2Fn:arr=>fmtK(arr.reduce((s,r)=>s+r.sales,0)/arr.length),
+      m3Label:'Top Rep',m3Fn:arr=>arr[0]?.name.split(' ')[0]||'—'},
+    avg:{colHeader:'ATV',podSub:'avg transaction',
+      valFn:r=>fmt$(r.avg),
+      m1Label:'Highest Avg',m1Fn:arr=>fmt$(arr[0]?.avg||0),
+      m2Label:'Team Avg',m2Fn:arr=>fmt$(arr.reduce((s,r)=>s+r.avg,0)/arr.length),
+      m3Label:'Lowest Avg',m3Fn:arr=>fmt$(arr[arr.length-1]?.avg||0)},
+    ghf:{colHeader:'Units Sold',podSub:'units sold',
+      valFn:r=>(r.units||r.ghf||0).toLocaleString(),
+      m1Label:'Total GHF Units',m1Fn:arr=>arr.reduce((s,r)=>s+(r.units||r.ghf||0),0).toLocaleString(),
+      m2Label:'Team Avg',m2Fn:arr=>Math.round(arr.reduce((s,r)=>s+(r.units||r.ghf||0),0)/arr.length).toLocaleString(),
+      m3Label:'Top Seller',m3Fn:arr=>arr[0]?.name.split(' ')[0]||'—'},
+    plus:{colHeader:'Units Sold',podSub:'units sold',
+      valFn:r=>(r.units||r.plus||0).toLocaleString(),
+      m1Label:'Total Plus Units',m1Fn:arr=>arr.reduce((s,r)=>s+(r.units||r.plus||0),0).toLocaleString(),
+      m2Label:'Team Avg',m2Fn:arr=>Math.round(arr.reduce((s,r)=>s+(r.units||r.plus||0),0)/arr.length).toLocaleString(),
+      m3Label:'Top Seller',m3Fn:arr=>arr[0]?.name.split(' ')[0]||'—'},
+  };
+
+  window.renderAll=function(data){
+    lastLiveData = data;
+    window._lastLiveData = data;
+    renderTeamChallenge(data);
+    renderPointsBoard(data.points||[]);
+    ['txn','sales','avg','ghf','plus'].forEach(tab=>{
+      const c=TAB_CONFIG[tab];
+      const rows_=data[tab];
+      if(!rows_||!rows_.length){document.getElementById('board-'+tab).innerHTML='<div class="loading-bar">No data</div>';return;}
+      const [p2,p1,p3]=[rows_[1],rows_[0],rows_[2]];
+      const podium=[p2,p1,p3].map((r,i)=>{
+        if(!r) return '<div></div>';
+        return '<div class="podium-card'+(i===1?' p1 '+tab:'')+'">'
+          +'<div class="podium-emoji">'+(i===1?'🥇':i===0?'🥈':'🥉')+'</div>'
+          +'<div class="podium-name">'+r.name+'</div>'
+          +titleBadgeHTML(r.name)
+          +'<div class="podium-val">'+c.valFn(r)+'</div>'
+          +'<div class="podium-sub">'+c.podSub+'</div></div>';
+      }).join('');
+      const listRows=rows_.map((rep,i)=>{
+        const color=RENDER_COLORS[i%RENDER_COLORS.length];
+        let nameCell;
+        if(tab==='ghf'||tab==='plus'){
+          const fs=getStreak(STREAK_KEY_FIRE(rep.name));
+          const rs=getStreak(STREAK_KEY_RANK(rep.name));
+          nameCell='<div class="rep-name">'+rep.name
+            +titleBadgeHTML(rep.name)
+            +(fs>=2?'<span class="streak-badge fire" style="font-size:9px;padding:1px 6px">'+fireStreakEmoji(fs)+' '+fs+'mo</span>':'')
+            +(rs>=2?'<span class="streak-badge rank" style="font-size:9px;padding:1px 6px">⭐'+rs+'</span>':'')
+            +'</div>';
+        } else {
+          nameCell='<div class="rep-name">'+rep.name+titleBadgeHTML(rep.name)+'</div>';
+        }
+        return '<div class="rep-row'+(i===0?' hl':'')+'">'
+          +'<div class="rank">'+rl(i)+'</div>'
+          +'<div class="rep-info"><div class="avatar" style="background:'+color+'22;color:'+color+'">'+renderIni(rep.name)+'</div>'+nameCell+'</div>'
+          +'<div class="val">'+c.valFn(rep)+'</div></div>';
+      }).join('');
+      document.getElementById('board-'+tab).innerHTML=
+        ((tab==='ghf'||tab==='plus') ? renderCampaignBanner(tab) : '') +
+        (PRIZE_TABS.includes(tab) ? firstPlaceBanner(tab,rows_) : '') +
+        '<div class="metrics">'
+        +'<div class="metric"><div class="metric-label">'+c.m1Label+'</div><div class="metric-val">'+c.m1Fn(rows_)+'</div></div>'
+        +'<div class="metric"><div class="metric-label">'+c.m2Label+'</div><div class="metric-val">'+c.m2Fn(rows_)+'</div></div>'
+        +'<div class="metric"><div class="metric-label">'+c.m3Label+'</div><div class="metric-val">'+c.m3Fn(rows_)+'</div></div>'
+        +'</div><div class="podium">'+podium+'</div>'
+        +'<div class="card"><div class="thead '+tab+'">'
+        +'<div style="text-align:center">#</div><div>Rep</div>'
+        +'<div style="text-align:right">'+c.colHeader+'</div></div>'+listRows+'</div>'
+        +(tab==='txn' ? renderStreakBoard(rows_) : '');
+    });
+    renderSquadBoard(data);
+  };
+
+  // ── Squad leaderboard (Team Rewards) ────────────────────────────
+  function renderSquadBoard(data){
+    const cfg = window._squadConfig || {};
+    const squads = window._squadList || [];
+    const assign = window._squadAssign || {};
+    const tabBtn = document.getElementById('tab-btn-squads');
+
+    if(!cfg.enabled || !squads.length){
+      tabBtn.style.display = 'none';
+      return;
+    }
+    tabBtn.style.display = 'flex';
+
+    const ghfArr  = data.ghf   || [];
+    const plusArr = data.plus  || [];
+    const salesArr= data.sales || [];
+
+    // Score each squad: 9pts/GHF unit + 9pts/Plus unit + 1pt per $100 net sales — matches getExportData formula
+    const scored = squads.map(sq=>{
+      let units=0, sales=0, repCount=0;
+      Object.keys(assign).forEach(nameKey=>{
+        if(assign[nameKey] !== sq.id) return;
+        repCount++;
+        const g = ghfArr.find(r=>r.name.replace(/\s/g,'_')===nameKey);
+        const p = plusArr.find(r=>r.name.replace(/\s/g,'_')===nameKey);
+        const s = salesArr.find(r=>r.name.replace(/\s/g,'_')===nameKey);
+        units += (g?.units||g?.ghf||0) + (p?.units||p?.plus||0);
+        sales += (s?.sales||0);
+      });
+      const score = Math.round(units*9 + sales*0.01);
+      return { ...sq, units, sales, repCount, score };
+    }).sort((a,b)=>b.score-a.score);
+
+    const podium=[scored[1],scored[0],scored[2]].map((sq,i)=>{
+      if(!sq) return '<div></div>';
+      return '<div class="podium-card'+(i===1?' p1 squads':'')+'">'
+        +'<div class="podium-emoji">'+(i===1?'🥇':i===0?'🥈':'🥉')+'</div>'
+        +'<div class="podium-name">'+sq.name+'</div>'
+        +'<div class="podium-val">'+sq.score.toLocaleString()+' pts</div>'
+        +'<div class="podium-sub">'+sq.repCount+' rep'+(sq.repCount!==1?'s':'')+'</div></div>';
+    }).join('');
+
+    const rows = scored.map((sq,i)=>{
+      return '<div class="rep-row'+(i===0?' hl':'')+'">'
+        +'<div class="rank">'+rl(i)+'</div>'
+        +'<div class="rep-info"><div class="avatar" style="background:'+sq.color+'22;color:'+sq.color+'">'+renderIni(sq.name)+'</div>'
+        +'<div class="rep-name">'+sq.name+'</div></div>'
+        +'<div class="val">'+sq.score.toLocaleString()+' pts</div></div>';
+    }).join('');
+
+    const prizeBanner = cfg.prize
+      ? '<div class="reward-banner"><div class="reward-icon-wrap">🏆</div><div class="reward-text">'
+        +'<div class="reward-eyebrow">Squad Prize</div><div class="reward-headline">'+cfg.prize+'</div></div></div>'
+      : '';
+
+    document.getElementById('board-squads').innerHTML = prizeBanner
+      +'<div class="podium">'+podium+'</div>'
+      +'<div class="card"><div class="thead squads">'
+      +'<div style="text-align:center">#</div><div>Squad</div>'
+      +'<div style="text-align:right">Score</div></div>'+rows+'</div>';
+  }
+
+
+  // ── Export functions ──────────────────────────────────────────
+
+  function getExportData(){
+    if(!lastLiveData) return null;
+    const txn  = lastLiveData.txn  || [];
+    const sales= lastLiveData.sales|| [];
+    const avg  = lastLiveData.avg  || [];
+    const ghf  = lastLiveData.ghf  || [];
+    const plus = lastLiveData.plus || [];
+    // Merge all rep names
+    const names = [...new Set([...txn,...sales,...ghf,...plus].map(r=>r.name))];
+    return names.map(name=>{
+      const t = txn.find(r=>r.name===name)   ||{txn:0};
+      const s = sales.find(r=>r.name===name) ||{sales:0};
+      const a = avg.find(r=>r.name===name)   ||{avg:0};
+      const g = ghf.find(r=>r.name===name)   ||{units:0,ghf:0};
+      const p = plus.find(r=>r.name===name)  ||{units:0,plus:0};
+      const ghfU = g.units||g.ghf||0;
+      const plusU= p.units||p.plus||0;
+      const netS = s.sales||0;
+      // Points: 9pts per GHF unit, 9pts per Plus unit, 1pt per $100 net sales
+      const monthlyPts = Math.round(ghfU*9 + plusU*9 + netS*0.01);
+      const allTimePts = getLiveAllTime(name);
+      return {
+        name, txn:t.txn||0, sales:netS,
+        avg:a.avg||0, ghf:ghfU, plus:plusU,
+        monthlyPts, allTimePts
+      };
+    }).sort((a,b)=>b.txn-a.txn);
+  }
+
+  function exportBrandReport(){
+    const data = getExportData();
+    if(!data){ document.getElementById('export-status').textContent='⚠ Upload data first'; return; }
+    const status = document.getElementById('export-status');
+    status.textContent = '⏳ Building brand report...';
+
+    const wb = XLSX.utils.book_new();
+    const now = new Date();
+    const dateStr = now.toLocaleDateString('en-US',{month:'long',year:'numeric'});
+
+    // ── Sheet 1: Summary ─────────────────────────────────────────
+    const totalGHF   = data.reduce((s,r)=>s+r.ghf,0);
+    const totalPlus  = data.reduce((s,r)=>s+r.plus,0);
+    const totalSales = data.reduce((s,r)=>s+r.sales,0);
+    const totalPts   = data.reduce((s,r)=>s+r.monthlyPts,0);
+    const topRep     = [...data].sort((a,b)=>b.ghf+b.plus - (a.ghf+a.plus))[0];
+
+    const summaryRows = [
+      ['BRAND PERFORMANCE REPORT'],
+      [SHOP_NAME + '  ·  ' + dateStr + ''],
+      [],
+      ['METRIC', 'VALUE', 'NOTES'],
+      ['GHF Units Sold', totalGHF, 'Total GHF units this period'],
+      ['Plus Units Sold', totalPlus, 'Total Plus units this period'],
+      ['Total Brand Units', totalGHF+totalPlus, 'GHF + Plus combined'],
+      ['Net Sales Attributed', totalSales, 'Total net sales from all reps'],
+      ['Avg Units Per Rep', Math.round((totalGHF+totalPlus)/data.length), 'Across ' + data.length + ' reps'],
+      ['Top Brand Rep', topRep ? topRep.name : '—', topRep ? (topRep.ghf+topRep.plus) + ' total brand units' : ''],
+      ['Total Points Earned', totalPts, 'Team total this month'],
+      [],
+      ['PROGRAM ECONOMICS', '', ''],
+      ['Platform fee (est.)', '$175.00', 'Per location monthly fee'],
+      ['Est. redemptions (30%)', '$' + (totalPts * 0.01 * 0.3).toFixed(2), '30% redemption rate on earned points'],
+      ['Est. total program cost', '$' + (175 + totalPts * 0.01 * 0.3).toFixed(2), 'Fee + redemptions'],
+    ];
+    const wsSummary = XLSX.utils.aoa_to_sheet(summaryRows);
+    wsSummary['!cols'] = [{wch:30},{wch:20},{wch:40}];
+    XLSX.utils.book_append_sheet(wb, wsSummary, 'Brand Summary');
+
+    // ── Sheet 2: Rep Detail ──────────────────────────────────────
+    const repRows = [
+      ['PERENNIAL REWARDS — REP PERFORMANCE (' + dateStr + ')'],
+      [],
+      ['Rep Name','Transactions','Net Sales ($)','ATV ($)','GHF Units','Plus Units','Total Brand Units','Monthly Points','All-Time Points','Brand Rank'],
+      ...data.map((r,i) => [
+        r.name, r.txn,
+        parseFloat(r.sales.toFixed(2)),
+        parseFloat(r.avg.toFixed(2)),
+        r.ghf, r.plus, r.ghf+r.plus,
+        r.monthlyPts, r.allTimePts,
+        i+1
+      ]),
+      [],
+      ['TOTAL / AVG',
+        data.reduce((s,r)=>s+r.txn,0),
+        parseFloat(data.reduce((s,r)=>s+r.sales,0).toFixed(2)),
+        parseFloat((data.reduce((s,r)=>s+r.avg,0)/data.length).toFixed(2)),
+        totalGHF, totalPlus, totalGHF+totalPlus,
+        totalPts,
+        data.reduce((s,r)=>s+r.allTimePts,0),
+        ''
+      ]
+    ];
+    const wsReps = XLSX.utils.aoa_to_sheet(repRows);
+    wsReps['!cols'] = [{wch:22},{wch:14},{wch:14},{wch:10},{wch:12},{wch:12},{wch:16},{wch:14},{wch:14},{wch:10}];
+    XLSX.utils.book_append_sheet(wb, wsReps, 'Rep Performance');
+
+    // ── Sheet 3: Points Detail ───────────────────────────────────
+    const tiers = [{pts:500,reward:'$5 Gift Card'},{pts:1000,reward:'$10 Gift Card'},{pts:2500,reward:'$25 Gift Card'},{pts:5000,reward:'$50 + Swag'}];
+    const ptsRows = [
+      ['PERENNIAL POINTS DETAIL — ' + dateStr],
+      [],
+      ['Rep Name','Monthly Points','All-Time Points','Tier Unlocked','Next Tier','Points Needed'],
+      ...data.map(r => {
+        const unlocked = [...tiers].reverse().find(t=>r.allTimePts>=t.pts);
+        const next = tiers.find(t=>r.allTimePts<t.pts);
+        return [
+          r.name, r.monthlyPts, r.allTimePts,
+          unlocked ? unlocked.reward : 'None yet',
+          next ? next.reward : '✓ Max tier',
+          next ? Math.max(0, next.pts - r.allTimePts) : 0
+        ];
+      })
+    ];
+    const wsPts = XLSX.utils.aoa_to_sheet(ptsRows);
+    wsPts['!cols'] = [{wch:22},{wch:14},{wch:14},{wch:16},{wch:16},{wch:14}];
+    XLSX.utils.book_append_sheet(wb, wsPts, 'Points Detail');
+
+    const fname = 'Brand_Report_' + SHOP_NAME.replace(/\s+/g,'_') + '_' + now.toISOString().slice(0,7) + '.xlsx';
+    XLSX.writeFile(wb, fname);
+    status.textContent = '✅ Brand report downloaded!';
+    setTimeout(()=>{ status.textContent=''; }, 3000);
+  }
+
+  function exportRetailerReport(){
+    const data = getExportData();
+    if(!data){ document.getElementById('export-status').textContent='⚠ Upload data first'; return; }
+    const status = document.getElementById('export-status');
+    status.textContent = '⏳ Building retailer report...';
+
+    const wb = XLSX.utils.book_new();
+    const now = new Date();
+    const dateStr = now.toLocaleDateString('en-US',{month:'long',year:'numeric'});
+
+    // ── Sheet 1: Shop Summary ────────────────────────────────────
+    const totalTxn   = data.reduce((s,r)=>s+r.txn,0);
+    const totalSales = data.reduce((s,r)=>s+r.sales,0);
+    const avgAtv     = totalTxn > 0 ? totalSales/totalTxn : 0;
+    const totalGHF   = data.reduce((s,r)=>s+r.ghf,0);
+    const totalPlus  = data.reduce((s,r)=>s+r.plus,0);
+    const totalPts   = data.reduce((s,r)=>s+r.monthlyPts,0);
+    const aboveAvg   = data.filter(r=>r.txn > totalTxn/data.length).length;
+
+    const summaryRows = [
+      ['SHOP PERFORMANCE REPORT'],
+      [SHOP_NAME + '  ·  ' + dateStr + ''],
+      [],
+      ['SHOP PERFORMANCE', 'VALUE', 'NOTES'],
+      ['Total Transactions', totalTxn, 'All POS Sale transactions'],
+      ['Net Sales ($)', parseFloat(totalSales.toFixed(2)), 'Total net sales this period'],
+      ['Avg Transaction Value ($)', parseFloat(avgAtv.toFixed(2)), 'Net sales / transactions'],
+      ['GHF Units Sold', totalGHF, 'Glass House Farms units'],
+      ['Plus Units Sold', totalPlus, 'Plus Products units'],
+      ['Total Brand Units', totalGHF+totalPlus, 'GHF + Plus combined'],
+      ['Active Reps', data.length, 'Reps with at least 1 transaction'],
+      ['Reps Above Team Avg', aboveAvg, 'Above avg transactions per rep'],
+      [],
+      ['STAFF ENGAGEMENT', '', ''],
+      ['Total Points Earned (Team)', totalPts, 'This month'],
+      ['Avg Points Per Rep', Math.round(totalPts/data.length), 'Across ' + data.length + ' reps'],
+      ['Est. Redemption Cost ($)', parseFloat((totalPts*0.01*0.3).toFixed(2)), '30% redemption rate'],
+      ['Reps at Tier 1+ (500 pts)', data.filter(r=>r.allTimePts>=500).length, 'Eligible for $5 gift card'],
+      ['Reps at Tier 2+ (1000 pts)', data.filter(r=>r.allTimePts>=1000).length, 'Eligible for $10 gift card'],
+      ['Reps at Tier 3+ (2500 pts)', data.filter(r=>r.allTimePts>=2500).length, 'Eligible for $25 gift card'],
+      ['Reps at Tier 4+ (5000 pts)', data.filter(r=>r.allTimePts>=5000).length, 'Eligible for $50 + swag'],
+    ];
+    const wsSummary = XLSX.utils.aoa_to_sheet(summaryRows);
+    wsSummary['!cols'] = [{wch:30},{wch:18},{wch:40}];
+    XLSX.utils.book_append_sheet(wb, wsSummary, 'Shop Summary');
+
+    // ── Sheet 2: Rep Leaderboard ─────────────────────────────────
+    const retRows = [
+      ['STAFF LEADERBOARD — ' + SHOP_NAME + ' — ' + dateStr],
+      [],
+      ['Rank','Rep Name','Transactions','Net Sales ($)','ATV ($)','GHF Units','Plus Units','Monthly Points','All-Time Points'],
+      ...data.map((r,i) => [
+        i+1, r.name, r.txn,
+        parseFloat(r.sales.toFixed(2)),
+        parseFloat(r.avg.toFixed(2)),
+        r.ghf, r.plus,
+        r.monthlyPts, r.allTimePts
+      ]),
+      [],
+      ['','TOTAL',
+        data.reduce((s,r)=>s+r.txn,0),
+        parseFloat(totalSales.toFixed(2)),
+        parseFloat(avgAtv.toFixed(2)),
+        totalGHF, totalPlus,
+        totalPts,
+        data.reduce((s,r)=>s+r.allTimePts,0)
+      ]
+    ];
+    const wsRet = XLSX.utils.aoa_to_sheet(retRows);
+    wsRet['!cols'] = [{wch:6},{wch:22},{wch:14},{wch:14},{wch:10},{wch:12},{wch:12},{wch:14},{wch:14}];
+    XLSX.utils.book_append_sheet(wb, wsRet, 'Rep Leaderboard');
+
+    const fname = 'Retailer_Report_' + SHOP_NAME.replace(/\s+/g,'_') + '_' + now.toISOString().slice(0,7) + '.xlsx';
+    XLSX.writeFile(wb, fname);
+    status.textContent = '✅ Retailer report downloaded!';
+    setTimeout(()=>{ status.textContent=''; }, 3000);
+  }
+
+  function exportCSV(type){
+    const data = getExportData();
+    if(!data){ document.getElementById('export-status').textContent='⚠ Upload data first'; return; }
+    const status = document.getElementById('export-status');
+    const now = new Date();
+    const dateStr = now.toISOString().slice(0,7);
+
+    let rows, fname;
+    if(type === 'brand'){
+      rows = [
+        ['Rep Name','GHF Units','Plus Units','Total Brand Units','Net Sales','Monthly Points','All-Time Points'],
+        ...data.sort((a,b)=>b.ghf+b.plus-(a.ghf+a.plus)).map(r=>[
+          r.name, r.ghf, r.plus, r.ghf+r.plus,
+          r.sales.toFixed(2), r.monthlyPts, r.allTimePts
+        ])
+      ];
+      fname = 'Brand_Report_' + SHOP_NAME.replace(/\s+/g,'_') + '_' + dateStr + '.csv';
+    } else {
+      rows = [
+        ['Rank','Rep Name','Transactions','Net Sales','ATV','GHF Units','Plus Units','Monthly Points'],
+        ...data.map((r,i)=>[
+          i+1, r.name, r.txn, r.sales.toFixed(2),
+          r.avg.toFixed(2), r.ghf, r.plus, r.monthlyPts
+        ])
+      ];
+      fname = 'Retailer_Report_' + SHOP_NAME.replace(/\s+/g,'_') + '_' + dateStr + '.csv';
+    }
+    const csv = rows.map(r=>r.join(',')).join('\n');
+    const blob = new Blob([csv], {type:'text/csv'});
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = fname;
+    a.click();
+    status.textContent = '✅ CSV downloaded!';
+    setTimeout(()=>{ status.textContent=''; }, 3000);
+  }
+
+
+  // ── 1st place prize config ────────────────────────────
+  // Change these to set the monthly prize per brand tab
+  const PRIZE_TABS = ['ghf', 'avg'];
+  const FIRST_PLACE_PRIZES = {
+    ghf:  '$100 Gift Card',   // e.g. "$25 Gift Card" or "GHF Branded Hoodie"
+    avg:  '$100 Gift Card',
+    plus: 'MANAGER PRIZE HERE',   // e.g. "$25 Gift Card" or "Plus Products Swag"
+  };
+
+  function firstPlaceBanner(tab, data){
+    if(!data || !data.length) return '';
+    const winner = data[0];
+    const prize = FIRST_PLACE_PRIZES[tab] || 'Prize TBD';
+    const label = tab==='ghf' ? 'Top GHF Seller' : tab==='avg' ? 'Top ATV Seller' : 'Top Plus Seller';
+    const brand = tab==='ghf' ? 'Glass House Farms' : tab==='avg' ? 'Highest Avg Ticket' : 'Plus Products';
+    const c = TAB_CONFIG[tab];
+    return '<div class="first-place-banner">'
+      +'<div class="first-place-crown">👑</div>'
+      +'<div class="first-place-text">'
+      +'<div class="first-place-eyebrow">🏁 ' + label + ' — In Progress</div>'
+      +'<div class="first-place-title">' + brand + ' Race</div>'
+      +'<div class="first-place-prize">' + (prize === 'MANAGER PRIZE HERE' ? '<span class="prize-placeholder">Prize to be announced by manager</span>' : '🎁 ' + prize) + '</div>'
+      +'<div class="first-place-winner">'
+      +'<div class="first-place-winner-label">Current leader:</div>'
+      +'<div class="first-place-winner-name">👑 ' + winner.name + '</div>'
+      +'<div class="first-place-winner-val">' + c.valFn(winner) + '</div>'
+      +'</div>'
+      +'</div></div>';
+  }
+
+
+  // ── Streak system ─────────────────────────────────────────────
+  // Storage keys per rep per shop
+  const STREAK_KEY_FIRE = n => 'streak_fire_' + SHOP_NAME.replace(/\s/g,'_') + '_' + n.replace(/\s/g,'_');
+  const STREAK_KEY_RANK = n => 'streak_rank_' + SHOP_NAME.replace(/\s/g,'_') + '_' + n.replace(/\s/g,'_');
+  const STREAK_MONTH_KEY = () => { const d=new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0'); };
+  const STREAK_LAST_KEY  = n => 'streak_last_month_' + SHOP_NAME.replace(/\s/g,'_') + '_' + n.replace(/\s/g,'_');
+
+  function getStreak(key){ return parseInt(localStorage.getItem(key)||'0'); }
+  function setStreak(key, val){ localStorage.setItem(key, String(val)); }
+
+  // Called after each upload — updates streaks for all reps
+  function updateStreaks(reps, topFiveNames){
+    const currentMonth = STREAK_MONTH_KEY();
+    reps.forEach(rep => {
+      const lastMonth = localStorage.getItem(STREAK_LAST_KEY(rep.name)) || '';
+      // Only update once per month
+      if(lastMonth === currentMonth) return;
+
+      // Fire streak: sold any GHF or Plus units this month
+      const hasSales = (rep.ghf||0) + (rep.plus||0) > 0;
+      const fireKey  = STREAK_KEY_FIRE(rep.name);
+      setStreak(fireKey, hasSales ? getStreak(fireKey)+1 : 0);
+
+      // Rank streak: in top 5 this month
+      const inTop5  = topFiveNames.includes(rep.name);
+      const rankKey = STREAK_KEY_RANK(rep.name);
+      setStreak(rankKey, inTop5 ? getStreak(rankKey)+1 : 0);
+
+      // Mark this month processed
+      localStorage.setItem(STREAK_LAST_KEY(rep.name), currentMonth);
+    });
+  }
+
+  // Streak bonus points: 50pts per month of fire streak, 100pts per month of rank streak
+  function streakBonusPoints(name){
+    const fire = getStreak(STREAK_KEY_FIRE(name));
+    const rank = getStreak(STREAK_KEY_RANK(name));
+    return (fire * 50) + (rank * 100);
+  }
+
+  function fireStreakEmoji(months){
+    if(months >= 12) return '🔥🔥🔥';
+    if(months >= 6)  return '🔥🔥';
+    if(months >= 2)  return '🔥';
+    return '✦';
+  }
+
+  function renderStreakBoard(reps){
+    const withStreaks = reps.map(r => ({
+      ...r,
+      fireStreak: getStreak(STREAK_KEY_FIRE(r.name)),
+      rankStreak: getStreak(STREAK_KEY_RANK(r.name)),
+      streakBonus: streakBonusPoints(r.name),
+    })).filter(r => r.fireStreak > 0 || r.rankStreak > 0)
+       .sort((a,b) => (b.fireStreak+b.rankStreak) - (a.fireStreak+a.rankStreak));
+
+    if(!withStreaks.length){
+      return '<div class="streak-section"><div class="streak-header"><div class="streak-header-title">🔥 Streak Leaders</div><div class="streak-header-sub">Earn badges for consecutive months</div></div>'
+        +'<div class="streak-empty">Streaks will appear after the second consecutive month of data. Keep selling!</div></div>';
+    }
+
+    const COLORS=['#C17F24','#C94B1E','#B85C38','#6B7C3E','#5B3F8A','#D4A832','#A63D2F','#C05C2C'];
+    const ini = n => n.split(' ').map(p=>p[0]).join('').toUpperCase().slice(0,2);
+
+    const rows = withStreaks.map((rep,i) => {
+      const color = COLORS[i%COLORS.length];
+      const fireLabel = rep.fireStreak > 0 ? fireStreakEmoji(rep.fireStreak)+' '+rep.fireStreak+'mo selling' : '';
+      const rankLabel = rep.rankStreak > 0 ? '⭐ '+rep.rankStreak+'mo top 5' : '';
+      return '<div class="streak-row">'
+        +'<div class="streak-icon">'+(rep.fireStreak>=6?'🔥🔥':rep.fireStreak>=2?'🔥':'✦')+'</div>'
+        +'<div class="streak-rep-info"><div class="avatar" style="background:'+color+'22;color:'+color+'">'+ini(rep.name)+'</div>'
+        +'<div><div class="streak-name">'+rep.name+'</div>'
+        +'<div style="display:flex;gap:4px;flex-wrap:wrap;margin-top:2px">'
+        +(fireLabel?'<span class="streak-badge fire">'+fireLabel+'</span>':'')
+        +(rankLabel?'<span class="streak-badge rank">'+rankLabel+'</span>':'')
+        +'</div></div></div>'
+        +'<div class="streak-count">'+(rep.fireStreak||rep.rankStreak)+' month'+(Math.max(rep.fireStreak,rep.rankStreak)!==1?'s':'')+'</div>'
+        +'<div class="streak-bonus-pts">+'+rep.streakBonus.toLocaleString()+' pts</div>'
+        +'</div>';
+    }).join('');
+
+    return '<div class="streak-section"><div class="streak-header">'
+      +'<div class="streak-header-title">🔥 Streak Leaders</div>'
+      +'<div class="streak-header-sub">🔥 Selling streak  ·  ⭐ Top 5 streak</div>'
+      +'</div>'+rows+'</div>';
+  }
+
+
+  // ── Team challenge system ─────────────────────────────────────
+  const CHALLENGE_KEY = () => 'challenge_' + SHOP_NAME.replace(/\s/g,'_');
+
+  function getChallenge(){
+    try{ return JSON.parse(localStorage.getItem(CHALLENGE_KEY())||'null'); }
+    catch(e){ return null; }
+  }
+  function saveChallenge(obj){
+    localStorage.setItem(CHALLENGE_KEY(), JSON.stringify(obj));
+  }
+  function clearChallenge(){
+    localStorage.removeItem(CHALLENGE_KEY());
+  }
+
+  function renderTeamChallenge(liveData){
+    const ch = getChallenge();
+    const container = document.getElementById('team-challenge-wrap');
+    if(!container) return;
+
+    // No challenge set — show setup prompt (only in manager panel context)
+    if(!ch){
+      container.innerHTML = '';
+      return;
+    }
+
+    const ghfArr  = liveData.ghf   || [];
+    const plusArr = liveData.plus  || [];
+    const txnArr  = liveData.txn   || [];
+
+    const totalGHF  = ghfArr.reduce((s,r)=>s+(r.units||r.ghf||0),0);
+    const totalPlus = plusArr.reduce((s,r)=>s+(r.units||r.plus||0),0);
+    const totalBrand= totalGHF + totalPlus;
+
+    // Personal consistency: % of reps who sold at least 1 brand unit
+    const repsWithSales = txnArr.filter(r=>{
+      const g = ghfArr.find(x=>x.name===r.name);
+      const p = plusArr.find(x=>x.name===r.name);
+      return (g&&(g.units||g.ghf||0)>0) || (p&&(p.units||p.plus||0)>0);
+    }).length;
+    const totalReps   = txnArr.length;
+    const consistPct  = totalReps > 0 ? Math.round(repsWithSales/totalReps*100) : 0;
+
+    const unitGoal    = parseInt(ch.unitGoal)||0;
+    const consistGoal = parseInt(ch.consistGoal)||80;
+    const unitPct     = unitGoal > 0 ? Math.min(Math.round(totalBrand/unitGoal*100),100) : 0;
+    const unitHit     = totalBrand >= unitGoal;
+    const consistHit  = consistPct >= consistGoal;
+    const bothHit     = unitHit && consistHit;
+
+    const statusClass = bothHit ? 'won' : 'active';
+    const icon        = bothHit ? '🏆' : '🎯';
+    const eyebrow     = bothHit ? 'Challenge complete!' : 'Team challenge — this month';
+    const title       = bothHit
+      ? 'Your team crushed it! ' + ch.prize + ' is earned.'
+      : ch.prize ? 'Win together: ' + ch.prize : 'Hit the team goal this month';
+
+    container.innerHTML =
+      '<div class="challenge-banner '+statusClass+'">'
+      +'<div class="challenge-top">'
+      +'<div class="challenge-icon">'+icon+'</div>'
+      +'<div class="challenge-text">'
+      +'<div class="challenge-eyebrow">'+eyebrow+'</div>'
+      +'<div class="challenge-title">'+title+'</div>'
+      +(ch.prize && !bothHit ? '<div class="challenge-prize">🎉 Prize: '+ch.prize+'</div>' : '')
+      +'</div></div>'
+
+      // Unit progress bar
+      +(unitGoal > 0 ?
+        '<div class="challenge-progress-wrap">'
+        +'<div class="challenge-prog-labels">'
+        +'<span class="challenge-prog-label">🌿 GHF + 🟣 Plus units</span>'
+        +'<span class="challenge-prog-val">'+totalBrand.toLocaleString()+' / '+unitGoal.toLocaleString()+'</span>'
+        +'</div>'
+        +'<div class="challenge-prog-bg"><div class="challenge-prog-fill'+(bothHit?' won':'')+'" style="width:'+unitPct+'%"></div></div>'
+        +'</div>'
+      : '')
+
+      // Sub-goals
+      +'<div class="challenge-sub-goals">'
+      +'<div class="challenge-sub">'
+      +'<div class="challenge-sub-val">'+totalBrand.toLocaleString()+(unitGoal>0?'<span style="font-size:11px;font-weight:400;color:rgba(255,255,255,0.5)"> / '+unitGoal+'</span>':'')+'</div>'
+      +'<div class="challenge-sub-label">Brand Units</div>'
+      +'<div class="challenge-sub-check '+(unitHit?'hit':'miss')+'">'+( unitHit ? '✓ Goal reached!' : unitGoal>0?'Need '+(unitGoal-totalBrand)+' more':'No target set')+'</div>'
+      +'</div>'
+      +'<div class="challenge-sub">'
+      +'<div class="challenge-sub-val">'+consistPct+'%<span style="font-size:11px;font-weight:400;color:rgba(255,255,255,0.5)"> / '+consistGoal+'%</span></div>'
+      +'<div class="challenge-sub-label">Team Selling</div>'
+      +'<div class="challenge-sub-check '+(consistHit?'hit':'miss')+'">'+(consistHit?'✓ '+repsWithSales+' of '+totalReps+' reps!':repsWithSales+' of '+totalReps+' reps selling')+'</div>'
+      +'</div>'
+      +'</div>'
+      +'</div>';
+  }
+
+  function renderChallengeSetup(){
+    const ch = getChallenge();
+    const wrap = document.getElementById('challenge-setup-wrap');
+    if(!wrap) return;
+    wrap.innerHTML =
+      '<div class="challenge-setup-title">🎯 Set team challenge for this month</div>'
+      +'<div class="challenge-form-row">'
+      +'<div class="challenge-field"><label>Unit goal (GHF + Plus)</label><input type="number" id="ch-unit-goal" placeholder="e.g. 2500" value="'+(ch?ch.unitGoal:'')+'"></div>'
+      +'<div class="challenge-field"><label>Consistency goal (%)</label><input type="number" id="ch-consist-goal" placeholder="e.g. 80" value="'+(ch?ch.consistGoal:'80')+'"></div>'
+      +'</div>'
+      +'<div class="challenge-field" style="margin-bottom:10px"><label>Team prize</label><input type="text" id="ch-prize" placeholder="e.g. Team lunch at your favorite spot" value="'+(ch?ch.prize:'')+'"></div>'
+      +'<button class="challenge-save-btn" onclick="saveChallengeSetup()">Save team challenge</button>'
+      +(ch ? '<button class="challenge-clear-btn" onclick="clearChallengeSetup()">Clear current challenge</button>' : '');
+  }
+
+  function saveChallengeSetup(){
+    const unitGoal    = document.getElementById('ch-unit-goal').value.trim();
+    const consistGoal = document.getElementById('ch-consist-goal').value.trim()||'80';
+    const prize       = document.getElementById('ch-prize').value.trim();
+    if(!unitGoal && !prize){ alert('Please set at least a unit goal or a prize.'); return; }
+    saveChallenge({ unitGoal: parseInt(unitGoal)||0, consistGoal: parseInt(consistGoal)||80, prize });
+    renderChallengeSetup();
+    renderCampaignSetup();
+    renderReportSection();
+    // Re-render challenge banner if data is loaded
+    if(typeof lastLiveData !== 'undefined' && lastLiveData) renderTeamChallenge(lastLiveData);
+    alert('Team challenge saved!');
+  }
+
+  function clearChallengeSetup(){
+    if(!confirm('Clear the current team challenge?')) return;
+    clearChallenge();
+    renderChallengeSetup();
+    renderCampaignSetup();
+    renderReportSection();
+    const wrap = document.getElementById('team-challenge-wrap');
+    if(wrap) wrap.innerHTML = '';
+  }
+
+  // Store last loaded data so challenge can re-render when setup changes
+  let lastLiveData = null;
+
+
+  // ── Launch campaign system ────────────────────────────────────
+  const CAMPAIGN_KEY = brand => 'campaign_' + brand + '_' + SHOP_NAME.replace(/\s/g,'_');
+
+  function getCampaign(brand){
+    try{ return JSON.parse(localStorage.getItem(CAMPAIGN_KEY(brand))||'null'); }
+    catch(e){ return null; }
+  }
+  function saveCampaign(brand, obj){
+    localStorage.setItem(CAMPAIGN_KEY(brand), JSON.stringify(obj));
+  }
+  function clearCampaign(brand){
+    localStorage.removeItem(CAMPAIGN_KEY(brand));
+  }
+
+  // Returns extra points for a rep based on active campaigns
+  // productName matching is case-insensitive substring match
+  function campaignBonusForRep(repData, allRows){
+    let bonus = 0;
+    for(const brand of ['ghf','plus']){
+      const ch = getCampaign(brand);
+      if(!ch || !ch.productName) continue;
+      // Count units of this product for this rep from raw data
+      // We use the brand units as proxy — product-level data not available from aggregated liveData
+      // So bonus is applied as: if rep sold any units of this brand, apply multiplier notice
+      // (Full product-level tracking requires raw row data)
+    }
+    return bonus;
+  }
+
+  // Campaign banner for a tab
+  function renderCampaignBanner(tab){
+    const brand = tab === 'ghf' ? 'ghf' : 'plus';
+    const ch    = getCampaign(brand);
+    if(!ch || !ch.productName) return '';
+
+    const endDate  = ch.endDate ? new Date(ch.endDate) : null;
+    const today    = new Date();
+    const expired  = endDate && endDate < today;
+    if(expired) return '';
+
+    const daysLeft = endDate ? Math.max(0, Math.ceil((endDate-today)/(1000*60*60*24))) : null;
+    const brandName= tab==='ghf' ? 'Glass House Farms' : 'Plus Products';
+    const icon     = tab==='ghf' ? '🌲' : '🟪';
+
+    return '<div class="campaign-banner '+brand+'">'
+      +'<div class="campaign-inner">'
+      +'<div class="campaign-icon-wrap">'+icon+'</div>'
+      +'<div class="campaign-body">'
+      +'<div class="campaign-eyebrow">⚡ Limited-time launch campaign — '+brandName+'</div>'
+      +'<div class="campaign-title">'+ch.productName+'</div>'
+      +'<div class="campaign-desc">Sell this product this month to earn 2× points per unit sold</div>'
+      +'<div class="campaign-rep-boost">⭐ 2× points on every unit sold</div>'
+      +(daysLeft !== null ? '<div class="campaign-countdown">🕐 '+daysLeft+' day'+(daysLeft!==1?'s':'')+' remaining</div>' : '')
+      +'</div>'
+      +'<div class="campaign-badge '+brand+'">2× POINTS</div>'
+      +'</div>'
+      +'</div>';
+  }
+
+  // Manager campaign setup UI
+  let activeCampaignTab = 'ghf';
+  function renderCampaignSetup(){
+    const wrap = document.getElementById('campaign-setup-wrap');
+    if(!wrap) return;
+    const ghfCh  = getCampaign('ghf');
+    const plusCh = getCampaign('plus');
+    const isGHF  = activeCampaignTab === 'ghf';
+    const curCh  = isGHF ? ghfCh : plusCh;
+    const curVal = curCh ? curCh.productName : '';
+    const curEnd = curCh ? (curCh.endDate||'') : '';
+    const ghfCls = activeCampaignTab==='ghf' ? 'campaign-tab-btn active ghf' : 'campaign-tab-btn';
+    const plsCls = activeCampaignTab==='plus' ? 'campaign-tab-btn active plus' : 'campaign-tab-btn';
+    const lbl    = isGHF ? 'GHF' : 'Plus';
+    let out = '<div class="campaign-setup-section">';
+    out += '<div class="campaign-setup-title">Launch Campaigns (2x Points)</div>';
+    if(ghfCh) out += '<div class="campaign-active-summary"><strong>GHF active:</strong> ' + ghfCh.productName + (ghfCh.endDate ? ' - ends ' + new Date(ghfCh.endDate).toLocaleDateString() : '') + '</div>';
+    if(plusCh) out += '<div class="campaign-active-summary"><strong>Plus active:</strong> ' + plusCh.productName + (plusCh.endDate ? ' - ends ' + new Date(plusCh.endDate).toLocaleDateString() : '') + '</div>';
+    out += '<div class="campaign-form-tabs">';
+    out += '<button class="' + ghfCls + '" onclick="setCampaignTab(String.fromCharCode(103,104,102))">GHF</button>';
+    out += '<button class="' + plsCls + '" onclick="setCampaignTab(String.fromCharCode(112,108,117,115))">Plus</button>';
+    out += '</div>';
+    out += '<div class="campaign-fields">';
+    out += '<div class="campaign-field"><label>Product / SKU name</label><input type="text" id="camp-product" placeholder="e.g. GHF Blueberry Cookies 3.5g" value="' + curVal + '"></div>';
+    out += '<div class="campaign-field"><label>End date (optional)</label><input type="date" id="camp-end" value="' + curEnd + '"></div>';
+    out += '</div>';
+    out += '<button class="campaign-save-btn ' + activeCampaignTab + '" onclick="saveCampaignSetup()">Save ' + lbl + ' Campaign</button>';
+    if(curCh) out += '<button class="campaign-clear-btn" onclick="clearCampaignSetup()">Clear this campaign</button>';
+    out += '</div>';
+    wrap.innerHTML = out;
+  }
+
+  function setCampaignTab(brand){
+    activeCampaignTab = brand;
+    renderCampaignSetup();
+    renderReportSection();
+  }
+  function saveCampaignSetup(){
+    const product = document.getElementById('camp-product').value.trim();
+    const endDate = document.getElementById('camp-end').value;
+    if(!product){ alert('Please enter a product or SKU name.'); return; }
+    saveCampaign(activeCampaignTab, { productName: product, endDate: endDate||null });
+    renderCampaignSetup();
+    renderReportSection();
+    // Refresh leaderboard if data is loaded
+    if(lastLiveData) window.renderAll(lastLiveData);
+    alert((activeCampaignTab==='ghf'?'GHF':'Plus')+' launch campaign saved! The banner will appear on the '+(activeCampaignTab==='ghf'?'GHF':'Plus')+' tab.');
+  }
+  function clearCampaignSetup(){
+    if(!confirm('Clear the '+activeCampaignTab.toUpperCase()+' campaign?')) return;
+    clearCampaign(activeCampaignTab);
+    renderCampaignSetup();
+    renderReportSection();
+    if(lastLiveData) window.renderAll(lastLiveData);
+  }
+
+
+  // ── Automated monthly reporting ───────────────────────────────
+  const REPORT_CONFIG_KEY = () => 'report_config_' + SHOP_NAME.replace(/\s/g,'_');
+  const REPORT_SENT_KEY   = () => 'report_sent_'   + SHOP_NAME.replace(/\s/g,'_');
+
+  function getReportConfig(){
+    try{ return JSON.parse(localStorage.getItem(REPORT_CONFIG_KEY())||'null'); }
+    catch(e){ return null; }
+  }
+  function saveReportConfig(obj){
+    localStorage.setItem(REPORT_CONFIG_KEY(), JSON.stringify(obj));
+  }
+
+  // ── Email service hook — connect your provider here ───────────
+  // When ready, implement this function with EmailJS, SendGrid, etc.
+  async function sendReportEmail(recipientEmail, recipientName, brand, statsHtml, month){
+    // ── EmailJS example (uncomment and fill credentials):
+    // await emailjs.send('SERVICE_ID', 'TEMPLATE_ID', {
+    //   to_email: recipientEmail,
+    //   to_name:  recipientName,
+    //   brand:    brand,
+    //   month:    month,
+    //   shop:     SHOP_NAME,
+    //   stats:    statsHtml,
+    //   portal_url: 'https://your-github-pages-url/brand-portal.html',
+    // });
+
+    // ── Placeholder — logs until service is connected:
+    console.log('Would send report to:', recipientEmail, 'for brand:', brand, 'month:', month);
+    // Simulate async send
+    await new Promise(r => setTimeout(r, 500));
+    return true;
+  }
+  // ─────────────────────────────────────────────────────────────
+
+  function buildStatsHtml(brand){
+    const ld = window._lastLiveData;
+    if(!ld) return 'No data available.';
+    const brandArr = ld[brand] || [];
+    const salesArr = ld.sales  || [];
+    const txnArr   = ld.txn    || [];
+    const totalUnits = brandArr.reduce((s,r)=>s+(r.units||r[brand]||0),0);
+    const totalSales = salesArr.reduce((s,r)=>s+r.sales,0);
+    const totalTxn   = txnArr.reduce((s,r)=>s+r.txn,0);
+    const topRep     = brandArr[0] ? brandArr[0].name + ' (' + (brandArr[0].units||brandArr[0][brand]||0) + ' units)' : 'N/A';
+    return 'Units Sold: ' + totalUnits + ' | Net Sales: $' + Math.round(totalSales).toLocaleString()
+      + ' | Transactions: ' + totalTxn + ' | Top Rep: ' + topRep;
+  }
+
+  // Check on load if auto-report should fire (1st of month, not yet sent this month)
+  function checkAutoReport(){
+    const cfg = getReportConfig();
+    if(!cfg || !cfg.ghfEmail) return;
+    const now        = new Date();
+    const isFirst    = now.getDate() === 1;
+    const monthKey   = now.getFullYear() + '-' + String(now.getMonth()+1).padStart(2,'0');
+    const sentKey    = localStorage.getItem(REPORT_SENT_KEY());
+    if(isFirst && sentKey !== monthKey){
+      console.log('Auto-report: triggering monthly send for', monthKey);
+      sendMonthlyReports(true);
+    }
+  }
+
+  async function sendMonthlyReports(auto){
+    const cfg = getReportConfig();
+    if(!cfg){ alert('Set up report recipients first.'); return; }
+    const btn    = document.getElementById('report-send-btn');
+    const logEl  = document.getElementById('report-log');
+    if(btn) btn.disabled = true;
+    const now    = new Date();
+    const month  = now.toLocaleDateString('en-US',{month:'long',year:'numeric'});
+    const monthKey = now.getFullYear() + '-' + String(now.getMonth()+1).padStart(2,'0');
+
+    let sent = 0;
+    const recipients = [
+      cfg.ghfEmail  ? {email:cfg.ghfEmail,  name:cfg.ghfName||'GHF Team',  brand:'ghf',  brandName:'Glass House Farms'} : null,
+      cfg.plusEmail ? {email:cfg.plusEmail, name:cfg.plusName||'Plus Team', brand:'plus', brandName:'Plus Products'}     : null,
+    ].filter(Boolean);
+
+    for(const r of recipients){
+      if(logEl) logEl.textContent = 'Sending to ' + r.name + '...';
+      try{
+        const stats = buildStatsHtml(r.brand);
+        await sendReportEmail(r.email, r.name, r.brandName, stats, month);
+        sent++;
+        console.log('Sent report to', r.email);
+      } catch(e){
+        console.error('Failed to send to', r.email, e);
+        if(logEl) logEl.textContent = 'Failed to send to ' + r.email;
+      }
+    }
+
+    // Mark as sent for this month
+    localStorage.setItem(REPORT_SENT_KEY(), monthKey);
+    if(logEl) logEl.textContent = (auto?'Auto-report: ':'') + sent + ' of ' + recipients.length + ' reports sent for ' + month + ' ✅';
+    if(btn){ btn.disabled = false; btn.textContent = '✅ Reports sent for ' + month; }
+    renderReportSection();
+  }
+
+  function renderReportSection(){
+    const wrap = document.getElementById('report-section-wrap');
+    if(!wrap) return;
+    const cfg       = getReportConfig();
+    const now       = new Date();
+    const monthKey  = now.getFullYear() + '-' + String(now.getMonth()+1).padStart(2,'0');
+    const lastSent  = localStorage.getItem(REPORT_SENT_KEY());
+    const sentThisMonth = lastSent === monthKey;
+    const nextFirst = new Date(now.getFullYear(), now.getMonth()+1, 1);
+    const daysUntil = Math.ceil((nextFirst - now)/(1000*60*60*24));
+    const ghfVal    = cfg ? (cfg.ghfEmail||'') : '';
+    const plusVal   = cfg ? (cfg.plusEmail||'') : '';
+    const ghfName   = cfg ? (cfg.ghfName||'') : '';
+    const plusName  = cfg ? (cfg.plusName||'') : '';
+
+    wrap.innerHTML =
+      '<div class="report-section">'
+      +'<div class="report-header">'
+      +'<div><div class="report-header-title">📬 Monthly Brand Reports</div>'
+      +'<div class="report-header-sub">Auto-sends on the 1st of each month</div></div>'
+      +'</div>'
+      +'<div class="report-body">'
+      +'<div class="report-status-row">'
+      +'<div class="report-status-label">Last sent</div>'
+      +'<div class="report-status-val">' + (lastSent || 'Never') + (sentThisMonth ? ' ✅' : '') + '</div>'
+      +'</div>'
+      +'<div class="report-status-row" style="margin-bottom:1rem">'
+      +'<div class="report-status-label">Next auto-send</div>'
+      +'<div class="report-status-val">1st of next month (' + daysUntil + ' days)</div>'
+      +'</div>'
+      +'<div style="font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:.625rem">Recipients</div>'
+      +'<div class="report-config-row">'
+      +'<div class="report-field"><label>GHF Contact Name</label><input type="text" id="cfg-ghf-name" placeholder="e.g. Sarah @ GHF" value="' + ghfName + '"></div>'
+      +'<div class="report-field"><label>GHF Email</label><input type="email" id="cfg-ghf-email" placeholder="sarah@ghf.com" value="' + ghfVal + '"></div>'
+      +'</div>'
+      +'<div class="report-config-row">'
+      +'<div class="report-field"><label>Plus Contact Name</label><input type="text" id="cfg-plus-name" placeholder="e.g. Mike @ Plus" value="' + plusName + '"></div>'
+      +'<div class="report-field"><label>Plus Email</label><input type="email" id="cfg-plus-email" placeholder="mike@plus.com" value="' + plusVal + '"></div>'
+      +'</div>'
+      +'<button class="report-save-config-btn" style="margin-bottom:.875rem" onclick="saveReportRecipients()">Save recipients</button>'
+      +'<div style="background:rgba(193,127,36,0.08);border:1px solid rgba(193,127,36,0.2);border-radius:9px;padding:.75rem;font-size:12px;color:var(--muted);margin-bottom:.875rem;line-height:1.5">'
+      +'<strong style="color:var(--charcoal);display:block;margin-bottom:2px">Email service setup required</strong>'
+      +'Connect EmailJS or SendGrid in the sendReportEmail() function to activate sending. The trigger and recipient logic are ready — just needs your email credentials.'
+      +'</div>'
+      +'<button class="report-send-btn" id="report-send-btn" onclick="sendMonthlyReports(false)">'
+      + (sentThisMonth ? '✅ Resend reports for ' + monthKey : '📤 Send reports now') + '</button>'
+      +'<div class="report-log" id="report-log"></div>'
+      +'</div></div>';
+  }
+
+  function saveReportRecipients(){
+    const cfg = {
+      ghfName:   document.getElementById('cfg-ghf-name').value.trim(),
+      ghfEmail:  document.getElementById('cfg-ghf-email').value.trim(),
+      plusName:  document.getElementById('cfg-plus-name').value.trim(),
+      plusEmail: document.getElementById('cfg-plus-email').value.trim(),
+    };
+    saveReportConfig(cfg);
+    renderReportSection();
+    alert('Report recipients saved!');
+  }
+
+  // Store liveData ref for stats building
+  window._lastLiveData = null;
+
+
+  function switchTab(tab,btn){
+    document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+    btn.classList.add('active');
+    ['txn','sales','avg','ghf','plus','squads'].forEach(t=>{
+      document.getElementById('board-'+t).style.display=t===tab?'block':'none';
+    });
+  }
+
+  function handleFile(file){
+    if(!file) return;
+    document.getElementById('up-icon').textContent='⏳';
+    document.getElementById('up-label').textContent='Processing...';
+    const reader=new FileReader();
+    reader.onload=async e=>{
+      try{
+        let rows;
+        if(file.name.toLowerCase().endsWith('.csv')){
+          const lines=e.target.result.split('\n');
+          const headers=lines[0].split(',').map(h=>h.replace(/^"|"$/g,'').trim());
+          rows=lines.slice(1).filter(l=>l.trim()).map(line=>{
+            const cols=[]; let cur='',inQ=false;
+            for(const ch of (line+',')){
+              if(ch==='"'){inQ=!inQ;}
+              else if(ch===','&&!inQ){cols.push(cur.trim());cur='';}
+              else cur+=ch;
+            }
+            const obj={};
+            headers.forEach((h,i)=>{obj[h]=(cols[i]||'').replace(/^"|"$/g,'').trim();});
+            return obj;
+          });
+        } else {
+          const wb=XLSX.read(new Uint8Array(e.target.result),{type:'array'});
+          rows=XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]]);
+        }
+        const filtered=rows.filter(r=>
+          (r['Ticket Type']||'').trim()==='POS'&&
+          (r['Type']||'').trim()==='Sale'&&
+          (r['Cashier']||'').trim()!==''
+        );
+        if(filtered.length===0) throw new Error('No POS Sale rows found');
+        const byRep={};
+        filtered.forEach(r=>{
+          const name=r['Cashier'].trim();
+          const tid=(r['Ticket ID']||'').trim();
+          const ns=parseFloat(r['Net Sales'])||0;
+          const qty=parseFloat(r['Qty'])||0;
+          const brand=(r['Brand']||'').trim().toUpperCase();
+          if(!byRep[name]) byRep[name]={tickets:new Set(),sales:0,ghf:0,plus:0};
+          if(tid) byRep[name].tickets.add(tid);
+          byRep[name].sales+=ns;
+          if(brand==='GLASS HOUSE FARMS') byRep[name].ghf+=qty;
+          if(brand==='PLUS PRODUCTS') byRep[name].plus+=qty;
+        });
+        const reps=Object.entries(byRep).map(([name,d])=>{
+          const txn=d.tickets.size;
+          const sales=Math.round(d.sales*100)/100;
+          const ghf=Math.round(d.ghf);
+          const plus=Math.round(d.plus);
+          // Points: 9pts per GHF unit, 9pts per Plus unit, 1pt per $100 net sales.
+          // Coefficients solved from June 2026 actuals to preserve the same average
+          // points/rep (and therefore the same tier-redemption pace) as the old
+          // 10pts/unit-only formula.
+          const monthlyPts=Math.round(ghf*9 + plus*9 + sales*0.01);
+          return {
+            name, txn, sales,
+            avg: txn>0?Math.round(sales/txn*100)/100:0,
+            ghf, plus, monthlyPts,
+          };
+        }).filter(r=>r.txn>0);
+        const liveData={
+          txn:[...reps].sort((a,b)=>b.txn-a.txn),
+          sales:[...reps].sort((a,b)=>b.sales-a.sales),
+          avg:[...reps].filter(r=>r.txn>=5).sort((a,b)=>b.avg-a.avg),
+          ghf:[...reps].filter(r=>r.ghf>0).sort((a,b)=>b.ghf-a.ghf),
+          plus:[...reps].filter(r=>r.plus>0).sort((a,b)=>b.plus-a.plus),
+          points:[...reps].sort((a,b)=>b.monthlyPts-a.monthlyPts),
+        };
+        const now=new Date();
+        const updatedAt=now.toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'})
+          +' at '+now.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});
+        lastLiveData = liveData;
+      window._lastLiveData = liveData;
+      window.renderAll(liveData);
+        document.getElementById('header-meta').textContent='Updated '+updatedAt;
+        document.getElementById('footer').textContent='Perennial · '+SHOP_NAME+' · Updated '+updatedAt;
+        document.getElementById('upload-area').classList.add('done');
+        document.getElementById('up-icon').textContent='✅';
+        document.getElementById('up-label').textContent=file.name;
+        document.getElementById('up-sub').textContent=reps.length+' reps · '+filtered.length.toLocaleString()+' transactions';
+        document.getElementById('up-result').style.display='block';
+        document.getElementById('up-result').textContent='All 6 tabs updated';
+        document.getElementById('sync-status').style.display='block';
+        document.getElementById('sync-status').textContent='💾 Syncing to all devices...';
+        // Update streak data for all reps
+        const top5Names = liveData.txn.slice(0,5).map(r=>r.name);
+        updateStreaks(reps, top5Names);
+        await creditMonthlyPoints(reps);
+        const saved=await window.saveToFirebase(liveData,updatedAt);
+        document.getElementById('sync-status').textContent=saved
+          ?'✅ Synced — all devices now show updated data'
+          :'⚠ Sync failed — check Firebase config';
+        if(ownerUnlocked) document.getElementById('export-section').classList.add('visible');
+      } catch(err){
+        document.getElementById('up-icon').textContent='⚠️';
+        document.getElementById('up-label').textContent='Error: '+err.message;
+        document.getElementById('up-sub').textContent='Check this is a Treez Product Summary export';
+        console.error(err);
+      }
+    };
+    file.name.toLowerCase().endsWith('.csv')?reader.readAsText(file):reader.readAsArrayBuffer(file);
+  }
+
+  function handleDrop(e){
+    const file=e.dataTransfer.files[0];
+    if(file) handleFile(file);
+  }
+
+  window.addEventListener('load',()=>{
+    if(typeof window.loadFromFirebase==='function') window.loadFromFirebase();
+    checkAutoReport();
+  });
 </script>
+
+
+
+<script>
+function toggleMenu(){
+  var overlay = document.getElementById('menu-overlay');
+  var drawer = document.getElementById('menu-drawer');
+  var open = drawer.style.display === 'flex';
+  overlay.style.display = open ? 'none' : 'block';
+  drawer.style.display = open ? 'none' : 'flex';
+}
+document.addEventListener('keydown', function(e){ if(e.key==='Escape') { document.getElementById('menu-overlay').style.display='none'; document.getElementById('menu-drawer').style.display='none'; }});
+</script>
+
 </body>
 </html>

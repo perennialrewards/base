@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Perennial — My Points</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,600;1,9..144,400&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Inter',system-ui,sans-serif;background:#F5ECD4;min-height:100vh;color:#1C1409}
+  :root{
+    --navy:#1C1409;--teal:#C17F24;--cream:#F5ECD4;--white:#FFFFFF;
+    --border:rgba(61,43,26,0.15);--gray:#8A7A68;--charcoal:#1C1409;--purple:#5B3F8A;
+  }
+
+  /* Banner */
+  .banner{width:100%;background:var(--navy);background-image:linear-gradient(rgba(28,20,9,0.92),rgba(28,20,9,0.97));background-size:cover;background-position:center 40%;padding:2rem 1.25rem 2.5rem;text-align:center;position:relative;border-radius:0 0 32px 32px}
+  .banner-logo img{height:52px;width:auto;margin-bottom:.75rem}
+  .banner-title{font-family:'Fraunces',serif;font-size:1.75rem;font-weight:700;color:#fff;margin-bottom:.25rem}
+  .banner-sub{font-family:'Fraunces',serif;font-size:1.1rem;color:#fff;font-style:italic;opacity:.85}
+  .back-btn{position:absolute;top:16px;left:16px;color:rgba(255,255,255,0.6);text-decoration:none;font-size:13px;font-weight:500}
+  .back-btn:hover{color:#fff}
+
+  /* Page */
+  .page{max-width:480px;margin:0 auto;padding:1.25rem}
+
+  /* PIN wall */
+  .pin-card{background:var(--white);border:0.5px solid var(--border);border-radius:16px;padding:2rem 1.5rem;margin-bottom:1rem}
+  .flex-balance-wrap{text-align:center;padding:1.25rem 1rem;background:linear-gradient(135deg,#2D1B69,#5B3F8A);border-radius:14px;margin-bottom:1.25rem;color:#fff}
+  .flex-balance-label{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:1px;opacity:.75;margin-bottom:4px}
+  .flex-balance-num{font-family:'Fraunces',serif;font-size:2.4rem;line-height:1}
+  .flex-balance-sub{font-size:11px;opacity:.7;margin-top:4px}
+  .flex-category{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--gray);margin:1.1rem 0 .625rem;padding-top:.25rem}
+  .flex-category:first-child{margin-top:0}
+  .flex-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .flex-item{background:var(--cream);border:1.5px solid var(--border);border-radius:12px;padding:.9rem .75rem;text-align:center;cursor:pointer;transition:border-color .12s,opacity .12s}
+  .flex-item:hover{border-color:var(--purple)}
+  .flex-item.locked{opacity:.45;cursor:not-allowed}
+  .flex-item.locked:hover{border-color:var(--border)}
+  .flex-item-emoji{font-size:22px;margin-bottom:6px}
+  .flex-item-name{font-size:12.5px;font-weight:600;color:var(--charcoal);line-height:1.3;margin-bottom:4px}
+  .flex-item-cost{font-size:11px;color:var(--purple);font-weight:600}
+  .flex-item.locked .flex-item-cost{color:var(--gray)}
+  .pin-title{font-size:16px;font-weight:600;color:var(--charcoal);margin-bottom:4px}
+  .pin-sub{font-size:13px;color:var(--purple);margin-bottom:1.5rem;line-height:1.5}
+  .field-label{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--gray);margin-bottom:5px}
+  .field-group{margin-bottom:.875rem}
+  select.field-input, input.field-input{width:100%;padding:10px 12px;font-size:14px;border:1.5px solid var(--border);border-radius:9px;background:var(--cream);color:var(--charcoal);font-family:inherit;outline:none}
+  input.field-input[type="password"]{font-size:20px;letter-spacing:8px;text-align:center;font-family:monospace}
+  .pin-error{font-size:12px;color:#EF4444;min-height:16px;margin-bottom:.5rem}
+  .btn-primary{width:100%;padding:13px;font-size:14px;font-weight:600;color:#fff;background:var(--navy);border:none;border-radius:10px;cursor:pointer;font-family:inherit}
+  .btn-primary:hover{background:#3D2B1A}
+  .page-footer{font-size:11px;color:var(--gray);text-align:center;margin-top:1.25rem}
+
+  /* Personal view */
+  .personal-card{background:var(--white);border:0.5px solid var(--border);border-radius:16px;padding:2rem 1.5rem;margin-bottom:1rem;text-align:center}
+  .pts-name{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:1px;color:var(--gray);margin-bottom:6px}
+  .pts-number{font-family:'Fraunces',serif;font-size:4rem;color:var(--charcoal);line-height:1}
+  .pts-label{font-size:13px;color:var(--gray);margin-top:6px;margin-bottom:1.5rem}
+
+  /* Tier progress */
+  .tier-section{background:var(--cream);border-radius:12px;padding:1rem;margin-top:1rem;text-align:left}
+  .tier-heading{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--gray);margin-bottom:.75rem}
+  .current-title{display:inline-block;font-size:13px;font-weight:700;padding:4px 14px;border-radius:14px;margin-bottom:.5rem;letter-spacing:.2px}
+  .current-title.lvl1{background:rgba(138,122,104,0.15);color:#8A7A68}
+  .current-title.lvl2{background:rgba(184,92,56,0.15);color:#B85C38}
+  .current-title.lvl3{background:rgba(193,127,36,0.18);color:#C17F24}
+  .current-title.lvl4{background:rgba(232,172,45,0.22);color:#B8860B}
+  .current-title.lvl5{background:linear-gradient(135deg,#2D1B69,#5B3F8A);color:#fff}
+  .title-step{display:flex;align-items:center;gap:10px;padding:6px 0}
+  .title-step-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;background:var(--border)}
+  .title-step.done .title-step-dot{background:#5B3F8A}
+  .title-step-label{font-size:12.5px;color:var(--gray);flex:1}
+  .title-step.done .title-step-label{color:var(--charcoal);font-weight:600}
+  .title-step.current .title-step-label{color:#5B3F8A;font-weight:700}
+  .title-step-pts{font-size:11px;color:var(--gray)}
+  .tier-row{display:flex;align-items:center;gap:10px;margin-bottom:.625rem}
+  .tier-emoji{font-size:18px;width:28px;text-align:center}
+  .tier-info{flex:1}
+  .tier-name{font-size:13px;font-weight:600;color:var(--charcoal)}
+  .tier-pts{font-size:11px;color:var(--gray)}
+  .tier-bar-bg{height:5px;background:rgba(61,43,26,0.15);border-radius:3px;margin-top:4px;overflow:hidden}
+  .tier-bar-fill{height:100%;background:var(--purple);border-radius:3px;transition:width .6s}
+  .tier-unlocked{font-size:11px;font-weight:600;color:#059669;background:#D1FAE5;padding:2px 8px;border-radius:8px;white-space:nowrap}
+
+  /* Motivation quiz recommendation tag */
+  .motivation-tag{display:none;background:var(--purple);background:linear-gradient(135deg,#2D1B69,#5B3F8A);border-radius:10px;padding:.75rem 1rem;margin-top:1rem;text-align:left}
+  .motivation-tag-eyebrow{font-size:10px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:rgba(255,255,255,0.65);margin-bottom:3px}
+  .motivation-tag-body{font-size:12.5px;color:#fff;line-height:1.4}
+  .motivation-tag-body a{color:#fff;text-decoration:underline}
+
+  /* Links */
+  .action-links{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:1rem}
+  .action-link{background:var(--white);border:0.5px solid var(--border);border-radius:12px;padding:1rem;text-decoration:none;display:flex;align-items:center;gap:10px}
+  .action-link-icon{font-size:20px}
+  .action-link-title{font-size:13px;font-weight:600;color:var(--charcoal)}
+  .action-link-sub{font-size:11px;color:var(--gray)}
+  .sign-out{text-align:center;margin-top:.75rem}
+  textarea.field-input{font-family:inherit}
+  .sign-out button{font-size:12px;color:var(--gray);background:none;border:none;cursor:pointer;text-decoration:underline;font-family:inherit}
+</style>
+</head>
+<body>
+
+
+<!-- Side menu -->
+<div id="menu-overlay" onclick="toggleMenu()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:300"></div>
+<div id="menu-drawer" style="display:none;position:fixed;top:0;left:0;width:260px;height:100%;background:#fff;z-index:400;box-shadow:4px 0 20px rgba(0,0,0,0.15);flex-direction:column">
+  <div style="background:#1C1409;padding:1.5rem 1.25rem 1.25rem">
+    <div style="font-size:14px;font-weight:600;color:#fff">Perennial</div>
+    <div style="font-size:12px;color:rgba(255,255,255,0.5);margin-top:2px">Rewards Program</div>
+  </div>
+  <div style="padding:1rem 0;flex:1">
+    <a href="index.html" style="display:flex;align-items:center;gap:12px;padding:.875rem 1.25rem;text-decoration:none;color:#1C1409;font-size:14px;font-weight:500">
+      <span style="font-size:18px">🏆</span> Current Competitions
+    </a>
+    <a href="points.html" style="display:flex;align-items:center;gap:12px;padding:.875rem 1.25rem;text-decoration:none;color:#1C1409;font-size:14px;font-weight:500;background:#F5ECD4">
+      <span style="font-size:18px">⭐</span> My Rewards
+    </a>
+    <a href="motivation-quiz.html" style="display:flex;align-items:center;gap:12px;padding:.875rem 1.25rem;text-decoration:none;color:#1C1409;font-size:14px;font-weight:500">
+      <span style="font-size:18px">🧠</span> Motivation Quiz
+    </a>
+    <div style="border-top:0.5px solid rgba(61,43,26,0.15);margin:.5rem 1.25rem"></div>
+    <a href="roster.html" style="display:flex;align-items:center;gap:12px;padding:.875rem 1.25rem;text-decoration:none;color:#5B3F8A;font-size:14px;font-weight:500">
+      <span style="font-size:18px">👥</span> Rep Roster
+      <span style="margin-left:auto;font-size:10px;font-weight:600;color:#5B3F8A;background:#F3F0FA;padding:2px 8px;border-radius:10px">🔒 Manager</span>
+    </a>
+  </div>
+  <div style="padding:1rem 1.25rem;border-top:0.5px solid rgba(61,43,26,0.15);font-size:11px;color:#8A7A68">
+    Perennial · Internal use only
+  </div>
+</div>
+
+<div class="banner">
+  <button onclick="toggleMenu()" style="position:absolute;top:16px;left:16px;width:40px;height:40px;border-radius:10px;background:rgba(255,255,255,0.15);border:none;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;padding:0">
+    <div style="width:18px;height:2px;background:#fff;border-radius:2px"></div>
+    <div style="width:18px;height:2px;background:#fff;border-radius:2px"></div>
+    <div style="width:18px;height:2px;background:#fff;border-radius:2px"></div>
+  </button>
+  <div class="banner-logo"><img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQwIiBoZWlnaHQ9IjcyIiB2aWV3Qm94PSIwIDAgMjQwIDcyIiBmaWxsPSJub25lIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxnIHRyYW5zZm9ybT0idHJhbnNsYXRlKDM2LDM2KSI+PGVsbGlwc2UgY3g9IjAiIGN5PSItMjgiIHJ4PSI1IiByeT0iOSIgZmlsbD0iI0MxN0YyNCIgdHJhbnNmb3JtPSJyb3RhdGUoMCkiLz48ZWxsaXBzZSBjeD0iMCIgY3k9Ii0yOCIgcng9IjUiIHJ5PSI5IiBmaWxsPSIjQzk0QjFFIiBvcGFjaXR5PSIwLjk1IiB0cmFuc2Zvcm09InJvdGF0ZSgzMCkiLz48ZWxsaXBzZSBjeD0iMCIgY3k9Ii0yOCIgcng9IjUiIHJ5PSI5IiBmaWxsPSIjQjg1QzM4IiBvcGFjaXR5PSIwLjkiIHRyYW5zZm9ybT0icm90YXRlKDYwKSIvPjxlbGxpcHNlIGN4PSIwIiBjeT0iLTI4IiByeD0iNSIgcnk9IjkiIGZpbGw9IiNENDk1MkEiIG9wYWNpdHk9IjAuODUiIHRyYW5zZm9ybT0icm90YXRlKDkwKSIvPjxlbGxpcHNlIGN4PSIwIiBjeT0iLTI4IiByeD0iNSIgcnk9IjkiIGZpbGw9IiNBNjNEMkYiIG9wYWNpdHk9IjAuODUiIHRyYW5zZm9ybT0icm90YXRlKDEyMCkiLz48ZWxsaXBzZSBjeD0iMCIgY3k9Ii0yOCIgcng9IjUiIHJ5PSI5IiBmaWxsPSIjRThBQzJEIiBvcGFjaXR5PSIwLjgiIHRyYW5zZm9ybT0icm90YXRlKDE1MCkiLz48ZWxsaXBzZSBjeD0iMCIgY3k9Ii0yOCIgcng9IjUiIHJ5PSI5IiBmaWxsPSIjNkIzQTJBIiBvcGFjaXR5PSIwLjgiIHRyYW5zZm9ybT0icm90YXRlKDE4MCkiLz48ZWxsaXBzZSBjeD0iMCIgY3k9Ii0yOCIgcng9IjUiIHJ5PSI5IiBmaWxsPSIjQzA1QzJDIiBvcGFjaXR5PSIwLjgiIHRyYW5zZm9ybT0icm90YXRlKDIxMCkiLz48ZWxsaXBzZSBjeD0iMCIgY3k9Ii0yOCIgcng9IjUiIHJ5PSI5IiBmaWxsPSIjNkI3QzNFIiBvcGFjaXR5PSIwLjc1IiB0cmFuc2Zvcm09InJvdGF0ZSgyNDApIi8+PGVsbGlwc2UgY3g9IjAiIGN5PSItMjgiIHJ4PSI1IiByeT0iOSIgZmlsbD0iI0Q0QTgzMiIgb3BhY2l0eT0iMC44IiB0cmFuc2Zvcm09InJvdGF0ZSgyNzApIi8+PGVsbGlwc2UgY3g9IjAiIGN5PSItMjgiIHJ4PSI1IiByeT0iOSIgZmlsbD0iIzhCMjUxOCIgb3BhY2l0eT0iMC44IiB0cmFuc2Zvcm09InJvdGF0ZSgzMDApIi8+PGVsbGlwc2UgY3g9IjAiIGN5PSItMjgiIHJ4PSI1IiByeT0iOSIgZmlsbD0iI0Q0NzIxQSIgb3BhY2l0eT0iMC44NSIgdHJhbnNmb3JtPSJyb3RhdGUoMzMwKSIvPjxjaXJjbGUgY3g9IjAiIGN5PSIwIiByPSIxOCIgc3Ryb2tlPSIjQzE3RjI0IiBzdHJva2Utd2lkdGg9IjAuNSIgZmlsbD0ibm9uZSIgb3BhY2l0eT0iMC4yNSIvPjx0ZXh0IHg9Ii04IiB5PSIxMCIgZm9udC1mYW1pbHk9IkZyYXVuY2VzLEdlb3JnaWEsc2VyaWYiIGZvbnQtc2l6ZT0iMjgiIGZvbnQtd2VpZ2h0PSI2MDAiIGZpbGw9IiNGNUVDRDQiPlA8L3RleHQ+PC9nPjx0ZXh0IHg9IjgyIiB5PSI0NyIgZm9udC1mYW1pbHk9IkZyYXVuY2VzLEdlb3JnaWEsc2VyaWYiIGZvbnQtc2l6ZT0iMzAiIGZvbnQtd2VpZ2h0PSI2MDAiIGZpbGw9IiNGNUVDRDQiIGxldHRlci1zcGFjaW5nPSItMC41Ij5lcmVubmlhbDwvdGV4dD48L3N2Zz4=" alt="Perennial"></div>
+  <div class="banner-title">Perennial</div>
+  <div class="banner-sub">My Points</div>
+</div>
+
+<div class="page">
+
+  <!-- PIN login wall -->
+  <div class="pin-card" id="pin-wall">
+    <div class="pin-title">Sign in to see your stats</div>
+    <div class="pin-sub">Select your name and enter the PIN your manager assigned you.</div>
+    <div class="field-group">
+      <div class="field-label">Your name</div>
+      <select class="field-input" id="pts-name">
+        <option value="">— Select your name —</option>
+      </select>
+    </div>
+    <div class="field-group">
+      <div class="field-label">Your PIN</div>
+      <input class="field-input" type="password" id="pts-pin" maxlength="6" placeholder="• • • •" inputmode="numeric" onkeydown="if(event.key==='Enter')ptsLogin()">
+    </div>
+    <div class="pin-error" id="pin-error"></div>
+    <button class="btn-primary" onclick="ptsLogin()">View my stats</button>
+    <div class="page-footer">Perennial · Rewards Program · Personal use only</div>
+  </div>
+
+  <!-- Personal view -->
+  <div id="personal-view" style="display:none">
+    <div class="personal-card">
+      <div class="pts-name" id="personal-name"></div>
+      <div class="current-title" id="current-title"></div>
+      <div class="pts-number" id="personal-pts">0</div>
+      <div class="pts-label" id="personal-pts-sub">points this period</div>
+      <div class="tier-section">
+        <div class="tier-heading">Redemption tiers</div>
+        <div id="tier-list"></div>
+      </div>
+      <div class="tier-section">
+        <div class="tier-heading">Your rank</div>
+        <div id="title-progress"></div>
+      </div>
+      <div class="motivation-tag" id="motivation-tag">
+        <div class="motivation-tag-eyebrow">Recommended for you</div>
+        <div class="motivation-tag-body" id="motivation-tag-body"></div>
+      </div>
+    </div>
+    <!-- Flex Points Marketplace -->
+    <div id="redeem-section" class="pin-card" style="margin-bottom:1rem">
+      <div style="font-size:15px;font-weight:600;color:var(--charcoal);margin-bottom:4px">🎯 Flex Points Marketplace</div>
+      <div style="font-size:12px;color:var(--gray);margin-bottom:1.1rem">Spend your points on whatever's most useful to you right now.</div>
+      <div class="flex-balance-wrap">
+        <div class="flex-balance-label">Available to spend</div>
+        <div class="flex-balance-num" id="flex-balance">0</div>
+        <div class="flex-balance-sub" id="flex-balance-sub">pts</div>
+      </div>
+      <div id="flex-marketplace"></div>
+      <div class="field-group" style="margin-top:1rem">
+        <div class="field-label">Note (optional)</div>
+        <textarea class="field-input" id="redeem-note" rows="2" placeholder="Any preferences or special instructions..." style="resize:none;font-size:13px;padding:10px 12px"></textarea>
+      </div>
+      <div id="redeem-error" style="font-size:12px;color:#EF4444;min-height:14px;margin-bottom:.5rem"></div>
+      <button class="btn-primary" id="redeem-submit-btn" onclick="submitRedeem()" disabled style="opacity:.4">Select an item above</button>
+    </div>
+
+    <!-- Confirmation screen (hidden until submitted) -->
+    <div id="redeem-confirm" style="display:none" class="pin-card">
+      <div style="text-align:center;padding:.5rem 0">
+        <div style="font-size:40px;margin-bottom:.75rem">🎉</div>
+        <div style="font-size:16px;font-weight:600;color:var(--charcoal);margin-bottom:.5rem">Request submitted!</div>
+        <div style="font-size:13px;color:var(--gray);line-height:1.6;margin-bottom:1.25rem" id="confirm-detail"></div>
+        <div style="background:var(--cream);border-radius:10px;padding:1rem;font-size:12px;color:var(--gray);margin-bottom:1.25rem">
+          Your manager has been notified and will fulfill your reward within <strong>5–7 business days</strong>.
+        </div>
+        <button onclick="resetRedeem()" style="font-size:13px;color:var(--gray);background:none;border:1px solid var(--border);border-radius:9px;padding:9px 20px;cursor:pointer;font-family:inherit">Submit another request</button>
+      </div>
+    </div>
+
+    <a href="index.html" class="action-link" style="margin-bottom:1rem">
+      <div class="action-link-icon">🏆</div>
+      <div><div class="action-link-title">Current Competitions</div><div class="action-link-sub">Team rankings</div></div>
+    </a>
+    <div class="sign-out"><button onclick="ptsSignOut()">Sign out</button></div>
+  </div>
+
+</div>
+
+<script type="module">
+  import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+  import { getDatabase, ref, get } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js';
+
+  const firebaseConfig = {
+    apiKey:            'PASTE_API_KEY_HERE',
+    authDomain:        'PASTE_AUTH_DOMAIN_HERE',
+    databaseURL:       'PASTE_DATABASE_URL_HERE',
+    projectId:         'PASTE_PROJECT_ID_HERE',
+    storageBucket:     'PASTE_STORAGE_BUCKET_HERE',
+    messagingSenderId: 'PASTE_MESSAGING_SENDER_ID_HERE',
+    appId:             'PASTE_APP_ID_HERE',
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db  = getDatabase(app);
+
+  const SHOP_NAME = 'Perennial';
+  const DRIVE_INFO = {
+    meaning:   {label:'Epic Meaning & Calling',        feature:'team goals and shop-wide competitions'},
+    growth:    {label:'Development & Accomplishment',  feature:'your redemption tiers and point progress'},
+    feedback:  {label:'Empowerment & Feedback',        feature:'the live leaderboard'},
+    ownership: {label:'Ownership & Possession',        feature:'your points balance and redemptions'},
+    social:    {label:'Social Influence & Relatedness',feature:'your leaderboard rank vs teammates'},
+    scarcity:  {label:'Scarcity & Impatience',         feature:'limited-time competitions'},
+    curiosity: {label:'Unpredictability & Curiosity',  feature:'surprise bonus drops'},
+    avoidance: {label:'Loss & Avoidance',               feature:'streaks — don\u2019t break the chain'},
+  };
+  const TIERS = [
+    {pts:500,  name:'Sprout',   reward:'$5 Gift Card',         emoji:'🌱'},
+    {pts:1000, name:'Sapling',  reward:'$10 Gift Card',        emoji:'🌿'},
+    {pts:2500, name:'Harvest',  reward:'$25 Gift Card',        emoji:'🍂'},
+    {pts:5000, name:'Evergreen',reward:'$50 Gift Card + Swag', emoji:'🌲'},
+  ];
+  const SKILL_TITLES = [
+    {pts:0,    name:'Novice',       cls:'lvl1'},
+    {pts:250,  name:'Budtender',    cls:'lvl2'},
+    {pts:750,  name:'Specialist',   cls:'lvl3'},
+    {pts:2000, name:'Closer',       cls:'lvl4'},
+    {pts:5000, name:'Master Closer',cls:'lvl5'},
+  ];
+
+  // Flex Points Marketplace catalog — absorbs the old fixed-tier redemption
+  // system. Points are earned once (lifetime, feeds Milestones/Skill Trees
+  // and never decreases) but spendable *balance* goes down as items are
+  // redeemed here, tracked separately in points_spent/.
+  const CATALOG = [
+    {id:'gc5',   cat:'Gift Cards', name:'$5 Gift Card',           cost:500,  emoji:'🎁'},
+    {id:'gc10',  cat:'Gift Cards', name:'$10 Gift Card',          cost:1000, emoji:'🎁'},
+    {id:'gc25',  cat:'Gift Cards', name:'$25 Gift Card',          cost:2500, emoji:'💳'},
+    {id:'gc50',  cat:'Gift Cards', name:'$50 Gift Card + Swag',   cost:5000, emoji:'🏆'},
+    {id:'shift', cat:'Time & Flexibility', name:'Pick Your Shift (1 wk)', cost:750,  emoji:'📅'},
+    {id:'ptoH',  cat:'Time & Flexibility', name:'Half-Day PTO',          cost:1500, emoji:'🌴'},
+    {id:'ptoF',  cat:'Time & Flexibility', name:'Full-Day PTO',          cost:3000, emoji:'🌴'},
+    {id:'swag',  cat:'Swag', name:'Perennial Swag Pack',          cost:800,  emoji:'👕'},
+  ];
+  let selectedItem = null;
+  let flexBalance = 0;
+
+  // ── PIN functions ──────────────────────────────────────────────
+  function getPin(name){
+    return localStorage.getItem('rep_pin_Perennial_' + name.replace(/\s/g,'_')) || '';
+  }
+
+  async function getPinFirebase(name){
+    try {
+      const snap = await get(ref(db, 'pins/Perennial/' + name.replace(/\s/g,'_')));
+      return snap.exists() ? String(snap.val()) : null;
+    } catch(e){ return null; }
+  }
+
+  async function loadNames(){
+    try {
+      const snap = await get(ref(db, 'leaderboard/liveData/txn'));
+      if(snap.exists()){
+        const sel = document.getElementById('pts-name');
+        snap.val().forEach(function(r){
+          const o = document.createElement('option');
+          o.value = r.name; o.textContent = r.name;
+          sel.appendChild(o);
+        });
+      }
+    } catch(e){ console.warn('Could not load names:', e); }
+  }
+
+  async function ptsLogin(){
+    const name = document.getElementById('pts-name').value;
+    const pin  = document.getElementById('pts-pin').value.trim();
+    const err  = document.getElementById('pin-error');
+    if(!name){ err.textContent = 'Select your name.'; return; }
+    if(!pin) { err.textContent = 'Enter your PIN.';   return; }
+    err.textContent = 'Checking...';
+    const saved = (await getPinFirebase(name)) || getPin(name);
+    if(!saved){ err.textContent = 'No PIN set — ask your manager.'; return; }
+    if(pin !== String(saved)){
+      err.textContent = 'Incorrect PIN.';
+      document.getElementById('pts-pin').value = '';
+      return;
+    }
+    err.textContent = '';
+    showPersonal(name);
+  }
+
+  async function showPersonal(name){
+    document.getElementById('pin-wall').style.display = 'none';
+    document.getElementById('personal-view').style.display = 'block';
+    document.getElementById('personal-name').textContent = name + ' — Lifetime Points';
+    try {
+      const shopKey = SHOP_NAME.replace(/\s/g,'_');
+      const [pointsSnap, allTimeSnap, spentSnap] = await Promise.all([
+        get(ref(db, 'leaderboard/liveData/points')),
+        get(ref(db, 'points_alltime/' + shopKey + '/' + name.replace(/\s/g,'_'))),
+        get(ref(db, 'points_spent/' + shopKey + '/' + name.replace(/\s/g,'_')))
+      ]);
+      let monthly = 0;
+      if(pointsSnap.exists()){
+        const rep = pointsSnap.val().find(function(r){ return r.name === name; });
+        if(rep) monthly = rep.monthlyPts || 0;
+      }
+      const lifetime = allTimeSnap.exists() ? (allTimeSnap.val() || 0) : monthly;
+      const spent = spentSnap.exists() ? (spentSnap.val() || 0) : 0;
+      flexBalance = Math.max(0, lifetime - spent);
+      document.getElementById('personal-pts').textContent = lifetime.toLocaleString();
+      document.getElementById('personal-pts-sub').textContent = monthly.toLocaleString() + ' pts this period';
+      document.getElementById('flex-balance').textContent = flexBalance.toLocaleString();
+      document.getElementById('flex-balance-sub').textContent = spent > 0 ? spent.toLocaleString() + ' pts redeemed so far' : 'pts';
+      renderMarketplace();
+      document.getElementById('tier-list').innerHTML = TIERS.map(function(t){
+        const pct = Math.min(Math.round(lifetime / t.pts * 100), 100);
+        const unlocked = lifetime >= t.pts;
+        return '<div class="tier-row">'
+          + '<div class="tier-emoji">' + t.emoji + '</div>'
+          + '<div class="tier-info">'
+          +   '<div class="tier-name">' + t.name + '</div>'
+          +   '<div class="tier-pts">' + t.reward + ' · ' + t.pts.toLocaleString() + ' pts</div>'
+          +   '<div class="tier-bar-bg"><div class="tier-bar-fill" style="width:' + pct + '%"></div></div>'
+          + '</div>'
+          + (unlocked ? '<div class="tier-unlocked">✓ Unlocked</div>' : '')
+          + '</div>';
+      }).join('');
+
+      const currentTitle = [...SKILL_TITLES].reverse().find(t => lifetime >= t.pts) || SKILL_TITLES[0];
+      document.getElementById('current-title').className = 'current-title ' + currentTitle.cls;
+      document.getElementById('current-title').textContent = currentTitle.name;
+      document.getElementById('title-progress').innerHTML = SKILL_TITLES.map(function(t){
+        const done = lifetime >= t.pts;
+        const isCurrent = t.name === currentTitle.name;
+        return '<div class="title-step' + (done ? ' done' : '') + (isCurrent ? ' current' : '') + '">'
+          + '<div class="title-step-dot"></div>'
+          + '<div class="title-step-label">' + t.name + '</div>'
+          + '<div class="title-step-pts">' + t.pts.toLocaleString() + ' pts</div>'
+          + '</div>';
+      }).join('');
+    } catch(e){ console.warn('Points load error:', e); }
+
+    // Motivation quiz personalization tag
+    try {
+      const safeName = name.replace(/[.#$\[\]\/\s]/g, '_');
+      let result = null;
+      const snap = await get(ref(db, 'octalysis/' + shopKey + '/' + safeName));
+      if (snap.exists()) {
+        result = snap.val();
+      } else {
+        const local = localStorage.getItem('octalysis_' + shopKey + '_' + name.replace(/\s/g,'_'));
+        if (local) result = JSON.parse(local);
+      }
+      if (result && result.top3 && result.top3.length) {
+        const top = DRIVE_INFO[result.top3[0]];
+        if (top) {
+          document.getElementById('motivation-tag-body').innerHTML =
+            'You\u2019re driven by <strong>' + top.label + '</strong> — keep an eye on ' + top.feature + '. '
+            + '<a href="motivation-quiz.html">Retake the quiz</a>';
+          document.getElementById('motivation-tag').style.display = 'block';
+        }
+      } else {
+        document.getElementById('motivation-tag-body').innerHTML =
+          'Take the 2-minute <a href="motivation-quiz.html">motivation quiz</a> to see what drives you.';
+        document.getElementById('motivation-tag').style.display = 'block';
+      }
+    } catch(e){ console.warn('Motivation tag load error:', e); }
+  }
+
+  function ptsSignOut(){
+    document.getElementById('pin-wall').style.display = 'block';
+    document.getElementById('personal-view').style.display = 'none';
+    document.getElementById('pts-pin').value = '';
+    document.getElementById('pts-name').value = '';
+    document.getElementById('pin-error').textContent = '';
+  }
+
+  // Expose functions to onclick handlers
+  window.ptsLogin   = ptsLogin;
+  window.ptsSignOut = ptsSignOut;
+
+  // Menu toggle
+  window.toggleMenu = function(){
+    var overlay = document.getElementById('menu-overlay');
+    var drawer  = document.getElementById('menu-drawer');
+    var open = drawer.style.display === 'flex';
+    overlay.style.display = open ? 'none' : 'block';
+    drawer.style.display  = open ? 'none' : 'flex';
+  };
+  document.addEventListener('keydown', function(e){
+    if(e.key === 'Escape'){ document.getElementById('menu-overlay').style.display='none'; document.getElementById('menu-drawer').style.display='none'; }
+  });
+
+  function renderMarketplace(){
+    const cats = [...new Set(CATALOG.map(i => i.cat))];
+    document.getElementById('flex-marketplace').innerHTML = cats.map(cat => {
+      const items = CATALOG.filter(i => i.cat === cat);
+      const cards = items.map(item => {
+        const locked = flexBalance < item.cost;
+        const sel = selectedItem && selectedItem.id === item.id;
+        return `<div class="flex-item${locked ? ' locked' : ''}"
+                     style="${sel ? 'border-color:#5B3F8A;border-width:2px;' : ''}"
+                     onclick="${locked ? '' : "selectFlexItem('" + item.id + "')"}">
+          <div class="flex-item-emoji">${item.emoji}</div>
+          <div class="flex-item-name">${item.name}</div>
+          <div class="flex-item-cost">${item.cost.toLocaleString()} pts</div>
+        </div>`;
+      }).join('');
+      return `<div class="flex-category">${cat}</div><div class="flex-grid">${cards}</div>`;
+    }).join('');
+  }
+
+  window.selectFlexItem = function(id){
+    selectedItem = CATALOG.find(i => i.id === id) || null;
+    renderMarketplace();
+    const btn = document.getElementById('redeem-submit-btn');
+    if(selectedItem){
+      btn.disabled = false;
+      btn.style.opacity = '1';
+      btn.textContent = 'Redeem ' + selectedItem.name + ' — ' + selectedItem.cost.toLocaleString() + ' pts';
+    } else {
+      btn.disabled = true;
+      btn.style.opacity = '.4';
+      btn.textContent = 'Select an item above';
+    }
+  };
+
+  // ── Redemption ────────────────────────────────────────────────
+  window.submitRedeem = async function(){
+    const errEl = document.getElementById('redeem-error');
+    const name  = document.getElementById('pts-name').value;
+    if(!selectedItem){ errEl.textContent = 'Please select an item from the marketplace.'; return; }
+    if(flexBalance < selectedItem.cost){
+      errEl.textContent = 'You need ' + selectedItem.cost.toLocaleString() + ' pts for this. You have ' + flexBalance.toLocaleString() + ' pts.';
+      return;
+    }
+    const note = document.getElementById('redeem-note').value.trim();
+    errEl.textContent = '';
+
+    const shopKey = SHOP_NAME.replace(/\s/g,'_');
+    try {
+      const {push, ref: dbRef, runTransaction, serverTimestamp} = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js');
+      // Record the request for manager fulfillment (unchanged pattern)
+      await push(dbRef(db, 'redemptions'), {
+        rep:       name,
+        shop:      'Perennial',
+        item:      selectedItem.name,
+        category:  selectedItem.cat,
+        cost:      selectedItem.cost,
+        note:      note || '',
+        pts:       flexBalance,
+        status:    'pending',
+        submitted: new Date().toISOString(),
+      });
+      // Deduct from spendable balance immediately so the item can't be
+      // re-redeemed before the manager fulfills it. Lifetime points (which
+      // feed Milestones/Skill Trees) are untouched — only the spendable
+      // balance goes down.
+      await runTransaction(dbRef(db, 'points_spent/' + shopKey + '/' + name.replace(/\s/g,'_')), function(cur){
+        return (cur || 0) + selectedItem.cost;
+      });
+    } catch(e){ console.warn('Firebase save failed, continuing:', e); }
+
+    flexBalance -= selectedItem.cost;
+    const redeemedItem = selectedItem;
+    selectedItem = null;
+
+    // Show confirmation
+    document.getElementById('redeem-section').style.display = 'none';
+    document.getElementById('redeem-confirm').style.display  = 'block';
+    document.getElementById('confirm-detail').innerHTML =
+      '<strong>' + name + '</strong> requested <strong>' + redeemedItem.name + '</strong>'
+      + (note ? '<br><em>"' + note + '"</em>' : '');
+  };
+
+  window.resetRedeem = function(){
+    document.getElementById('redeem-section').style.display = 'block';
+    document.getElementById('redeem-confirm').style.display  = 'none';
+    document.getElementById('redeem-note').value = '';
+    document.getElementById('redeem-error').textContent = '';
+    document.getElementById('flex-balance').textContent = flexBalance.toLocaleString();
+    selectedItem = null;
+    renderMarketplace();
+    const btn = document.getElementById('redeem-submit-btn');
+    btn.disabled = true;
+    btn.style.opacity = '.4';
+    btn.textContent = 'Select an item above';
+  };
+
+  // Load names on page load
+  loadNames();
+</script>
+</body>
+</html>

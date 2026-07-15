@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Perennial — Trophies</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,600;1,9..144,400&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Inter',system-ui,sans-serif;background:#F5ECD4;min-height:100vh;color:#1C1409}
+
+/* Banner */
+.banner{width:100%;background:#1C1409;padding:2rem 1.25rem 2.5rem;text-align:center;position:relative;border-radius:0 0 32px 32px}
+.banner-logo img{height:52px;width:auto;margin-bottom:.75rem}
+.banner-title{font-family:'Fraunces',serif;font-size:1.75rem;font-weight:700;color:#fff;margin-bottom:.25rem}
+.banner-sub{font-family:'Fraunces',serif;font-size:1.1rem;color:#fff;font-style:italic;opacity:.85}
+.back-btn{position:absolute;top:16px;right:16px;color:rgba(255,255,255,0.6);text-decoration:none;font-size:13px;font-weight:500}
+.back-btn:hover{color:#fff}
+
+/* Page */
+.page{max-width:560px;margin:0 auto;padding:1.25rem 1.25rem 3rem}
+.page-loading{text-align:center;padding:3rem 1rem;color:#8A7A68;font-size:13px}
+
+/* Legend */
+.legend{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-bottom:1.5rem}
+.legend-chip{display:flex;align-items:center;gap:6px;font-size:11px;color:#8A7A68;background:#FFFFFF;border:1px solid rgba(61,43,26,0.15);border-radius:20px;padding:5px 12px}
+.legend-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+
+/* Rep card */
+.rep-card{background:#FFFFFF;border:1px solid rgba(61,43,26,0.15);border-radius:16px;padding:1.1rem 1.25rem;margin-bottom:.875rem;display:flex;align-items:center;gap:14px}
+.rep-card.top{border-color:#C17F24;border-width:1.5px;box-shadow:0 4px 16px rgba(193,127,36,0.15)}
+.rep-avatar{width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;flex-shrink:0}
+.rep-info{flex:1;min-width:0}
+.rep-name{font-size:14.5px;font-weight:600;color:#1C1409}
+.rep-name-row{display:flex;align-items:center;gap:8px}
+.current-tier-tag{font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;text-transform:uppercase;letter-spacing:.4px}
+.current-tier-tag.t1{background:rgba(184,92,56,0.15);color:#B85C38}
+.current-tier-tag.t2{background:rgba(193,127,36,0.15);color:#C17F24}
+.current-tier-tag.t3{background:rgba(232,172,45,0.2);color:#B8860B}
+.current-tier-tag.t4{background:rgba(91,63,138,0.15);color:#5B3F8A}
+.rep-pts{font-size:12px;color:#8A7A68;margin-top:1px}
+.rep-badges{display:flex;gap:6px;flex-shrink:0}
+.badge{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:15px;border:2px solid rgba(61,43,26,0.12);background:#F5ECD4;opacity:.35;filter:grayscale(1)}
+.badge.unlocked{opacity:1;filter:none;border-color:transparent}
+.badge.t1.unlocked{background:linear-gradient(135deg,#D4952A,#B85C38);box-shadow:0 2px 8px rgba(184,92,56,0.35)}
+.badge.t2.unlocked{background:linear-gradient(135deg,#D4A832,#C17F24);box-shadow:0 2px 8px rgba(193,127,36,0.35)}
+.badge.t3.unlocked{background:linear-gradient(135deg,#E8AC2D,#C17F24);box-shadow:0 2px 8px rgba(232,172,45,0.4)}
+.badge.t4.unlocked{background:linear-gradient(135deg,#2D1B69,#5B3F8A);box-shadow:0 2px 10px rgba(91,63,138,0.4)}
+
+.empty-state{text-align:center;padding:3rem 1rem;color:#8A7A68;font-size:13px}
+
+.page-footer{font-size:11px;color:#8A7A68;text-align:center;margin-top:1.5rem}
+
+/* Side menu (matches index.html / points.html / roster.html) */
+</style>
+</head>
+<body>
+
+<div id="menu-overlay" onclick="toggleMenu()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:300"></div>
+<div id="menu-drawer" style="display:none;position:fixed;top:0;left:0;width:260px;height:100%;background:#fff;z-index:400;box-shadow:4px 0 20px rgba(0,0,0,0.15);flex-direction:column">
+  <div style="background:#1C1409;padding:1.5rem 1.25rem 1.25rem">
+    <div style="font-size:14px;font-weight:600;color:#fff">Perennial</div>
+    <div style="font-size:12px;color:rgba(255,255,255,0.5);margin-top:2px">Rewards Program</div>
+  </div>
+  <div style="padding:1rem 0;flex:1">
+    <a href="index.html" style="display:flex;align-items:center;gap:12px;padding:.875rem 1.25rem;text-decoration:none;color:#1C1409;font-size:14px;font-weight:500">
+      <span style="font-size:18px">🏆</span> Current Competitions
+    </a>
+    <a href="points.html" style="display:flex;align-items:center;gap:12px;padding:.875rem 1.25rem;text-decoration:none;color:#1C1409;font-size:14px;font-weight:500">
+      <span style="font-size:18px">⭐</span> My Rewards
+    </a>
+    <a href="trophies.html" style="display:flex;align-items:center;gap:12px;padding:.875rem 1.25rem;text-decoration:none;color:#1C1409;font-size:14px;font-weight:500;background:#F5ECD4">
+      <span style="font-size:18px">🥇</span> Trophies
+    </a>
+    <div style="border-top:0.5px solid rgba(61,43,26,0.15);margin:.5rem 1.25rem"></div>
+    <a href="roster.html" style="display:flex;align-items:center;gap:12px;padding:.875rem 1.25rem;text-decoration:none;color:#5B3F8A;font-size:14px;font-weight:500">
+      <span style="font-size:18px">👥</span> Rep Roster
+      <span style="margin-left:auto;font-size:10px;font-weight:600;color:#5B3F8A;background:#F3F0FA;padding:2px 8px;border-radius:10px">🔒 Manager</span>
+    </a>
+  </div>
+  <div style="padding:1rem 1.25rem;border-top:0.5px solid rgba(61,43,26,0.15);font-size:11px;color:#8A7A68">
+    Perennial · Internal use only
+  </div>
+</div>
+
+<div class="banner">
+  <button onclick="toggleMenu()" style="position:absolute;top:16px;left:16px;width:40px;height:40px;border-radius:10px;background:rgba(255,255,255,0.15);border:none;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;padding:0">
+    <div style="width:18px;height:2px;background:#fff;border-radius:2px"></div>
+    <div style="width:18px;height:2px;background:#fff;border-radius:2px"></div>
+    <div style="width:18px;height:2px;background:#fff;border-radius:2px"></div>
+  </button>
+  <div class="banner-logo"><img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQwIiBoZWlnaHQ9IjcyIiB2aWV3Qm94PSIwIDAgMjQwIDcyIiBmaWxsPSJub25lIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxnIHRyYW5zZm9ybT0idHJhbnNsYXRlKDM2LDM2KSI+PGVsbGlwc2UgY3g9IjAiIGN5PSItMjgiIHJ4PSI1IiByeT0iOSIgZmlsbD0iI0MxN0YyNCIgdHJhbnNmb3JtPSJyb3RhdGUoMCkiLz48ZWxsaXBzZSBjeD0iMCIgY3k9Ii0yOCIgcng9IjUiIHJ5PSI5IiBmaWxsPSIjQzk0QjFFIiBvcGFjaXR5PSIwLjk1IiB0cmFuc2Zvcm09InJvdGF0ZSgzMCkiLz48ZWxsaXBzZSBjeD0iMCIgY3k9Ii0yOCIgcng9IjUiIHJ5PSI5IiBmaWxsPSIjQjg1QzM4IiBvcGFjaXR5PSIwLjkiIHRyYW5zZm9ybT0icm90YXRlKDYwKSIvPjxlbGxpcHNlIGN4PSIwIiBjeT0iLTI4IiByeD0iNSIgcnk9IjkiIGZpbGw9IiNENDk1MkEiIG9wYWNpdHk9IjAuODUiIHRyYW5zZm9ybT0icm90YXRlKDkwKSIvPjxlbGxpcHNlIGN4PSIwIiBjeT0iLTI4IiByeD0iNSIgcnk9IjkiIGZpbGw9IiNBNjNEMkYiIG9wYWNpdHk9IjAuODUiIHRyYW5zZm9ybT0icm90YXRlKDEyMCkiLz48ZWxsaXBzZSBjeD0iMCIgY3k9Ii0yOCIgcng9IjUiIHJ5PSI5IiBmaWxsPSIjRThBQzJEIiBvcGFjaXR5PSIwLjgiIHRyYW5zZm9ybT0icm90YXRlKDE1MCkiLz48ZWxsaXBzZSBjeD0iMCIgY3k9Ii0yOCIgcng9IjUiIHJ5PSI5IiBmaWxsPSIjNkIzQTJBIiBvcGFjaXR5PSIwLjgiIHRyYW5zZm9ybT0icm90YXRlKDE4MCkiLz48ZWxsaXBzZSBjeD0iMCIgY3k9Ii0yOCIgcng9IjUiIHJ5PSI5IiBmaWxsPSIjQzA1QzJDIiBvcGFjaXR5PSIwLjgiIHRyYW5zZm9ybT0icm90YXRlKDIxMCkiLz48ZWxsaXBzZSBjeD0iMCIgY3k9Ii0yOCIgcng9IjUiIHJ5PSI5IiBmaWxsPSIjNkI3QzNFIiBvcGFjaXR5PSIwLjc1IiB0cmFuc2Zvcm09InJvdGF0ZSgyNDApIi8+PGVsbGlwc2UgY3g9IjAiIGN5PSItMjgiIHJ4PSI1IiByeT0iOSIgZmlsbD0iI0Q0QTgzMiIgb3BhY2l0eT0iMC44IiB0cmFuc2Zvcm09InJvdGF0ZSgyNzApIi8+PGVsbGlwc2UgY3g9IjAiIGN5PSItMjgiIHJ4PSI1IiByeT0iOSIgZmlsbD0iIzhCMjUxOCIgb3BhY2l0eT0iMC44IiB0cmFuc2Zvcm09InJvdGF0ZSgzMDApIi8+PGVsbGlwc2UgY3g9IjAiIGN5PSItMjgiIHJ4PSI1IiByeT0iOSIgZmlsbD0iI0Q0NzIxQSIgb3BhY2l0eT0iMC44NSIgdHJhbnNmb3JtPSJyb3RhdGUoMzMwKSIvPjxjaXJjbGUgY3g9IjAiIGN5PSIwIiByPSIxOCIgc3Ryb2tlPSIjQzE3RjI0IiBzdHJva2Utd2lkdGg9IjAuNSIgZmlsbD0ibm9uZSIgb3BhY2l0eT0iMC4yNSIvPjx0ZXh0IHg9Ii04IiB5PSIxMCIgZm9udC1mYW1pbHk9IkZyYXVuY2VzLEdlb3JnaWEsc2VyaWYiIGZvbnQtc2l6ZT0iMjgiIGZvbnQtd2VpZ2h0PSI2MDAiIGZpbGw9IiNGNUVDRDQiPlA8L3RleHQ+PC9nPjx0ZXh0IHg9IjgyIiB5PSI0NyIgZm9udC1mYW1pbHk9IkZyYXVuY2VzLEdlb3JnaWEsc2VyaWYiIGZvbnQtc2l6ZT0iMzAiIGZvbnQtd2VpZ2h0PSI2MDAiIGZpbGw9IiNGNUVDRDQiIGxldHRlci1zcGFjaW5nPSItMC41Ij5lcmVubmlhbDwvdGV4dD48L3N2Zz4=" alt="Perennial"></div>
+  <div class="banner-title">Trophies</div>
+  <div class="banner-sub">Every rep's milestones, in one place</div>
+</div>
+
+<div class="page">
+  <div class="legend" id="legend"></div>
+  <div id="trophy-list"><div class="page-loading">Loading trophy case...</div></div>
+  <div class="page-footer">Perennial · Milestones update automatically as points are earned</div>
+</div>
+
+<script type="module">
+  import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+  import { getDatabase, ref, get } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js';
+
+  const firebaseConfig = {
+    apiKey:            'PASTE_API_KEY_HERE',
+    authDomain:        'PASTE_AUTH_DOMAIN_HERE',
+    databaseURL:       'PASTE_DATABASE_URL_HERE',
+    projectId:         'PASTE_PROJECT_ID_HERE',
+    storageBucket:     'PASTE_STORAGE_BUCKET_HERE',
+    messagingSenderId: 'PASTE_MESSAGING_SENDER_ID_HERE',
+    appId:             'PASTE_APP_ID_HERE',
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db  = getDatabase(app);
+
+  const SHOP_NAME = 'Perennial';
+  const SHOP_KEY  = SHOP_NAME.replace(/\s/g,'_');
+
+  // Same tier thresholds as points.html — single source of truth for "what counts as a milestone"
+  const TIERS = [
+    {pts:500,  name:'Sprout',    reward:'$5 Gift Card',         emoji:'🌱', cls:'t1'},
+    {pts:1000, name:'Sapling',   reward:'$10 Gift Card',        emoji:'🌿', cls:'t2'},
+    {pts:2500, name:'Harvest',   reward:'$25 Gift Card',        emoji:'🍂', cls:'t3'},
+    {pts:5000, name:'Evergreen', reward:'$50 Gift Card + Swag', emoji:'🌲', cls:'t4'},
+  ];
+
+  const COLORS = ['#C17F24','#C94B1E','#B85C38','#6B7C3E','#5B3F8A','#D4A832','#A63D2F','#C05C2C'];
+  const ini = n => n.split(' ').map(p=>p[0]).join('').toUpperCase().slice(0,2);
+
+  function renderLegend(){
+    document.getElementById('legend').innerHTML = TIERS.map(t=>
+      `<div class="legend-chip"><span>${t.emoji}</span>${t.name} · ${t.pts.toLocaleString()}pts</div>`
+    ).join('');
+  }
+
+  async function loadTrophyCase(){
+    renderLegend();
+    const listEl = document.getElementById('trophy-list');
+    try {
+      const [namesSnap, ptsSnap] = await Promise.all([
+        get(ref(db, 'leaderboard/liveData/txn')),
+        get(ref(db, 'points_alltime/' + SHOP_KEY))
+      ]);
+
+      if(!namesSnap.exists()){
+        listEl.innerHTML = '<div class="empty-state">No reps found yet — check back once data has been uploaded.</div>';
+        return;
+      }
+
+      const allTime = ptsSnap.exists() ? ptsSnap.val() : {};
+      const reps = namesSnap.val().map(r => {
+        const key = r.name.replace(/\s/g,'_');
+        return { name: r.name, lifetime: allTime[key] || 0 };
+      }).sort((a,b) => b.lifetime - a.lifetime);
+
+      listEl.innerHTML = reps.map((rep, i) => {
+        const color = COLORS[i % COLORS.length];
+        const badges = TIERS.map(t => {
+          const unlocked = rep.lifetime >= t.pts;
+          return `<div class="badge ${t.cls}${unlocked ? ' unlocked' : ''}" title="${t.name} — ${t.reward} — ${t.pts.toLocaleString()} pts">${t.emoji}</div>`;
+        }).join('');
+        const isTop = i === 0 && rep.lifetime > 0;
+        const currentTier = [...TIERS].reverse().find(t => rep.lifetime >= t.pts);
+        const tierTag = currentTier
+          ? `<span class="current-tier-tag ${currentTier.cls}">${currentTier.emoji} ${currentTier.name}</span>`
+          : '';
+        return `<div class="rep-card${isTop ? ' top' : ''}">
+          <div class="rep-avatar" style="background:${color}22;color:${color}">${ini(rep.name)}</div>
+          <div class="rep-info">
+            <div class="rep-name-row"><div class="rep-name">${rep.name}</div>${tierTag}</div>
+            <div class="rep-pts">${rep.lifetime.toLocaleString()} lifetime pts</div>
+          </div>
+          <div class="rep-badges">${badges}</div>
+        </div>`;
+      }).join('');
+    } catch(e){
+      console.error('Trophy case load error:', e);
+      listEl.innerHTML = '<div class="empty-state">Could not load trophies — check connection and refresh.</div>';
+    }
+  }
+
+  window.toggleMenu = function(){
+    const overlay = document.getElementById('menu-overlay');
+    const drawer  = document.getElementById('menu-drawer');
+    const open = drawer.style.display === 'flex';
+    overlay.style.display = open ? 'none' : 'block';
+    drawer.style.display  = open ? 'none' : 'flex';
+  };
+  document.addEventListener('keydown', e => {
+    if(e.key === 'Escape'){
+      document.getElementById('menu-overlay').style.display='none';
+      document.getElementById('menu-drawer').style.display='none';
+    }
+  });
+
+  loadTrophyCase();
+</script>
+
+</body>
+</html>
