@@ -58,6 +58,21 @@
   .pts-number{font-family:'Fraunces',serif;font-size:4rem;color:var(--charcoal);line-height:1}
   .pts-label{font-size:13px;color:var(--gray);margin-top:6px;margin-bottom:1.5rem}
 
+  /* Hero — spendable balance, now the biggest number on the page */
+  .spend-hero{background:linear-gradient(135deg,#2D1B69,#5B3F8A);border:none}
+  .spend-hero .pts-name{color:rgba(245,236,212,0.6)}
+  .spend-hero .hero-balance-label{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:1px;color:rgba(245,236,212,0.65);margin-top:.5rem}
+  .spend-hero .pts-number{color:#fff}
+  .spend-hero .pts-label{color:rgba(245,236,212,0.7);margin-bottom:0}
+  .spend-hero .current-title{background:rgba(255,255,255,0.15) !important;color:#fff !important;backdrop-filter:blur(2px)}
+
+  /* Milestone Points — demoted, prestige-only, clearly not spendable */
+  .milestone-pts-card{padding:1.25rem 1.5rem}
+  .milestone-pts-label{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:1px;color:var(--gray);margin-bottom:4px}
+  .milestone-pts-num{font-family:'Fraunces',serif;font-size:2rem;color:var(--charcoal);line-height:1}
+  .milestone-pts-sub{font-size:12px;color:var(--gray);margin-top:4px}
+  .milestone-pts-note{font-size:11px;color:var(--gray);margin-top:.75rem;line-height:1.5;padding-top:.75rem;border-top:0.5px solid var(--border)}
+
   /* Tier progress */
   .tier-section{background:var(--cream);border-radius:12px;padding:1rem;margin-top:1rem;text-align:left}
   .tier-heading{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--gray);margin-bottom:.75rem}
@@ -176,13 +191,26 @@
 
   <!-- Personal view -->
   <div id="personal-view" style="display:none">
-    <div class="personal-card">
+    <!-- Hero: what they can actually spend right now -->
+    <div class="personal-card spend-hero">
       <div class="pts-name" id="personal-name"></div>
       <div class="current-title" id="current-title"></div>
-      <div class="pts-number" id="personal-pts">0</div>
-      <div class="pts-label" id="personal-pts-sub">points this period</div>
+      <div class="hero-balance-label">Available to spend</div>
+      <div class="pts-number" id="flex-balance">0</div>
+      <div class="pts-label" id="flex-balance-sub">pts</div>
+    </div>
+
+    <!-- Milestone Points — secondary, prestige-only, not spendable -->
+    <div class="personal-card milestone-pts-card">
+      <div class="milestone-pts-label">Milestone Points</div>
+      <div class="milestone-pts-num" id="personal-pts">0</div>
+      <div class="milestone-pts-sub" id="personal-pts-sub">points this period</div>
+      <div class="milestone-pts-note">Counts toward your rank and milestones below — separate from what you can spend.</div>
+    </div>
+
+    <div class="personal-card">
       <div class="tier-section">
-        <div class="tier-heading">Redemption tiers</div>
+        <div class="tier-heading">Achievements &amp; Milestones</div>
         <div id="tier-list"></div>
       </div>
       <div class="tier-section">
@@ -222,11 +250,6 @@
     <div id="redeem-section" class="pin-card" style="margin-bottom:1rem">
       <div style="font-size:15px;font-weight:600;color:var(--charcoal);margin-bottom:4px">🎯 Flex Points Marketplace</div>
       <div style="font-size:12px;color:var(--gray);margin-bottom:1.1rem">Spend your points on whatever's most useful to you right now.</div>
-      <div class="flex-balance-wrap">
-        <div class="flex-balance-label">Available to spend</div>
-        <div class="flex-balance-num" id="flex-balance">0</div>
-        <div class="flex-balance-sub" id="flex-balance-sub">pts</div>
-      </div>
       <div id="flex-marketplace"></div>
       <div class="field-group" style="margin-top:1rem">
         <div class="field-label">Note (optional)</div>
