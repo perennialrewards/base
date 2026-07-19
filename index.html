@@ -4,11 +4,13 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Perennial — Current Competitions</title>
+<script src="shared-config.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
 <script type="module">
   import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
-  import { getDatabase, ref, set, get, push } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js';
+  import { getDatabase, ref, set, get, push, onValue } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js';
+  import { getAuth, signInWithEmailAndPassword } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
 
   // ================================================================
   // FIREBASE CONFIG — fill in from console.firebase.google.com
@@ -29,10 +31,12 @@
 
   const app = initializeApp(firebaseConfig);
   const db  = getDatabase(app);
+  window._fbAuth = getAuth(app);
+  window._fbSignIn = signInWithEmailAndPassword;
+  window._fbDb = db;
 
   window.loadFromFirebase = async function() {
     try {
-      const snap = await get(ref(db, 'leaderboard/' + window.SHOP_KEY));
       const squadSnap  = await get(ref(db, 'teamRewards/squads/' + window.SHOP_KEY));
       const assignSnap = await get(ref(db, 'squadAssign/' + window.SHOP_KEY));
       const allTimeSnap = await get(ref(db, 'points_alltime/' + window.SHOP_KEY));
@@ -41,6 +45,22 @@
       const achievementsSnap = await get(ref(db, 'achievements/' + window.SHOP_KEY + '/current'));
       window._achievements = achievementsSnap.exists() ? achievementsSnap.val() : null;
       if(typeof window.loadShopConfig === 'function') await window.loadShopConfig();
+
+      // Populate the location switcher in the drawer
+      try {
+        const locSnap = await get(ref(db, 'groupConfig/locations'));
+        const locations = locSnap.exists() ? locSnap.val() : [{ shopKey:'Perennial', name:'Perennial', icon:'🌲' }];
+        const currentLoc = new URLSearchParams(window.location.search).get('loc') || 'Perennial';
+        const listEl = document.getElementById('loc-switcher-list');
+        if(listEl){
+          listEl.innerHTML = locations.map(loc => {
+            const isCurrent = loc.shopKey === currentLoc;
+            return `<a href="index.html?loc=${encodeURIComponent(loc.shopKey)}" style="display:flex;align-items:center;gap:8px;padding:.5rem .25rem;text-decoration:none;color:${isCurrent?'#5B3F8A':'#1C1409'};font-size:13px;font-weight:${isCurrent?'700':'500'}">
+              <span>${loc.icon||'🏪'}</span>${loc.name}${isCurrent?' <span style="margin-left:auto;font-size:9px;background:#F3F0FA;color:#5B3F8A;padding:2px 7px;border-radius:8px">Current</span>':''}
+            </a>`;
+          }).join('') + `<a href="locations.html" style="display:flex;align-items:center;gap:8px;padding:.5rem .25rem;text-decoration:none;color:#8A7A68;font-size:11.5px;margin-top:2px;border-top:0.5px solid rgba(61,43,26,0.1);padding-top:.6rem"><span>➕</span>Manage locations</a>`;
+        }
+      } catch(e){ console.warn('Location switcher load error:', e); }
 
       // Hydrate this device's localStorage streak cache from Firebase, so
       // fire/rank streaks are consistent no matter which device last
@@ -63,17 +83,26 @@
       new Set([...Object.keys(rawAllTime), ...Object.keys(rawBonus), ...Object.keys(rawMystery)]).forEach(k => {
         window._allTimePoints[k] = (rawAllTime[k]||0) + (rawBonus[k]||0) + (rawMystery[k]||0);
       });
-      if (snap.exists()) {
-        const data = snap.val();
-        lastLiveData = data.liveData;
-        window._lastLiveData = data.liveData;
-        window.renderAll(data.liveData);
-        document.getElementById('header-meta').textContent = 'Updated ' + data.updatedAt;
-        document.getElementById('footer').textContent = window.SHOP_NAME + ' · Updated ' + data.updatedAt;
-      } else {
-        document.getElementById('header-meta').textContent = 'No data yet — manager needs to upload';
-        document.getElementById('board-txn').innerHTML = '<div class="loading-bar">Waiting for manager to upload data.</div>';
-      }
+
+      // Live listener — fires immediately with whatever's there now, then
+      // again every time a manager uploads new data, so anyone with this
+      // page open sees it update without needing to refresh.
+      onValue(ref(db, 'leaderboard/' + window.SHOP_KEY), (snap) => {
+        if (snap.exists()) {
+          const data = snap.val();
+          window._lastLiveData = data.liveData;
+          window.renderAll(data.liveData);
+          document.getElementById('header-meta').textContent = 'Updated ' + data.updatedAt;
+          document.getElementById('footer').textContent = window.SHOP_NAME + ' · Updated ' + data.updatedAt;
+        } else {
+          document.getElementById('header-meta').textContent = 'No data yet — manager needs to upload';
+          document.getElementById('board-txn').innerHTML = '<div class="loading-bar">Waiting for manager to upload data.</div>';
+        }
+      }, (err) => {
+        document.getElementById('header-meta').textContent = 'Could not load — check connection';
+        document.getElementById('board-txn').innerHTML = '<div class="loading-bar">Error loading data. Refresh to try again.</div>';
+        console.error('Firebase live listener error:', err);
+      });
     } catch(err) {
       document.getElementById('header-meta').textContent = 'Could not load — check connection';
       document.getElementById('board-txn').innerHTML = '<div class="loading-bar">Error loading data. Refresh to try again.</div>';
@@ -659,6 +688,11 @@
       <span style="font-size:18px">👥</span> Rep Roster
       <span style="margin-left:auto;font-size:10px;font-weight:600;color:#5B3F8A;background:#F3F0FA;padding:2px 8px;border-radius:10px">🔒 Manager</span>
     </a>
+    <div style="border-top:0.5px solid rgba(61,43,26,0.15);margin:.5rem 1.25rem"></div>
+    <div style="padding:.5rem 1.25rem .25rem;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:#8A7A68">Viewing Location</div>
+    <div id="loc-switcher-list" style="padding:0 1.25rem .5rem">
+      <div style="font-size:11px;color:#8A7A68;padding:.25rem 0">Loading locations...</div>
+    </div>
   </div>
   <div style="padding:1rem 1.25rem;border-top:0.5px solid rgba(61,43,26,0.15);font-size:11px;color:#8A7A68">
     Perennial · Internal use only
@@ -817,7 +851,7 @@
   // ================================================================
   // SHOP SETUP — fill in these 2 fields for each new shop
   // ================================================================
-  const SHOP_NAME        = 'Perennial';
+  const SHOP_NAME        = new URLSearchParams(window.location.search).get('loc') || 'Perennial';
   const MANAGER_PASSWORD = 'PERENNIAL2026';
   const REWARD_HEADLINE  = 'Compete, grow, get rewarded.';
   // ================================================================
@@ -921,10 +955,10 @@
     var pw    = document.getElementById('pw-input').value;
     var errEl = document.getElementById('pw-error');
     var btn   = document.getElementById('pw-btn');
-    if(!email || !pw){ if(errEl) errEl.textContent='Enter email and password.'; return; }
+    if(!pw){ if(errEl) errEl.textContent='Enter a password.'; return; }
     if(btn){ btn.disabled=true; btn.textContent='Signing in...'; }
-    // Use Firebase Auth via module
-    if(window._fbSignIn && window._fbAuth){
+    // Real Firebase-Auth path — only attempted if an email was entered
+    if(window._fbSignIn && window._fbAuth && email){
       window._fbSignIn(window._fbAuth, email, pw).then(function(cred){
         return import('https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js').then(function(m){
           return m.get(m.ref(window._fbDb, 'managers/'+cred.user.uid+'/status'));
@@ -1002,16 +1036,10 @@
   const rl=i=>i===0?'🥇':i===1?'🥈':i===2?'🥉':String(i+1);
   const fmt$=v=>'$'+v.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
   const fmtK=v=>v>=1000?'$'+(v/1000).toFixed(1)+'K':fmt$(v);
-  const RENDER_COLORS=['#C17F24','#C94B1E','#B85C38','#6B7C3E','#5B3F8A','#D4A832','#A63D2F','#C05C2C'];
+  const RENDER_COLORS=window.PERENNIAL.LEAF_COLORS;
   const renderIni = n=>n.split(' ').map(p=>p[0]).join('').toUpperCase().slice(0,2);
 
-  const SKILL_TITLES = [
-    {pts:0,    name:'Novice',       cls:'lvl1'},
-    {pts:250,  name:'Budtender',    cls:'lvl2'},
-    {pts:750,  name:'Specialist',   cls:'lvl3'},
-    {pts:2000, name:'Closer',       cls:'lvl4'},
-    {pts:5000, name:'Master Closer',cls:'lvl5'},
-  ];
+  const SKILL_TITLES = window.PERENNIAL.SKILL_TITLES;
   function getTitleFor(name){
     const pts = (window._allTimePoints || {})[name.replace(/\s/g,'_')] || 0;
     return [...SKILL_TITLES].reverse().find(t => pts >= t.pts) || SKILL_TITLES[0];
@@ -1725,7 +1753,7 @@
         +'<div class="streak-empty">Streaks will appear after the second consecutive month of data. Keep selling!</div></div>';
     }
 
-    const COLORS=['#C17F24','#C94B1E','#B85C38','#6B7C3E','#5B3F8A','#D4A832','#A63D2F','#C05C2C'];
+    const COLORS=window.PERENNIAL.LEAF_COLORS;
     const ini = n => n.split(' ').map(p=>p[0]).join('').toUpperCase().slice(0,2);
 
     const rows = withStreaks.map((rep,i) => {
@@ -2297,6 +2325,17 @@
 
 
 <script>
+// Preserve ?loc= across drawer navigation
+(function(){
+  const loc = new URLSearchParams(window.location.search).get('loc');
+  if(!loc) return;
+  document.querySelectorAll('#menu-drawer a[href]').forEach(a => {
+    const href = a.getAttribute('href');
+    if(!href || href.startsWith('mailto:') || href.startsWith('tel:') || href.startsWith('#')) return;
+    const sep = href.includes('?') ? '&' : '?';
+    a.setAttribute('href', href + sep + 'loc=' + encodeURIComponent(loc));
+  });
+})();
 function toggleMenu(){
   var overlay = document.getElementById('menu-overlay');
   var drawer = document.getElementById('menu-drawer');

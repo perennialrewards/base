@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Perennial — Profiles</title>
+<script src="shared-config.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,600;1,9..144,400&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 :root{
@@ -132,7 +133,8 @@ textarea.field-input{resize:none}
     </a>
   </div>
   <div style="padding:1rem 1.25rem;border-top:0.5px solid rgba(61,43,26,0.15);font-size:11px;color:#8A7A68">
-    Perennial · Internal use only
+    Perennial · Internal use only<br>
+    <span id="loc-indicator" style="color:#5B3F8A;font-weight:600"></span>
   </div>
 </div>
 
@@ -227,40 +229,37 @@ textarea.field-input{resize:none}
 
   const app = initializeApp(firebaseConfig);
   const db  = getDatabase(app);
-  const SHOP_NAME = 'Perennial';
+  const SHOP_NAME = new URLSearchParams(window.location.search).get('loc') || 'Perennial';
   const shopKey   = SHOP_NAME.replace(/\s/g,'_');
   let currentName = '';
 
   const ICONS  = ['🌿','🔥','⭐','🎯','🚀','💎','🦁','🐝','🌵','🍁','🎨','🏆'];
-  const COLORS = ['#C17F24','#C94B1E','#B85C38','#D4952A','#A63D2F','#E8AC2D','#6B3A2A','#C05C2C','#6B7C3E','#D4A832','#8B2518','#D4721A','#5B3F8A'];
+  const COLORS = window.PERENNIAL.LEAF_COLORS;
 
-  const SKILL_TITLES = [
-    {pts:0,    name:'Novice'},        {pts:250,  name:'Budtender'},
-    {pts:750,  name:'Specialist'},    {pts:2000, name:'Closer'},
-    {pts:5000, name:'Master Closer'},
-  ];
-  const MILESTONE_TIERS = [
-    {pts:500, name:'Sprout',emoji:'🌱'}, {pts:1000, name:'Sapling',emoji:'🌿'},
-    {pts:2500, name:'Harvest',emoji:'🍂'}, {pts:5000, name:'Evergreen',emoji:'🌲'},
-  ];
-  const ARCHETYPE_TITLES = {
-    visionary:'The Visionary', climber:'The Climber', innovator:'The Innovator',
-    collector:'The Collector', connector:'The Connector', closer:'The Closer',
-    wildcard:'The Wildcard', guardian:'The Guardian',
-  };
-  const GENEROSITY_TIERS = [
-    {pts:0,    name:'',                    cls:'g0'},
-    {pts:100,  name:'🌰 Seed-Sower',        cls:'g1'},
-    {pts:300,  name:'🤝 Helping Hand',      cls:'g2'},
-    {pts:750,  name:'🌻 Community Builder', cls:'g3'},
-    {pts:1500, name:'🌳 Pillar of the Team',cls:'g4'},
-  ];
+  const SKILL_TITLES = window.PERENNIAL.SKILL_TITLES;
+  const MILESTONE_TIERS = window.PERENNIAL.TIERS;
+  const ARCHETYPE_TITLES = window.PERENNIAL.ARCHETYPE_TITLES;
+  const GENEROSITY_TIERS = window.PERENNIAL.GENEROSITY_TIERS;
   function generosityFor(pts){ return [...GENEROSITY_TIERS].reverse().find(t => pts >= t.pts); }
   let giftTargetName = '';
   let giverBalance = 0;
 
   let selectedIcon = ICONS[0];
   let selectedColor = COLORS[0];
+
+  const SESSION_KEY = 'perennial_session_' + shopKey;
+  const SESSION_TTL_MS = 12 * 60 * 60 * 1000;
+  function getSession(){
+    try {
+      const raw = localStorage.getItem(SESSION_KEY);
+      if(!raw) return null;
+      const sess = JSON.parse(raw);
+      if(Date.now() - sess.timestamp > SESSION_TTL_MS){ localStorage.removeItem(SESSION_KEY); return null; }
+      return sess;
+    } catch(e){ return null; }
+  }
+  function saveSession(name){ localStorage.setItem(SESSION_KEY, JSON.stringify({ name, timestamp: Date.now() })); }
+  window.clearSession = function(){ localStorage.removeItem(SESSION_KEY); location.reload(); };
 
   function ini(n){ return n.split(' ').map(p=>p[0]).join('').toUpperCase().slice(0,2); }
   function titleFor(pts){ return [...SKILL_TITLES].reverse().find(t => pts >= t.pts)?.name || 'Novice'; }
@@ -288,20 +287,10 @@ textarea.field-input{resize:none}
     } catch(e){ console.warn('Could not load names:', e); }
   }
 
-  window.editLogin = async function(){
-    const name = document.getElementById('pts-name').value;
-    const pin  = document.getElementById('pts-pin').value.trim();
-    const err  = document.getElementById('pin-error');
-    if(!name){ err.textContent = 'Select your name.'; return; }
-    if(!pin){ err.textContent = 'Enter your PIN.'; return; }
-    err.textContent = 'Checking...';
-    const saved = (await getPinFirebase(name)) || getPin(name);
-    if(!saved){ err.textContent = 'No PIN set — ask your manager.'; return; }
-    if(pin !== String(saved)){ err.textContent = 'Incorrect PIN.'; return; }
-    err.textContent = '';
+  async function proceedAsRep(name){
     currentName = name;
     document.getElementById('edit-pin-wall').style.display = 'none';
-    document.getElementById('edit-sub').textContent = 'Editing as ' + name;
+    document.getElementById('edit-sub').innerHTML = 'Editing as ' + name + ' · <a href="#" onclick="clearSession();return false" style="color:var(--muted)">Not you?</a>';
     document.getElementById('edit-form').style.display = 'block';
 
     let existing = null;
@@ -317,6 +306,21 @@ textarea.field-input{resize:none}
     renderIconGrid();
     renderColorRow();
     loadDirectory();
+  }
+
+  window.editLogin = async function(){
+    const name = document.getElementById('pts-name').value;
+    const pin  = document.getElementById('pts-pin').value.trim();
+    const err  = document.getElementById('pin-error');
+    if(!name){ err.textContent = 'Select your name.'; return; }
+    if(!pin){ err.textContent = 'Enter your PIN.'; return; }
+    err.textContent = 'Checking...';
+    const saved = (await getPinFirebase(name)) || getPin(name);
+    if(!saved){ err.textContent = 'No PIN set — ask your manager.'; return; }
+    if(pin !== String(saved)){ err.textContent = 'Incorrect PIN.'; return; }
+    err.textContent = '';
+    saveSession(name);
+    proceedAsRep(name);
   };
 
   function renderIconGrid(){
@@ -523,6 +527,26 @@ textarea.field-input{resize:none}
     }
   }
 
+
+  // Preserve ?loc= across drawer navigation, so picking a location once
+  // carries through to every other page instead of resetting to default.
+  (function(){
+    const loc = new URLSearchParams(window.location.search).get('loc');
+    if(!loc) return;
+    document.querySelectorAll('#menu-drawer a[href]').forEach(a => {
+      const href = a.getAttribute('href');
+      if(!href || href.startsWith('mailto:') || href.startsWith('tel:') || href.startsWith('#')) return;
+      const sep = href.includes('?') ? '&' : '?';
+      a.setAttribute('href', href + sep + 'loc=' + encodeURIComponent(loc));
+    });
+  })();
+
+  // Show which location is currently active, with a quick way to switch
+  (function(){
+    const loc = new URLSearchParams(window.location.search).get('loc') || 'Perennial';
+    const el = document.getElementById('loc-indicator');
+    if(el) el.innerHTML = '📍 ' + loc.replace(/_/g,' ') + ' · <a href="index.html" style="color:#5B3F8A">Switch</a>';
+  })();
   window.toggleMenu = function(){
     const overlay = document.getElementById('menu-overlay');
     const drawer  = document.getElementById('menu-drawer');
@@ -539,6 +563,10 @@ textarea.field-input{resize:none}
 
   loadNames();
   loadDirectory();
+  (function(){
+    const sess = getSession();
+    if(sess && sess.name) proceedAsRep(sess.name);
+  })();
   loadGiftFeed();
 </script>
 </body>

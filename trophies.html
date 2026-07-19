@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Perennial — Trophies</title>
+<script src="shared-config.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,600;1,9..144,400&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
@@ -108,7 +109,8 @@ body{font-family:'Inter',system-ui,sans-serif;background:#F5ECD4;min-height:100v
     </a>
   </div>
   <div style="padding:1rem 1.25rem;border-top:0.5px solid rgba(61,43,26,0.15);font-size:11px;color:#8A7A68">
-    Perennial · Internal use only
+    Perennial · Internal use only<br>
+    <span id="loc-indicator" style="color:#5B3F8A;font-weight:600"></span>
   </div>
 </div>
 
@@ -153,18 +155,13 @@ body{font-family:'Inter',system-ui,sans-serif;background:#F5ECD4;min-height:100v
   const app = initializeApp(firebaseConfig);
   const db  = getDatabase(app);
 
-  const SHOP_NAME = 'Perennial';
+  const SHOP_NAME = new URLSearchParams(window.location.search).get('loc') || 'Perennial';
   const SHOP_KEY  = SHOP_NAME.replace(/\s/g,'_');
 
   // Same tier thresholds as points.html — single source of truth for "what counts as a milestone"
-  const TIERS = [
-    {pts:500,  name:'Sprout',    reward:'$5 Gift Card',         emoji:'🌱', cls:'t1'},
-    {pts:1000, name:'Sapling',   reward:'$10 Gift Card',        emoji:'🌿', cls:'t2'},
-    {pts:2500, name:'Harvest',   reward:'$25 Gift Card',        emoji:'🍂', cls:'t3'},
-    {pts:5000, name:'Evergreen', reward:'$50 Gift Card + Swag', emoji:'🌲', cls:'t4'},
-  ];
+  const TIERS = window.PERENNIAL.TIERS.map((t,i) => ({ ...t, cls:'t'+(i+1) }));
 
-  const COLORS = ['#C17F24','#C94B1E','#B85C38','#6B7C3E','#5B3F8A','#D4A832','#A63D2F','#C05C2C'];
+  const COLORS = window.PERENNIAL.LEAF_COLORS;
   const ini = n => n.split(' ').map(p=>p[0]).join('').toUpperCase().slice(0,2);
 
   function renderLegend(){
@@ -223,6 +220,26 @@ body{font-family:'Inter',system-ui,sans-serif;background:#F5ECD4;min-height:100v
     }
   }
 
+
+  // Preserve ?loc= across drawer navigation, so picking a location once
+  // carries through to every other page instead of resetting to default.
+  (function(){
+    const loc = new URLSearchParams(window.location.search).get('loc');
+    if(!loc) return;
+    document.querySelectorAll('#menu-drawer a[href]').forEach(a => {
+      const href = a.getAttribute('href');
+      if(!href || href.startsWith('mailto:') || href.startsWith('tel:') || href.startsWith('#')) return;
+      const sep = href.includes('?') ? '&' : '?';
+      a.setAttribute('href', href + sep + 'loc=' + encodeURIComponent(loc));
+    });
+  })();
+
+  // Show which location is currently active, with a quick way to switch
+  (function(){
+    const loc = new URLSearchParams(window.location.search).get('loc') || 'Perennial';
+    const el = document.getElementById('loc-indicator');
+    if(el) el.innerHTML = '📍 ' + loc.replace(/_/g,' ') + ' · <a href="index.html" style="color:#5B3F8A">Switch</a>';
+  })();
   window.toggleMenu = function(){
     const overlay = document.getElementById('menu-overlay');
     const drawer  = document.getElementById('menu-drawer');

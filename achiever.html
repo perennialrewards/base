@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Perennial — Your Famous Achiever</title>
+<script src="shared-config.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,600;1,9..144,400&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 :root{
@@ -109,7 +110,8 @@ select.field-input,input.field-input{width:100%;padding:10px 12px;font-size:14px
     </a>
   </div>
   <div style="padding:1rem 1.25rem;border-top:0.5px solid rgba(61,43,26,0.15);font-size:11px;color:#8A7A68">
-    Perennial · Internal use only
+    Perennial · Internal use only<br>
+    <span id="loc-indicator" style="color:#5B3F8A;font-weight:600"></span>
   </div>
 </div>
 
@@ -170,7 +172,7 @@ select.field-input,input.field-input{width:100%;padding:10px 12px;font-size:14px
       <div class="action-link-icon">⭐</div>
       <div><div class="action-link-title">My Rewards</div><div class="action-link-sub">See your updated points</div></div>
     </a>
-    <div class="sign-out"><button onclick="location.reload()">Take again as someone else</button></div>
+    <div class="sign-out"><button onclick="clearSession()">Not you? Sign out</button></div>
   </div>
 
 </div>
@@ -191,21 +193,12 @@ select.field-input,input.field-input{width:100%;padding:10px 12px;font-size:14px
 
   const app = initializeApp(firebaseConfig);
   const db  = getDatabase(app);
-  const SHOP_NAME = 'Perennial';
+  const SHOP_NAME = new URLSearchParams(window.location.search).get('loc') || 'Perennial';
   const shopKey   = SHOP_NAME.replace(/\s/g,'_');
   let currentName = '';
 
   // ── 8 Archetypes ──────────────────────────────────────────────
-  const ARCHETYPES = {
-    visionary: {emoji:'🧭', title:'The Visionary', desc:"You're driven by purpose. A shift feels different when you know it's part of something bigger."},
-    climber:   {emoji:'📈', title:'The Climber',   desc:'You\u2019re driven by growth. Every shift is a rep toward becoming the best version of yourself.'},
-    innovator: {emoji:'🎨', title:'The Innovator', desc:"You're driven by curiosity. You'd rather find a better way than follow the old one."},
-    collector: {emoji:'💰', title:'The Collector', desc:"You're driven by ownership. Points, titles, badges — you like watching what's yours add up."},
-    connector: {emoji:'🤝', title:'The Connector', desc:'You\u2019re driven by people. A good shift is one where the team wins together.'},
-    closer:    {emoji:'⏳', title:'The Closer',    desc:'You\u2019re driven by the clock. Nothing focuses you like a deadline closing in.'},
-    wildcard:  {emoji:'🎲', title:'The Wildcard',  desc:'You\u2019re driven by surprise. Predictable is fine. Unexpected is better.'},
-    guardian:  {emoji:'🛡️', title:'The Guardian',  desc:'You\u2019re driven by consistency. Streaks aren\u2019t just numbers — they\u2019re a point of pride.'},
-  };
+  const ARCHETYPES = window.PERENNIAL.ARCHETYPES;
 
   // ── 10 forced-choice questions ───────────────────────────────
   const QUESTIONS = [
@@ -224,17 +217,21 @@ select.field-input,input.field-input{width:100%;padding:10px 12px;font-size:14px
   let qIndex = 0;
   const wins = {};
 
-  window.ptsLogin = async function(){
-    const name = document.getElementById('pts-name').value;
-    const pin  = document.getElementById('pts-pin').value.trim();
-    const err  = document.getElementById('pin-error');
-    if(!name){ err.textContent = 'Select your name.'; return; }
-    if(!pin){ err.textContent = 'Enter your PIN.'; return; }
-    err.textContent = 'Checking...';
-    const saved = (await getPinFirebase(name)) || getPin(name);
-    if(!saved){ err.textContent = 'No PIN set — ask your manager.'; return; }
-    if(pin !== String(saved)){ err.textContent = 'Incorrect PIN.'; return; }
-    err.textContent = '';
+  const SESSION_KEY = 'perennial_session_' + shopKey;
+  const SESSION_TTL_MS = 12 * 60 * 60 * 1000;
+  function getSession(){
+    try {
+      const raw = localStorage.getItem(SESSION_KEY);
+      if(!raw) return null;
+      const sess = JSON.parse(raw);
+      if(Date.now() - sess.timestamp > SESSION_TTL_MS){ localStorage.removeItem(SESSION_KEY); return null; }
+      return sess;
+    } catch(e){ return null; }
+  }
+  function saveSession(name){ localStorage.setItem(SESSION_KEY, JSON.stringify({ name, timestamp: Date.now() })); }
+  window.clearSession = function(){ localStorage.removeItem(SESSION_KEY); location.reload(); };
+
+  async function proceedAsRep(name){
     currentName = name;
     document.getElementById('pin-wall').style.display = 'none';
 
@@ -254,6 +251,21 @@ select.field-input,input.field-input{width:100%;padding:10px 12px;font-size:14px
     } else {
       document.getElementById('intro-wrap').style.display = 'block';
     }
+  }
+
+  window.ptsLogin = async function(){
+    const name = document.getElementById('pts-name').value;
+    const pin  = document.getElementById('pts-pin').value.trim();
+    const err  = document.getElementById('pin-error');
+    if(!name){ err.textContent = 'Select your name.'; return; }
+    if(!pin){ err.textContent = 'Enter your PIN.'; return; }
+    err.textContent = 'Checking...';
+    const saved = (await getPinFirebase(name)) || getPin(name);
+    if(!saved){ err.textContent = 'No PIN set — ask your manager.'; return; }
+    if(pin !== String(saved)){ err.textContent = 'Incorrect PIN.'; return; }
+    err.textContent = '';
+    saveSession(name);
+    proceedAsRep(name);
   };
 
   function getPin(name){
@@ -280,6 +292,10 @@ select.field-input,input.field-input{width:100%;padding:10px 12px;font-size:14px
     } catch(e){ console.warn('Could not load names:', e); }
   }
   loadNames();
+  (function(){
+    const sess = getSession();
+    if(sess && sess.name) proceedAsRep(sess.name);
+  })();
 
   window.startQuiz = function(){
     document.getElementById('intro-wrap').style.display = 'none';
@@ -360,6 +376,26 @@ select.field-input,input.field-input{width:100%;padding:10px 12px;font-size:14px
     document.getElementById('reveal-wrap').style.display = 'block';
   };
 
+
+  // Preserve ?loc= across drawer navigation, so picking a location once
+  // carries through to every other page instead of resetting to default.
+  (function(){
+    const loc = new URLSearchParams(window.location.search).get('loc');
+    if(!loc) return;
+    document.querySelectorAll('#menu-drawer a[href]').forEach(a => {
+      const href = a.getAttribute('href');
+      if(!href || href.startsWith('mailto:') || href.startsWith('tel:') || href.startsWith('#')) return;
+      const sep = href.includes('?') ? '&' : '?';
+      a.setAttribute('href', href + sep + 'loc=' + encodeURIComponent(loc));
+    });
+  })();
+
+  // Show which location is currently active, with a quick way to switch
+  (function(){
+    const loc = new URLSearchParams(window.location.search).get('loc') || 'Perennial';
+    const el = document.getElementById('loc-indicator');
+    if(el) el.innerHTML = '📍 ' + loc.replace(/_/g,' ') + ' · <a href="index.html" style="color:#5B3F8A">Switch</a>';
+  })();
   window.toggleMenu = function(){
     const overlay = document.getElementById('menu-overlay');
     const drawer  = document.getElementById('menu-drawer');

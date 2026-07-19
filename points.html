@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Perennial — My Points</title>
+<script src="shared-config.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,600;1,9..144,400&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
   *{box-sizing:border-box;margin:0;padding:0}
@@ -159,7 +160,8 @@
     </a>
   </div>
   <div style="padding:1rem 1.25rem;border-top:0.5px solid rgba(61,43,26,0.15);font-size:11px;color:#8A7A68">
-    Perennial · Internal use only
+    Perennial · Internal use only<br>
+    <span id="loc-indicator" style="color:#5B3F8A;font-weight:600"></span>
   </div>
 </div>
 
@@ -204,6 +206,7 @@
       <div class="hero-balance-label">Available to spend</div>
       <div class="pts-number" id="flex-balance">0</div>
       <div class="pts-label" id="flex-balance-sub">pts</div>
+      <div style="margin-top:.75rem"><a href="#" onclick="clearSession();return false" style="font-size:11px;color:rgba(245,236,212,0.6);text-decoration:underline">Not you? Sign out</a></div>
     </div>
 
     <!-- Milestone Points — secondary, prestige-only, not spendable -->
@@ -304,28 +307,13 @@
   const app = initializeApp(firebaseConfig);
   const db  = getDatabase(app);
 
-  const SHOP_NAME = 'Perennial';
+  const SHOP_NAME = new URLSearchParams(window.location.search).get('loc') || 'Perennial';
   const shopKey = SHOP_NAME.replace(/\s/g,'_');
   // Archetype titles only — no scoring breakdown here. The full breakdown is
   // manager-only, saved to Firebase under octalysis/{shop}/{rep} by achiever.html.
-  const ARCHETYPE_TITLES = {
-    visionary:'The Visionary', climber:'The Climber', innovator:'The Innovator',
-    collector:'The Collector', connector:'The Connector', closer:'The Closer',
-    wildcard:'The Wildcard', guardian:'The Guardian',
-  };
-  const TIERS = [
-    {pts:500,  name:'Sprout',   reward:'$5 Gift Card',         emoji:'🌱'},
-    {pts:1000, name:'Sapling',  reward:'$10 Gift Card',        emoji:'🌿'},
-    {pts:2500, name:'Harvest',  reward:'$25 Gift Card',        emoji:'🍂'},
-    {pts:5000, name:'Evergreen',reward:'$50 Gift Card + Swag', emoji:'🌲'},
-  ];
-  const SKILL_TITLES = [
-    {pts:0,    name:'Novice',       cls:'lvl1'},
-    {pts:250,  name:'Budtender',    cls:'lvl2'},
-    {pts:750,  name:'Specialist',   cls:'lvl3'},
-    {pts:2000, name:'Closer',       cls:'lvl4'},
-    {pts:5000, name:'Master Closer',cls:'lvl5'},
-  ];
+  const ARCHETYPE_TITLES = window.PERENNIAL.ARCHETYPE_TITLES;
+  const TIERS = window.PERENNIAL.TIERS;
+  const SKILL_TITLES = window.PERENNIAL.SKILL_TITLES;
 
   // Flex Points Marketplace catalog — absorbs the old fixed-tier redemption
   // system. Points are earned once (lifetime, feeds Milestones/Skill Trees
@@ -376,6 +364,20 @@
     } catch(e){ return null; }
   }
 
+  const SESSION_KEY = 'perennial_session_' + shopKey;
+  const SESSION_TTL_MS = 12 * 60 * 60 * 1000; // 12 hours — roughly a shift plus buffer
+  function getSession(){
+    try {
+      const raw = localStorage.getItem(SESSION_KEY);
+      if(!raw) return null;
+      const sess = JSON.parse(raw);
+      if(Date.now() - sess.timestamp > SESSION_TTL_MS){ localStorage.removeItem(SESSION_KEY); return null; }
+      return sess;
+    } catch(e){ return null; }
+  }
+  function saveSession(name){ localStorage.setItem(SESSION_KEY, JSON.stringify({ name, timestamp: Date.now() })); }
+  window.clearSession = function(){ localStorage.removeItem(SESSION_KEY); location.reload(); };
+
   async function loadNames(){
     try {
       const snap = await get(ref(db, 'leaderboard/' + shopKey + '/liveData/txn'));
@@ -405,6 +407,7 @@
       return;
     }
     err.textContent = '';
+    saveSession(name);
     showPersonal(name);
   }
 
@@ -513,6 +516,26 @@
   window.ptsSignOut = ptsSignOut;
 
   // Menu toggle
+
+  // Preserve ?loc= across drawer navigation, so picking a location once
+  // carries through to every other page instead of resetting to default.
+  (function(){
+    const loc = new URLSearchParams(window.location.search).get('loc');
+    if(!loc) return;
+    document.querySelectorAll('#menu-drawer a[href]').forEach(a => {
+      const href = a.getAttribute('href');
+      if(!href || href.startsWith('mailto:') || href.startsWith('tel:') || href.startsWith('#')) return;
+      const sep = href.includes('?') ? '&' : '?';
+      a.setAttribute('href', href + sep + 'loc=' + encodeURIComponent(loc));
+    });
+  })();
+
+  // Show which location is currently active, with a quick way to switch
+  (function(){
+    const loc = new URLSearchParams(window.location.search).get('loc') || 'Perennial';
+    const el = document.getElementById('loc-indicator');
+    if(el) el.innerHTML = '📍 ' + loc.replace(/_/g,' ') + ' · <a href="index.html" style="color:#5B3F8A">Switch</a>';
+  })();
   window.toggleMenu = function(){
     var overlay = document.getElementById('menu-overlay');
     var drawer  = document.getElementById('menu-drawer');
@@ -734,6 +757,13 @@
 
   // Load names on page load
   loadNames();
+  (function(){
+    const sess = getSession();
+    if(sess && sess.name){
+      document.getElementById('pin-wall').style.display = 'none';
+      showPersonal(sess.name);
+    }
+  })();
 </script>
 </body>
 </html>

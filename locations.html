@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Perennial — Group Leaderboard</title>
+<script src="shared-config.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,600;1,9..144,400&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 :root{
@@ -105,7 +106,8 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--cream);min-height
     </a>
   </div>
   <div style="padding:1rem 1.25rem;border-top:0.5px solid rgba(61,43,26,0.15);font-size:11px;color:#8A7A68">
-    Perennial · Internal use only
+    Perennial · Internal use only<br>
+    <span id="loc-indicator" style="color:#5B3F8A;font-weight:600"></span>
   </div>
 </div>
 
@@ -125,11 +127,16 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--cream);min-height
   <div class="mgr-card" id="mgr-card">
     <div id="mgr-pw-wrap">
       <div class="field-group">
+        <div class="field-label">Manager Email</div>
+        <input class="field-input" type="email" id="mgr-email" placeholder="manager@email.com">
+      </div>
+      <div class="field-group">
         <div class="field-label">Manager Password</div>
         <input class="field-input" type="password" id="mgr-pw" placeholder="Enter password">
       </div>
       <div class="err-msg" id="mgr-pw-err"></div>
-      <button class="btn-primary" onclick="mgrLogin()">Unlock</button>
+      <div id="mgr-pending" style="display:none;background:#FEF3C7;border:1px solid #FDE68A;border-radius:8px;padding:.75rem;font-size:12px;color:#92400E;text-align:center;margin-bottom:.75rem">Your account exists but isn't approved as a manager yet.</div>
+      <button class="btn-primary" id="mgr-login-btn" onclick="mgrLogin()">Unlock</button>
     </div>
     <div id="mgr-body" style="display:none">
       <div class="section-title" style="margin-top:0">Locations in this competition</div>
@@ -160,6 +167,7 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--cream);min-height
 <script type="module">
   import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
   import { getDatabase, ref, get, set } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js';
+  import { getAuth, signInWithEmailAndPassword } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
 
   const firebaseConfig = {
     apiKey:            'AIzaSyBF79P6AenHXN1685_5o4k50E0Yjxdc7Ko',
@@ -173,9 +181,11 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--cream);min-height
 
   const app = initializeApp(firebaseConfig);
   const db  = getDatabase(app);
+  window._fbAuth = getAuth(app);
+  window._fbSignIn = signInWithEmailAndPassword;
   const HOME_SHOP_KEY = 'Perennial'; // this deployment's own location
   const MANAGER_PASSWORD = 'PERENNIAL2026';
-  const LEAF_COLORS = ['#C17F24','#C94B1E','#B85C38','#6B7C3E','#5B3F8A','#D4A832'];
+  const LEAF_COLORS = window.PERENNIAL.LEAF_COLORS;
 
   const DEFAULT_LOCATIONS = [
     { shopKey: HOME_SHOP_KEY, name: 'Perennial', icon: '🌲', color: LEAF_COLORS[0] },
@@ -247,15 +257,45 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--cream);min-height
   window.toggleMgr = function(){
     document.getElementById('mgr-card').classList.toggle('open');
   };
-  window.mgrLogin = function(){
-    const pw = document.getElementById('mgr-pw').value;
-    const err = document.getElementById('mgr-pw-err');
-    if(pw !== MANAGER_PASSWORD){ err.textContent = 'Incorrect password.'; return; }
-    err.textContent = '';
+  function unlockMgr(){
     mgrUnlocked = true;
     document.getElementById('mgr-pw-wrap').style.display = 'none';
     document.getElementById('mgr-body').style.display = 'block';
     renderLocManageList();
+  }
+  window.mgrLogin = function(){
+    const email = document.getElementById('mgr-email').value.trim();
+    const pw    = document.getElementById('mgr-pw').value;
+    const err   = document.getElementById('mgr-pw-err');
+    const btn   = document.getElementById('mgr-login-btn');
+    if(!pw){ err.textContent = 'Enter a password.'; return; }
+
+    if(window._fbSignIn && window._fbAuth && email){
+      btn.disabled = true; btn.textContent = 'Signing in...';
+      window._fbSignIn(window._fbAuth, email, pw).then(cred =>
+        get(ref(db, 'managers/' + cred.user.uid + '/status'))
+      ).then(snap => {
+        const status = snap.exists() ? snap.val() : 'pending';
+        btn.disabled = false; btn.textContent = 'Unlock';
+        if(status === 'approved'){
+          err.textContent = '';
+          document.getElementById('mgr-pending').style.display = 'none';
+          unlockMgr();
+        } else {
+          document.getElementById('mgr-pending').style.display = 'block';
+        }
+      }).catch(() => {
+        btn.disabled = false; btn.textContent = 'Unlock';
+        err.textContent = 'Incorrect email or password.';
+        document.getElementById('mgr-pw').value = '';
+      });
+      return;
+    }
+
+    // Fallback: no email entered, or Firebase Auth unavailable
+    if(pw !== MANAGER_PASSWORD){ err.textContent = 'Incorrect password.'; return; }
+    err.textContent = '';
+    unlockMgr();
   };
 
   async function renderLocManageList(){
@@ -338,6 +378,19 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--cream);min-height
     loadGroupBoard();
   };
 
+
+  // Preserve ?loc= across drawer navigation, so picking a location once
+  // carries through to every other page instead of resetting to default.
+  (function(){
+    const loc = new URLSearchParams(window.location.search).get('loc');
+    if(!loc) return;
+    document.querySelectorAll('#menu-drawer a[href]').forEach(a => {
+      const href = a.getAttribute('href');
+      if(!href || href.startsWith('mailto:') || href.startsWith('tel:') || href.startsWith('#')) return;
+      const sep = href.includes('?') ? '&' : '?';
+      a.setAttribute('href', href + sep + 'loc=' + encodeURIComponent(loc));
+    });
+  })();
   window.toggleMenu = function(){
     const overlay = document.getElementById('menu-overlay');
     const drawer  = document.getElementById('menu-drawer');

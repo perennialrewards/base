@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Perennial — Rep Roster</title>
+<script src="shared-config.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,600;1,9..144,400&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 :root{
@@ -196,6 +197,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-h
 <script type="module">
   import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
   import { getDatabase, ref, set, get, push, remove } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js';
+  import { getAuth, signInWithEmailAndPassword } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
 
   const firebaseConfig = {
     apiKey:            'AIzaSyBF79P6AenHXN1685_5o4k50E0Yjxdc7Ko',
@@ -209,6 +211,8 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-h
 
   const app = initializeApp(firebaseConfig);
   const db  = getDatabase(app);
+  window._fbAuth = getAuth(app);
+  window._fbSignIn = signInWithEmailAndPassword;
 
   window._fbSetPin = async function(shopKey, name, pin){
     await set(ref(db, 'pins/' + shopKey + '/' + name.replace(/\s/g,'_')), pin);
@@ -296,6 +300,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-h
   </nav>
   <div class="ham-footer">
     <div class="ham-footer-brand">Shop Rewards Program</div>
+    <div id="loc-indicator" style="font-size:11px;color:#5B3F8A;font-weight:600;margin-top:4px"></div>
   </div>
 </div>
 
@@ -323,9 +328,12 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-h
     <div class="auth-title">Manager access</div>
     <div class="auth-sub">Enter your manager password to manage the rep roster.</div>
     <div class="auth-error" id="auth-error"></div>
+    <input class="auth-input" type="email" id="auth-email" placeholder="manager@email.com" style="margin-bottom:.6rem"
+      onkeydown="if(event.key==='Enter')document.getElementById('auth-input').focus()">
     <input class="auth-input" type="password" id="auth-input" placeholder="••••••••" maxlength="30"
       onkeydown="if(event.key==='Enter')checkAuth()">
-    <button class="auth-btn" onclick="checkAuth()">Unlock Roster</button>
+    <button class="auth-btn" id="auth-btn" onclick="checkAuth()">Unlock Roster</button>
+    <div id="auth-pending" style="display:none;background:#FEF3C7;border:1px solid #FDE68A;border-radius:8px;padding:.75rem;font-size:12px;color:#92400E;text-align:center;margin-top:.5rem">Your account exists but isn't approved as a manager yet — ask the owner to approve it in Firebase.</div>
   </div>
 </div>
 
@@ -487,7 +495,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-h
 <script>
 // ── CONFIG ─────────────────────────────────────────────────────
 const MANAGER_PASSWORD = 'PERENNIAL2026';
-const SHOP_NAME        = 'Perennial';
+const SHOP_NAME        = new URLSearchParams(window.location.search).get('loc') || 'Perennial';
 const LEADERBOARD_URL  = 'https://perennialrewards.github.io/base/';
 const STORAGE_KEY      = 'perennial_base';
 
@@ -511,21 +519,55 @@ async function sendEmail(toEmail, toName, rank, total, customMsg) {
 }
 // ───────────────────────────────────────────────────────────────
 
-const COLORS = ['#C17F24','#C94B1E','#B85C38','#6B7C3E','#5B3F8A','#D4A832','#A63D2F','#C05C2C'];
+const COLORS = window.PERENNIAL.LEAF_COLORS;
 const ini = n => n.split(' ').map(p=>p[0]).join('').toUpperCase().slice(0,2);
 
 // ── Auth ──────────────────────────────────────────────────────
+function unlockRoster(){
+  document.getElementById('auth-screen').style.display = 'none';
+  document.getElementById('main-content').style.display = 'block';
+  renderSquadsPanel();
+  renderFlashList();
+  loadMysteryBoxCurrent();
+}
 function checkAuth(){
-  const val = document.getElementById('auth-input').value;
-  if(val === MANAGER_PASSWORD){
-    document.getElementById('auth-screen').style.display = 'none';
-    document.getElementById('main-content').style.display = 'block';
-    renderSquadsPanel();
-    renderFlashList();
-    loadMysteryBoxCurrent();
+  const email = document.getElementById('auth-email').value.trim();
+  const pw    = document.getElementById('auth-input').value;
+  const errEl = document.getElementById('auth-error');
+  const btn   = document.getElementById('auth-btn');
+
+  if(window._fbSignIn && window._fbAuth && email){
+    btn.disabled = true; btn.textContent = 'Signing in...';
+    window._fbSignIn(window._fbAuth, email, pw).then(cred =>
+      import('https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js').then(m =>
+        m.get(m.ref(db, 'managers/' + cred.user.uid + '/status'))
+      )
+    ).then(snap => {
+      const status = snap.exists() ? snap.val() : 'pending';
+      btn.disabled = false; btn.textContent = 'Unlock Roster';
+      if(status === 'approved'){
+        errEl.textContent = '';
+        document.getElementById('auth-pending').style.display = 'none';
+        unlockRoster();
+      } else {
+        document.getElementById('auth-pending').style.display = 'block';
+      }
+    }).catch(() => {
+      btn.disabled = false; btn.textContent = 'Unlock Roster';
+      errEl.textContent = 'Incorrect email or password.';
+      document.getElementById('auth-input').value = '';
+    });
+    return;
+  }
+
+  // Fallback: no email entered, or Firebase Auth unavailable — hardcoded
+  // password. Kept only so the site isn't fully locked out if manager
+  // accounts haven't been set up yet; prefer the email+password path above.
+  if(pw === MANAGER_PASSWORD){
+    unlockRoster();
   } else {
     const inp = document.getElementById('auth-input');
-    document.getElementById('auth-error').textContent = 'Incorrect password.';
+    errEl.textContent = 'Incorrect password.';
     inp.classList.add('error'); inp.value = '';
     setTimeout(()=>inp.classList.remove('error'), 400);
   }
@@ -541,7 +583,7 @@ document.getElementById('auth-input').addEventListener('keydown', e=>{ if(e.key=
 const SQUADS_KEY  = 'squads_' + STORAGE_KEY;
 const SQUADS_EN_KEY = 'squadsEnabled_' + STORAGE_KEY;
 const SQUAD_PRIZE_KEY = 'squadPrize_' + STORAGE_KEY;
-const SQUAD_COLORS = ['#C17F24','#C94B1E','#B85C38','#6B7C3E','#5B3F8A','#D4A832'];
+const SQUAD_COLORS = window.PERENNIAL.LEAF_COLORS;
 
 function getSquads(){ try{ return JSON.parse(localStorage.getItem(SQUADS_KEY)||'[]'); }catch(e){ return []; } }
 function saveSquads(list){
@@ -864,6 +906,22 @@ async function sendNotifications(){
 </script>
 
 <script>
+// Preserve ?loc= across drawer navigation (roster's nav links are absolute URLs)
+(function(){
+  const loc = new URLSearchParams(window.location.search).get('loc');
+  if(!loc) return;
+  document.querySelectorAll('.ham-nav a[href]').forEach(a => {
+    const href = a.getAttribute('href');
+    if(!href) return;
+    const sep = href.includes('?') ? '&' : '?';
+    a.setAttribute('href', href + sep + 'loc=' + encodeURIComponent(loc));
+  });
+})();
+(function(){
+  const loc = new URLSearchParams(window.location.search).get('loc') || 'Perennial';
+  const el = document.getElementById('loc-indicator');
+  if(el) el.innerHTML = '📍 ' + loc.replace(/_/g,' ') + ' · <a href="index.html" style="color:#5B3F8A">Switch</a>';
+})();
 function openDrawer(){
   document.getElementById('ham-drawer').classList.add('open');
   document.getElementById('ham-overlay').classList.add('visible');
