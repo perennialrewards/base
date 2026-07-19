@@ -40,6 +40,19 @@
       const mysterySnap = await get(ref(db, 'points_mystery/' + window.SHOP_KEY));
       const achievementsSnap = await get(ref(db, 'achievements/' + window.SHOP_KEY + '/current'));
       window._achievements = achievementsSnap.exists() ? achievementsSnap.val() : null;
+      if(typeof window.loadShopConfig === 'function') await window.loadShopConfig();
+
+      // Hydrate this device's localStorage streak cache from Firebase, so
+      // fire/rank streaks are consistent no matter which device last
+      // uploaded — the synchronous getStreak()/setStreak() calls elsewhere
+      // stay unchanged, they just now read fresher data.
+      const streaks = await window.getAllStreaks(window.SHOP_KEY);
+      Object.entries(streaks).forEach(([nameKey, val]) => {
+        if(typeof val.fire === 'number') localStorage.setItem('streak_fire_' + window.SHOP_KEY + '_' + nameKey, String(val.fire));
+        if(typeof val.rank === 'number') localStorage.setItem('streak_rank_' + window.SHOP_KEY + '_' + nameKey, String(val.rank));
+        if(val.lastMonth) localStorage.setItem('streak_last_month_' + window.SHOP_KEY + '_' + nameKey, val.lastMonth);
+      });
+
       window._squadConfig = squadSnap.exists() ? (squadSnap.val().config || {}) : {};
       window._squadList   = squadSnap.exists() ? (squadSnap.val().list || []) : [];
       window._squadAssign = assignSnap.exists() ? assignSnap.val() : {};
@@ -102,6 +115,39 @@
       await set(ref(db, 'achievements/' + shopKey + '/lastRanks'), newRanks);
       return true;
     } catch(err){ console.error('Achievement save error:', err); return false; }
+  };
+
+  window.getAllStreaks = async function(shopKey){
+    try {
+      const snap = await get(ref(db, 'streaks/' + shopKey));
+      return snap.exists() ? snap.val() : {};
+    } catch(err){ console.warn('Streak load error:', err); return {}; }
+  };
+
+  window.saveStreaks = async function(shopKey, streakUpdates){
+    try {
+      // streakUpdates is {nameKey: {fire, rank, lastMonth}, ...} — merge via
+      // per-key set() calls rather than overwriting the whole node, so two
+      // devices updating different reps' streaks can't clobber each other.
+      await Promise.all(Object.entries(streakUpdates).map(([nameKey, val]) =>
+        set(ref(db, 'streaks/' + shopKey + '/' + nameKey), val)
+      ));
+      return true;
+    } catch(err){ console.error('Streak save error:', err); return false; }
+  };
+
+  window.getShopConfig = async function(shopKey){
+    try {
+      const snap = await get(ref(db, 'shopConfig/' + shopKey));
+      return snap.exists() ? snap.val() : null;
+    } catch(err){ console.warn('Shop config load error:', err); return null; }
+  };
+
+  window.saveShopConfigFb = async function(shopKey, config){
+    try {
+      await set(ref(db, 'shopConfig/' + shopKey), config);
+      return true;
+    } catch(err){ console.error('Shop config save error:', err); return false; }
   };
 </script>
 <style>
@@ -342,6 +388,22 @@
   /* ── Export buttons ─────────────────────────────────── */
   .export-section{margin-top:1rem;border-top:0.5px solid var(--border);padding-top:1rem;display:none}
   .export-section.visible{display:block}
+  .brand-settings-section{margin-top:1rem;border-top:0.5px solid var(--border);padding-top:1rem;display:none}
+  .brand-settings-section.visible{display:block}
+  .brand-settings-toggle{display:flex;align-items:center;justify-content:space-between;cursor:pointer;font-size:12.5px;font-weight:600;color:var(--charcoal)}
+  .brand-settings-body{display:none;margin-top:.875rem}
+  .brand-settings-body.open{display:block}
+  .bs-note{font-size:11px;color:var(--gray);line-height:1.6;margin-bottom:1rem;background:var(--cream);border-radius:8px;padding:.6rem .75rem}
+  .bs-subhead{font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:var(--gray);margin:.9rem 0 .5rem}
+  .bs-subhead:first-of-type{margin-top:0}
+  .bs-row{display:flex;gap:6px}
+  .bs-input{padding:8px 10px;font-size:12.5px;border:1px solid var(--border);border-radius:7px;background:var(--white);color:var(--charcoal);font-family:inherit;outline:none;width:100%;box-sizing:border-box}
+  .bs-input:focus{border-color:var(--teal)}
+  .bs-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .bs-label{font-size:9.5px;color:var(--gray);margin-bottom:3px}
+  .bs-msg{font-size:11px;color:var(--moss,#3D5020);min-height:14px;margin:.75rem 0 .25rem}
+  .bs-save-btn{width:100%;padding:9px;font-size:12.5px;font-weight:600;color:#fff;background:var(--teal);border:none;border-radius:8px;cursor:pointer;font-family:inherit}
+  .bs-reset-btn{width:100%;padding:8px;font-size:11px;font-weight:500;color:var(--gray);background:none;border:none;cursor:pointer;font-family:inherit;text-decoration:underline;margin-top:6px}
   .export-label{font-size:11px;font-weight:600;color:var(--gray);text-transform:uppercase;letter-spacing:.5px;margin-bottom:.75rem}
   .export-btns{display:grid;grid-template-columns:1fr 1fr;gap:8px}
   .export-btn{display:flex;align-items:center;justify-content:center;gap:7px;padding:10px 14px;border-radius:10px;font-size:13px;font-weight:500;cursor:pointer;border:none;font-family:inherit;transition:opacity .15s}
@@ -664,6 +726,46 @@
         </div>
         <div class="export-status" id="export-status"></div>
       </div>
+      <div class="brand-settings-section" id="brand-settings-section">
+        <div class="brand-settings-toggle" onclick="toggleBrandSettings()">
+          <span>⚙️ Brand &amp; Upload Format Settings</span>
+          <span id="bs-chevron">▾</span>
+        </div>
+        <div class="brand-settings-body" id="brand-settings-body">
+          <div class="bs-note">These control which two brands get tracked and how your POS export's columns get read. Defaults match a Treez Product Summary — only change these if your export looks different or you sell different brands.</div>
+
+          <div class="bs-subhead">Brand 1 (first tracked tab)</div>
+          <div class="bs-row">
+            <input class="bs-input" id="bs-b1-match" placeholder="Exact brand name in export (e.g. Glass House Farms)">
+            <input class="bs-input" id="bs-b1-label" placeholder="Short label (e.g. GHF)" style="max-width:110px">
+            <input class="bs-input" id="bs-b1-emoji" placeholder="🌲" style="max-width:60px">
+          </div>
+
+          <div class="bs-subhead">Brand 2 (second tracked tab)</div>
+          <div class="bs-row">
+            <input class="bs-input" id="bs-b2-match" placeholder="Exact brand name in export (e.g. Plus Products)">
+            <input class="bs-input" id="bs-b2-label" placeholder="Short label (e.g. Plus)" style="max-width:110px">
+            <input class="bs-input" id="bs-b2-emoji" placeholder="🟪" style="max-width:60px">
+          </div>
+
+          <div class="bs-subhead">CSV / Export Column Names</div>
+          <div class="bs-grid">
+            <div><div class="bs-label">Ticket type column</div><input class="bs-input" id="bs-col-tickettype"></div>
+            <div><div class="bs-label">Must equal</div><input class="bs-input" id="bs-val-tickettype"></div>
+            <div><div class="bs-label">Sale type column</div><input class="bs-input" id="bs-col-saletype"></div>
+            <div><div class="bs-label">Must equal</div><input class="bs-input" id="bs-val-saletype"></div>
+            <div><div class="bs-label">Rep name column</div><input class="bs-input" id="bs-col-cashier"></div>
+            <div><div class="bs-label">Ticket ID column</div><input class="bs-input" id="bs-col-ticketid"></div>
+            <div><div class="bs-label">Net sales column</div><input class="bs-input" id="bs-col-netsales"></div>
+            <div><div class="bs-label">Quantity column</div><input class="bs-input" id="bs-col-qty"></div>
+            <div><div class="bs-label">Brand column</div><input class="bs-input" id="bs-col-brand"></div>
+          </div>
+
+          <div class="bs-msg" id="bs-msg"></div>
+          <button class="bs-save-btn" onclick="saveShopConfig()">Save settings</button>
+          <button class="bs-reset-btn" onclick="resetShopConfigDefaults()">Reset to Treez defaults</button>
+        </div>
+      </div>
       <div style="margin-top:1rem;border-top:0.5px solid var(--border);padding-top:1rem" id="challenge-setup-wrap"></div>
       <div id="campaign-setup-wrap"></div>
       <div id="report-section-wrap"></div>
@@ -694,8 +796,8 @@
     <button class="tab active txn" onclick="switchTab('txn',this)"><span class="ti">🧾</span>Transactions</button>
     <button class="tab sales" onclick="switchTab('sales',this)"><span class="ti">💵</span>Net Sales</button>
     <button class="tab avg" onclick="switchTab('avg',this)"><span class="ti">🛒</span>ATV<span style="font-size:9px;background:#FFD700;color:#5B3A00;padding:1px 6px;border-radius:6px;font-weight:700;display:block;margin-top:2px">$100</span></button>
-    <button class="tab ghf" onclick="switchTab('ghf',this)"><span class="ti">🌲</span>GHF Units<span style="font-size:9px;background:#FFD700;color:#5B3A00;padding:1px 6px;border-radius:6px;font-weight:700;display:block;margin-top:2px">$100</span></button>
-    <button class="tab plus" onclick="switchTab('plus',this)"><span class="ti">🟪</span>Plus Units</button>
+    <button class="tab ghf" onclick="switchTab('ghf',this)"><span class="ti" id="tab-b1-emoji">🌲</span><span id="tab-b1-label">GHF Units</span><span style="font-size:9px;background:#FFD700;color:#5B3A00;padding:1px 6px;border-radius:6px;font-weight:700;display:block;margin-top:2px">$100</span></button>
+    <button class="tab plus" onclick="switchTab('plus',this)"><span class="ti" id="tab-b2-emoji">🟪</span><span id="tab-b2-label">Plus Units</span></button>
     <button class="tab squads" id="tab-btn-squads" onclick="switchTab('squads',this)" style="display:none;flex-direction:column;align-items:center;justify-content:center;gap:2px"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="6.2" cy="8.8" r="2.9" fill="#C17F24" opacity="0.55"/><path d="M0.8 18.4C0.8 15 3.1 13 6.2 13C7.4 13 8.5 13.3 9.4 13.9C8.2 15.2 7.5 16.9 7.4 18.8H0.8V18.4Z" fill="#C17F24" opacity="0.55"/><circle cx="17.8" cy="8.8" r="2.9" fill="#C17F24" opacity="0.55"/><path d="M23.2 18.4C23.2 15 20.9 13 17.8 13C16.6 13 15.5 13.3 14.6 13.9C15.8 15.2 16.5 16.9 16.6 18.8H23.2V18.4Z" fill="#C17F24" opacity="0.55"/><circle cx="12" cy="7.6" r="3.6" fill="#C17F24"/><path d="M5.4 19.2C5.4 15 8.2 12.4 12 12.4C15.8 12.4 18.6 15 18.6 19.2V19.6H5.4V19.2Z" fill="#C17F24"/></svg><span>Squad</span></button>
   </div>
 
@@ -829,6 +931,7 @@
         if(status === 'approved'){
           document.getElementById('pw-section').style.display='none';
           document.getElementById('upload-area').classList.add('visible');
+          document.getElementById('brand-settings-section').classList.add('visible');
           if(errEl) errEl.textContent='';
         } else {
           var p=document.getElementById('mgr-pending');
@@ -845,6 +948,7 @@
       if(pw === MANAGER_PASSWORD){
         document.getElementById('pw-section').style.display='none';
         document.getElementById('upload-area').classList.add('visible');
+        document.getElementById('brand-settings-section').classList.add('visible');
       } else {
         if(errEl) errEl.textContent='Incorrect password.';
         var i=document.getElementById('pw-input'); if(i){ i.value=''; }
@@ -913,6 +1017,103 @@
     const t = getTitleFor(name);
     return '<span class="title-badge '+t.cls+'">'+t.name+'</span>';
   }
+
+  // ── Brand & Upload Format Settings ──────────────────────────────
+  // Lets a manager retarget which two brands get tracked and how their
+  // POS export's columns map to what the parser needs — the piece that
+  // makes this deployable at a shop that isn't FSB, without code changes.
+  const DEFAULT_SHOP_CONFIG = {
+    brands: [
+      { match:'Glass House Farms', label:'GHF',  emoji:'🌲', tab:'ghf'  },
+      { match:'Plus Products',     label:'Plus', emoji:'🟪', tab:'plus' },
+    ],
+    csv: {
+      ticketTypeCol:'Ticket Type', ticketTypeVal:'POS',
+      saleTypeCol:'Type',          saleTypeVal:'Sale',
+      cashierCol:'Cashier', ticketIdCol:'Ticket ID',
+      netSalesCol:'Net Sales', qtyCol:'Qty', brandCol:'Brand',
+    },
+  };
+  window._shopConfig = JSON.parse(JSON.stringify(DEFAULT_SHOP_CONFIG));
+
+  function applyShopConfigToUI(){
+    const cfg = window._shopConfig;
+    document.getElementById('tab-b1-emoji').textContent = cfg.brands[0].emoji;
+    document.getElementById('tab-b1-label').textContent = cfg.brands[0].label + ' Units';
+    document.getElementById('tab-b2-emoji').textContent = cfg.brands[1].emoji;
+    document.getElementById('tab-b2-label').textContent = cfg.brands[1].label + ' Units';
+    TAB_CONFIG.ghf.m1Label  = 'Total ' + cfg.brands[0].label + ' Units';
+    TAB_CONFIG.plus.m1Label = 'Total ' + cfg.brands[1].label + ' Units';
+
+    document.getElementById('bs-b1-match').value = cfg.brands[0].match;
+    document.getElementById('bs-b1-label').value = cfg.brands[0].label;
+    document.getElementById('bs-b1-emoji').value = cfg.brands[0].emoji;
+    document.getElementById('bs-b2-match').value = cfg.brands[1].match;
+    document.getElementById('bs-b2-label').value = cfg.brands[1].label;
+    document.getElementById('bs-b2-emoji').value = cfg.brands[1].emoji;
+    document.getElementById('bs-col-tickettype').value = cfg.csv.ticketTypeCol;
+    document.getElementById('bs-val-tickettype').value = cfg.csv.ticketTypeVal;
+    document.getElementById('bs-col-saletype').value   = cfg.csv.saleTypeCol;
+    document.getElementById('bs-val-saletype').value   = cfg.csv.saleTypeVal;
+    document.getElementById('bs-col-cashier').value    = cfg.csv.cashierCol;
+    document.getElementById('bs-col-ticketid').value   = cfg.csv.ticketIdCol;
+    document.getElementById('bs-col-netsales').value   = cfg.csv.netSalesCol;
+    document.getElementById('bs-col-qty').value         = cfg.csv.qtyCol;
+    document.getElementById('bs-col-brand').value       = cfg.csv.brandCol;
+  }
+
+  window.loadShopConfig = async function loadShopConfig(){
+    const shopKey = SHOP_NAME.replace(/\s/g,'_');
+    const fetched = await window.getShopConfig(shopKey);
+    window._shopConfig = fetched || JSON.parse(JSON.stringify(DEFAULT_SHOP_CONFIG));
+    applyShopConfigToUI();
+  }
+
+  window.toggleBrandSettings = function(){
+    const body = document.getElementById('brand-settings-body');
+    const chev = document.getElementById('bs-chevron');
+    const open = body.classList.toggle('open');
+    chev.textContent = open ? '▴' : '▾';
+  };
+
+  window.saveShopConfig = async function(){
+    const msg = document.getElementById('bs-msg');
+    const b1match = document.getElementById('bs-b1-match').value.trim();
+    const b2match = document.getElementById('bs-b2-match').value.trim();
+    if(!b1match || !b2match){ msg.style.color='#EF4444'; msg.textContent='Both brand match names are required.'; return; }
+
+    const newConfig = {
+      brands: [
+        { match:b1match, label:document.getElementById('bs-b1-label').value.trim()||'Brand 1', emoji:document.getElementById('bs-b1-emoji').value.trim()||'🌿', tab:'ghf' },
+        { match:b2match, label:document.getElementById('bs-b2-label').value.trim()||'Brand 2', emoji:document.getElementById('bs-b2-emoji').value.trim()||'🟪', tab:'plus' },
+      ],
+      csv: {
+        ticketTypeCol: document.getElementById('bs-col-tickettype').value.trim() || 'Ticket Type',
+        ticketTypeVal: document.getElementById('bs-val-tickettype').value.trim() || 'POS',
+        saleTypeCol:   document.getElementById('bs-col-saletype').value.trim()   || 'Type',
+        saleTypeVal:   document.getElementById('bs-val-saletype').value.trim()   || 'Sale',
+        cashierCol:    document.getElementById('bs-col-cashier').value.trim()    || 'Cashier',
+        ticketIdCol:   document.getElementById('bs-col-ticketid').value.trim()   || 'Ticket ID',
+        netSalesCol:   document.getElementById('bs-col-netsales').value.trim()   || 'Net Sales',
+        qtyCol:        document.getElementById('bs-col-qty').value.trim()        || 'Qty',
+        brandCol:      document.getElementById('bs-col-brand').value.trim()      || 'Brand',
+      },
+    };
+
+    const shopKey = SHOP_NAME.replace(/\s/g,'_');
+    const ok = await window.saveShopConfigFb(shopKey, newConfig);
+    window._shopConfig = newConfig;
+    applyShopConfigToUI();
+    msg.style.color = ok ? 'var(--moss,#3D5020)' : '#EF4444';
+    msg.textContent = ok ? 'Saved ✓ — takes effect on your next upload.' : 'Could not save — check connection.';
+  };
+
+  window.resetShopConfigDefaults = function(){
+    window._shopConfig = JSON.parse(JSON.stringify(DEFAULT_SHOP_CONFIG));
+    applyShopConfigToUI();
+    document.getElementById('bs-msg').style.color = 'var(--moss,#3D5020)';
+    document.getElementById('bs-msg').textContent = 'Reset to Treez defaults — click Save to apply.';
+  };
 
   const TAB_CONFIG={
     txn:{colHeader:'Transactions',podSub:'transactions',
@@ -1390,8 +1591,10 @@
   function setStreak(key, val){ localStorage.setItem(key, String(val)); }
 
   // Called after each upload — updates streaks for all reps
-  function updateStreaks(reps, topFiveNames){
+  async function updateStreaks(reps, topFiveNames){
     const currentMonth = STREAK_MONTH_KEY();
+    const shopKey = SHOP_NAME.replace(/\s/g,'_');
+    const toSync = {};
     reps.forEach(rep => {
       const lastMonth = localStorage.getItem(STREAK_LAST_KEY(rep.name)) || '';
       // Only update once per month
@@ -1400,16 +1603,21 @@
       // Fire streak: sold any GHF or Plus units this month
       const hasSales = (rep.ghf||0) + (rep.plus||0) > 0;
       const fireKey  = STREAK_KEY_FIRE(rep.name);
-      setStreak(fireKey, hasSales ? getStreak(fireKey)+1 : 0);
+      const newFire  = hasSales ? getStreak(fireKey)+1 : 0;
+      setStreak(fireKey, newFire);
 
       // Rank streak: in top 5 this month
       const inTop5  = topFiveNames.includes(rep.name);
       const rankKey = STREAK_KEY_RANK(rep.name);
-      setStreak(rankKey, inTop5 ? getStreak(rankKey)+1 : 0);
+      const newRank = inTop5 ? getStreak(rankKey)+1 : 0;
+      setStreak(rankKey, newRank);
 
       // Mark this month processed
       localStorage.setItem(STREAK_LAST_KEY(rep.name), currentMonth);
+
+      toSync[rep.name.replace(/\s/g,'_')] = { fire: newFire, rank: newRank, lastMonth: currentMonth };
     });
+    if(Object.keys(toSync).length) await window.saveStreaks(shopKey, toSync);
   }
 
   // Streak bonus points: 50pts per month of fire streak, 100pts per month of rank streak
@@ -1991,34 +2199,36 @@
           const wb=XLSX.read(new Uint8Array(e.target.result),{type:'array'});
           rows=XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]]);
         }
+        const cc = window._shopConfig.csv;
+        const brandCfg = window._shopConfig.brands;
         const filtered=rows.filter(r=>
-          (r['Ticket Type']||'').trim()==='POS'&&
-          (r['Type']||'').trim()==='Sale'&&
-          (r['Cashier']||'').trim()!==''
+          (r[cc.ticketTypeCol]||'').trim()===cc.ticketTypeVal&&
+          (r[cc.saleTypeCol]||'').trim()===cc.saleTypeVal&&
+          (r[cc.cashierCol]||'').trim()!==''
         );
-        if(filtered.length===0) throw new Error('No POS Sale rows found');
+        if(filtered.length===0) throw new Error('No matching rows found — check Brand & Upload Format Settings if this isn\'t a Treez export');
         const byRep={};
         filtered.forEach(r=>{
-          const name=r['Cashier'].trim();
-          const tid=(r['Ticket ID']||'').trim();
-          const ns=parseFloat(r['Net Sales'])||0;
-          const qty=parseFloat(r['Qty'])||0;
-          const brand=(r['Brand']||'').trim().toUpperCase();
+          const name=r[cc.cashierCol].trim();
+          const tid=(r[cc.ticketIdCol]||'').trim();
+          const ns=parseFloat(r[cc.netSalesCol])||0;
+          const qty=parseFloat(r[cc.qtyCol])||0;
+          const brand=(r[cc.brandCol]||'').trim().toUpperCase();
           if(!byRep[name]) byRep[name]={tickets:new Set(),sales:0,ghf:0,plus:0};
           if(tid) byRep[name].tickets.add(tid);
           byRep[name].sales+=ns;
-          if(brand==='GLASS HOUSE FARMS') byRep[name].ghf+=qty;
-          if(brand==='PLUS PRODUCTS') byRep[name].plus+=qty;
+          if(brand===brandCfg[0].match.toUpperCase()) byRep[name].ghf+=qty;
+          if(brand===brandCfg[1].match.toUpperCase()) byRep[name].plus+=qty;
         });
         const reps=Object.entries(byRep).map(([name,d])=>{
           const txn=d.tickets.size;
           const sales=Math.round(d.sales*100)/100;
           const ghf=Math.round(d.ghf);
           const plus=Math.round(d.plus);
-          // Points: 9pts per GHF unit, 9pts per Plus unit, 1pt per $100 net sales.
-          // Coefficients solved from June 2026 actuals to preserve the same average
-          // points/rep (and therefore the same tier-redemption pace) as the old
-          // 10pts/unit-only formula.
+          // Points: 9pts per configured Brand 1 unit, 9pts per Brand 2 unit,
+          // 1pt per $100 net sales. Coefficients solved from June 2026 FSB
+          // actuals to preserve the same average points/rep as the old
+          // 10pts/unit-only formula — a new shop may want to re-tune these.
           const monthlyPts=Math.round(ghf*9 + plus*9 + sales*0.01);
           return {
             name, txn, sales,
@@ -2052,7 +2262,7 @@
         document.getElementById('sync-status').textContent='💾 Syncing to all devices...';
         // Update streak data for all reps
         const top5Names = liveData.txn.slice(0,5).map(r=>r.name);
-        updateStreaks(reps, top5Names);
+        await updateStreaks(reps, top5Names);
         await creditMonthlyPoints(reps);
         await computeAndSaveAchievements(reps);
         const saved=await window.saveToFirebase(liveData,updatedAt);

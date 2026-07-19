@@ -84,6 +84,9 @@ select.field-input,input.field-input{width:100%;padding:10px 12px;font-size:14px
     <a href="index.html" style="display:flex;align-items:center;gap:12px;padding:.875rem 1.25rem;text-decoration:none;color:#1C1409;font-size:14px;font-weight:500">
       <span style="font-size:18px">🏆</span> Current Competitions
     </a>
+    <a href="locations.html" style="display:flex;align-items:center;gap:12px;padding:.875rem 1.25rem;text-decoration:none;color:#1C1409;font-size:14px;font-weight:500">
+      <span style="font-size:18px">🌎</span> Group Leaderboard
+    </a>
     <a href="points.html" style="display:flex;align-items:center;gap:12px;padding:.875rem 1.25rem;text-decoration:none;color:#1C1409;font-size:14px;font-weight:500">
       <span style="font-size:18px">⭐</span> My Rewards
     </a>
@@ -265,7 +268,7 @@ select.field-input,input.field-input{width:100%;padding:10px 12px;font-size:14px
 
   async function loadNames(){
     try {
-      const snap = await get(ref(db, 'leaderboard/liveData/txn'));
+      const snap = await get(ref(db, 'leaderboard/' + shopKey + '/liveData/txn'));
       if(snap.exists()){
         const sel = document.getElementById('pts-name');
         snap.val().forEach(r => {
