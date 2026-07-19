@@ -43,6 +43,7 @@ select.field-input,input.field-input{width:100%;padding:10px 12px;font-size:14px
 .q-card{background:var(--white);border:0.5px solid var(--border);border-radius:16px;padding:1.75rem 1.5rem;text-align:center}
 .q-prompt{font-family:'Fraunces',serif;font-size:1.15rem;font-weight:600;color:var(--ink);margin-bottom:1.5rem;line-height:1.4}
 .q-option{display:block;width:100%;padding:1rem 1.1rem;margin-bottom:10px;background:var(--cream);border:1.5px solid var(--border);border-radius:12px;font-size:13.5px;color:var(--ink);font-family:inherit;text-align:left;cursor:pointer;transition:border-color .12s,background .12s}
+.q-option:disabled{opacity:.5;cursor:default}
 .q-option:hover{border-color:var(--amber);background:#fff}
 .q-option:last-child{margin-bottom:0}
 
@@ -278,6 +279,8 @@ select.field-input,input.field-input{width:100%;padding:10px 12px;font-size:14px
     document.getElementById('intro-wrap').style.display = 'none';
     document.getElementById('quiz-wrap').style.display = 'block';
     qIndex = 0;
+    answering = false;
+    finishing = false;
     Object.keys(ARCHETYPES).forEach(k => wins[k] = 0);
     renderQuestion();
   };
@@ -288,22 +291,32 @@ select.field-input,input.field-input{width:100%;padding:10px 12px;font-size:14px
     document.getElementById('progress-label').textContent = 'Question ' + (qIndex+1) + ' of ' + QUESTIONS.length;
     document.getElementById('question-slot').innerHTML =
       '<div class="q-card"><div class="q-prompt">' + q.prompt + '</div>'
-      + '<button class="q-option" onclick="answerQ(\'' + q.a.key + '\')">' + q.a.text + '</button>'
-      + '<button class="q-option" onclick="answerQ(\'' + q.b.key + '\')">' + q.b.text + '</button>'
+      + '<button class="q-option" onclick="answerQ(\'' + q.a.key + '\', this)">' + q.a.text + '</button>'
+      + '<button class="q-option" onclick="answerQ(\'' + q.b.key + '\', this)">' + q.b.text + '</button>'
       + '</div>';
   }
 
-  window.answerQ = function(key){
+  let answering = false;
+  window.answerQ = function(key, btn){
+    // Guard against a fast double-tap firing this twice — common on the
+    // final question, which is exactly what caused the 20-point bug.
+    if(answering) return;
+    answering = true;
+    if(btn) btn.parentElement.querySelectorAll('.q-option').forEach(b => b.disabled = true);
     wins[key] = (wins[key]||0) + 1;
     qIndex++;
     if(qIndex < QUESTIONS.length){
+      answering = false;
       renderQuestion();
     } else {
       finishQuiz();
     }
   };
 
+  let finishing = false;
   async function finishQuiz(){
+    if(finishing) return;
+    finishing = true;
     const scores = Object.keys(wins).map(k => ({key:k, wins:wins[k]}));
     scores.sort((a,b) => b.wins - a.wins);
     const topDrive = scores[0].key;
