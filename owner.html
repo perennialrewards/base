@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Perennial — Owner Portal</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,600;1,9..144,400&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --ink:     #1C1409;
+  --brown:   #3D2B1A;
+  --cream:   #F5ECD4;
+  --cream2:  #EDE0C4;
+  --amber:   #C17F24;
+  --gold:    #E8AC2D;
+  --rust:    #A63D2F;
+  --moss:    #6B7C3E;
+  --border:  rgba(61,43,26,0.12);
+  --muted:   #8A7A68;
+  --surface: #FFFFFF;
+  --purple:  #5B3F8A;
+}
+* { box-sizing:border-box; margin:0; padding:0 }
+html { -webkit-font-smoothing:antialiased }
+body { font-family:'Inter',sans-serif; background:var(--cream); color:var(--ink); min-height:100vh }
+
+/* ── LOGIN SCREEN ── */
+.login-screen {
+  min-height:100vh;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:2rem;
+  background:var(--ink);
+}
+.login-card {
+  background:#241A0E;
+  border:1px solid rgba(193,127,36,0.2);
+  border-radius:20px;
+  padding:2.5rem;
+  max-width:400px;
+  width:100%;
+}
+.login-logo { margin-bottom:1.5rem }
+.login-title { font-family:'Fraunces',serif; font-size:1.5rem; font-weight:600; color:var(--cream); margin-bottom:.25rem }
+.login-sub { font-size:13px; color:rgba(245,236,212,0.45); margin-bottom:2rem; line-height:1.5 }
+.login-field { margin-bottom:1rem }
+.login-field label { font-size:10px; font-weight:600; text-transform:uppercase; letter-spacing:1px; color:rgba(245,236,212,0.4); display:block; margin-bottom:5px }
+.login-field input { width:100%; padding:11px 14px; font-size:14px; border:1px solid rgba(255,255,255,0.1); border-radius:10px; background:rgba(255,255,255,0.05); color:var(--cream); font-family:inherit; outline:none; transition:border-color .15s }
+.login-field input:focus { border-color:var(--amber) }
+.login-field input.err { border-color:#EF4444; animation:shake .3s }
+@keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-4px)} 75%{transform:translateX(4px)} }
+.login-btn { width:100%; padding:13px; font-size:14px; font-weight:600; color:var(--ink); background:var(--amber); border:none; border-radius:10px; cursor:pointer; font-family:inherit; margin-top:.5rem; transition:opacity .15s }
+.login-btn:hover { opacity:.88 }
+.login-btn:disabled { opacity:.5; cursor:not-allowed }
+.login-msg { font-size:12px; color:#EF4444; min-height:16px; margin-bottom:.75rem }
+
+/* ── MAIN APP ── */
+.app { display:none; min-height:100vh }
+
+/* Top bar */
+.topbar { background:var(--ink); padding:.875rem 2rem; display:flex; align-items:center; justify-content:space-between; position:sticky; top:0; z-index:100 }
+.topbar-logo { display:flex; align-items:center; gap:10px }
+.topbar-badge { font-size:10px; font-weight:600; letter-spacing:1.5px; text-transform:uppercase; color:var(--amber); background:rgba(193,127,36,0.12); padding:3px 10px; border-radius:10px }
+.topbar-right { display:flex; align-items:center; gap:14px }
+.topbar-user { font-size:12px; color:rgba(245,236,212,0.4) }
+.signout-btn { font-size:12px; color:rgba(245,236,212,0.4); background:none; border:none; cursor:pointer; text-decoration:underline; font-family:inherit }
+.signout-btn:hover { color:var(--cream) }
+
+/* Page */
+.page { max-width:1100px; margin:0 auto; padding:2.5rem 2rem 4rem }
+.page-header { margin-bottom:2.5rem }
+.page-eyebrow { font-size:10px; font-weight:600; letter-spacing:2px; text-transform:uppercase; color:var(--amber); margin-bottom:.5rem }
+.page-title { font-family:'Fraunces',serif; font-size:clamp(1.75rem,4vw,2.75rem); font-weight:300; color:var(--ink); line-height:1.1; letter-spacing:-.5px }
+.page-title em { font-style:italic; color:var(--amber) }
+
+/* Section */
+.section { margin-bottom:2.5rem }
+.section-title { font-size:11px; font-weight:600; letter-spacing:2px; text-transform:uppercase; color:var(--muted); margin-bottom:1rem; padding-bottom:.5rem; border-bottom:1px solid var(--border) }
+
+/* Shop grid */
+.shops-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); gap:1rem; margin-bottom:1rem }
+.shop-card { background:var(--surface); border:1px solid var(--border); border-radius:14px; overflow:hidden; transition:box-shadow .15s }
+.shop-card:hover { box-shadow:0 4px 16px rgba(61,43,26,0.08) }
+.shop-card-header { padding:.875rem 1.125rem; display:flex; align-items:center; justify-content:space-between; border-bottom:1px solid var(--border) }
+.shop-card-name { font-size:13px; font-weight:600; color:var(--ink) }
+.shop-card-group { font-size:10px; font-weight:600; letter-spacing:1px; text-transform:uppercase; color:var(--muted) }
+.shop-status { width:8px; height:8px; border-radius:50%; flex-shrink:0 }
+.shop-status.live { background:#10B981 }
+.shop-status.pending { background:var(--gold) }
+.shop-kpis { display:grid; grid-template-columns:repeat(3,1fr); padding:.875rem 1.125rem; gap:.5rem }
+.shop-kpi { text-align:center }
+.shop-kpi-val { font-family:'Fraunces',serif; font-size:1.3rem; font-weight:600; color:var(--ink); line-height:1 }
+.shop-kpi-label { font-size:9px; text-transform:uppercase; letter-spacing:.5px; color:var(--muted); margin-top:2px }
+.shop-card-footer { padding:.625rem 1.125rem; background:#FAFAF8; border-top:1px solid var(--border); display:flex; align-items:center; gap:8px; flex-wrap:wrap }
+.shop-export-btn { font-size:11px; font-weight:600; padding:5px 12px; border-radius:7px; border:none; cursor:pointer; font-family:inherit; transition:opacity .15s }
+.shop-export-btn:hover { opacity:.85 }
+.shop-export-btn.brand { background:rgba(193,127,36,0.12); color:var(--brown) }
+.shop-export-btn.retailer { background:rgba(107,124,62,0.12); color:#3D5020 }
+.shop-export-btn.loading { opacity:.5; cursor:not-allowed }
+.shop-link { font-size:11px; color:var(--muted); text-decoration:none; margin-left:auto }
+.shop-link:hover { color:var(--ink) }
+
+/* Summary row */
+.summary-row { display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:1rem; margin-bottom:2.5rem }
+.summary-card { background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:1.25rem }
+.summary-val { font-family:'Fraunces',serif; font-size:2rem; font-weight:300; color:var(--ink); line-height:1 }
+.summary-label { font-size:11px; text-transform:uppercase; letter-spacing:.5px; color:var(--muted); margin-top:4px }
+.summary-delta { display:inline-block; font-size:10px; font-weight:600; color:var(--moss); background:rgba(107,124,62,0.1); padding:2px 8px; border-radius:6px; margin-top:6px }
+
+/* Report section */
+.report-card { background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:1.5rem; margin-bottom:1rem }
+.report-card-title { font-size:14px; font-weight:600; color:var(--ink); margin-bottom:.25rem }
+.report-card-sub { font-size:12px; color:var(--muted); margin-bottom:1.25rem; line-height:1.5 }
+.report-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:1.25rem }
+.report-field label { font-size:10px; font-weight:600; text-transform:uppercase; letter-spacing:.5px; color:var(--muted); display:block; margin-bottom:4px }
+.report-field input { width:100%; padding:9px 11px; font-size:13px; border:1px solid var(--border); border-radius:8px; background:var(--cream); color:var(--ink); font-family:inherit; outline:none }
+.report-field input:focus { border-color:var(--amber) }
+.report-send-btn { padding:10px 22px; font-size:13px; font-weight:600; color:#fff; background:var(--ink); border:none; border-radius:9px; cursor:pointer; font-family:inherit; transition:opacity .15s; margin-right:8px }
+.report-send-btn:hover { opacity:.85 }
+.report-save-btn { padding:10px 18px; font-size:13px; font-weight:600; color:var(--ink); background:var(--cream2); border:1px solid var(--border); border-radius:9px; cursor:pointer; font-family:inherit }
+.report-status { font-size:12px; color:var(--muted); margin-top:.75rem; min-height:18px }
+.report-status.ok { color:var(--moss) }
+.report-status.err { color:var(--rust) }
+.next-send { background:rgba(193,127,36,0.08); border:1px solid rgba(193,127,36,0.2); border-radius:10px; padding:.875rem 1.125rem; display:flex; align-items:center; justify-content:space-between; margin-bottom:1rem }
+.next-send-label { font-size:12px; color:var(--muted) }
+.next-send-val { font-size:13px; font-weight:600; color:var(--brown) }
+
+/* Connect notice */
+.connect-notice { background:#F0F4FF; border:1px solid #C7D4FA; border-radius:10px; padding:.875rem 1.125rem; font-size:12px; color:#3050A0; line-height:1.55; margin-bottom:1rem }
+.connect-notice strong { display:block; margin-bottom:2px; color:#1A3070 }
+
+/* Loading state */
+.shop-loading { text-align:center; padding:2rem; color:var(--muted); font-size:13px }
+
+/* Footer */
+.page-footer { text-align:center; font-size:11px; color:var(--muted); margin-top:3rem; opacity:.6 }
+
+@media(max-width:600px) {
+  .page { padding:1.5rem 1rem 3rem }
+  .report-grid { grid-template-columns:1fr }
+  .topbar { padding:.875rem 1rem }
+}
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════════
+     LOGIN SCREEN
+══════════════════════════════════════════════ -->
+<div class="login-screen" id="login-screen">
+  <div class="login-card">
+    <div class="login-logo">
+      <svg width="130" height="40" viewBox="0 0 240 72" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <g transform="translate(36,36)">
+          <ellipse cx="0" cy="-28" rx="5" ry="9" fill="#C17F24" transform="rotate(0)"/>
+          <ellipse cx="0" cy="-28" rx="5" ry="9" fill="#C94B1E" opacity="0.95" transform="rotate(30)"/>
+          <ellipse cx="0" cy="-28" rx="5" ry="9" fill="#B85C38" opacity="0.9" transform="rotate(60)"/>
+          <ellipse cx="0" cy="-28" rx="5" ry="9" fill="#D4952A" opacity="0.85" transform="rotate(90)"/>
+          <ellipse cx="0" cy="-28" rx="5" ry="9" fill="#A63D2F" opacity="0.85" transform="rotate(120)"/>
+          <ellipse cx="0" cy="-28" rx="5" ry="9" fill="#E8AC2D" opacity="0.8" transform="rotate(150)"/>
+          <ellipse cx="0" cy="-28" rx="5" ry="9" fill="#6B3A2A" opacity="0.8" transform="rotate(180)"/>
+          <ellipse cx="0" cy="-28" rx="5" ry="9" fill="#C05C2C" opacity="0.8" transform="rotate(210)"/>
+          <ellipse cx="0" cy="-28" rx="5" ry="9" fill="#6B7C3E" opacity="0.75" transform="rotate(240)"/>
+          <ellipse cx="0" cy="-28" rx="5" ry="9" fill="#D4A832" opacity="0.8" transform="rotate(270)"/>
+          <ellipse cx="0" cy="-28" rx="5" ry="9" fill="#8B2518" opacity="0.8" transform="rotate(300)"/>
+          <ellipse cx="0" cy="-28" rx="5" ry="9" fill="#D4721A" opacity="0.85" transform="rotate(330)"/>
+          <text x="-8" y="10" font-family="Fraunces,Georgia,serif" font-size="28" font-weight="600" fill="#F5ECD4">P</text>
+        </g>
+        <text x="82" y="47" font-family="Fraunces,Georgia,serif" font-size="30" font-weight="600" fill="#F5ECD4" letter-spacing="-0.5">erennial</text>
+      </svg>
+    </div>
+    <div class="login-title">Owner Portal</div>
+    <div class="login-sub">Platform-level access. Not for shop managers.</div>
+    <div class="login-msg" id="login-msg"></div>
+    <div class="login-field">
+      <label>Email</label>
+      <input type="email" id="login-email" placeholder="you@perennial.com">
+    </div>
+    <div class="login-field">
+      <label>Password</label>
+      <input type="password" id="login-pw" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()">
+    </div>
+    <button class="login-btn" id="login-btn" onclick="doLogin()">Sign in</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     MAIN APP (shown after auth)
+══════════════════════════════════════════════ -->
+<div class="app" id="app">
+
+  <!-- Side menu — secondary destinations relative to Owner Portal -->
+  <div id="owner-menu-overlay" onclick="toggleOwnerMenu()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:300"></div>
+  <div id="owner-menu-drawer" style="display:none;position:fixed;top:0;left:0;width:260px;height:100%;background:#fff;z-index:400;box-shadow:4px 0 20px rgba(0,0,0,0.15);flex-direction:column">
+    <div style="background:#1C1409;padding:1.5rem 1.25rem 1.25rem">
+      <div style="font-size:14px;font-weight:600;color:#fff">Perennial</div>
+      <div style="font-size:12px;color:rgba(255,255,255,0.5);margin-top:2px">Owner Portal</div>
+    </div>
+    <div style="padding:1rem 0;flex:1">
+      <div style="padding:.5rem 1.25rem .25rem;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--muted)">Shop-Facing Pages</div>
+      <a href="index.html" style="display:flex;align-items:center;gap:12px;padding:.75rem 1.25rem;text-decoration:none;color:var(--ink);font-size:14px;font-weight:500">
+        <span style="font-size:18px">🏆</span> Current Competitions
+      </a>
+      <a href="points.html" style="display:flex;align-items:center;gap:12px;padding:.75rem 1.25rem;text-decoration:none;color:var(--ink);font-size:14px;font-weight:500">
+        <span style="font-size:18px">⭐</span> My Rewards
+      </a>
+      <a href="trophies.html" style="display:flex;align-items:center;gap:12px;padding:.75rem 1.25rem;text-decoration:none;color:var(--ink);font-size:14px;font-weight:500">
+        <span style="font-size:18px">🥇</span> Trophies
+      </a>
+      <a href="profiles.html" style="display:flex;align-items:center;gap:12px;padding:.75rem 1.25rem;text-decoration:none;color:var(--ink);font-size:14px;font-weight:500">
+        <span style="font-size:18px">🪪</span> Profiles
+      </a>
+      <a href="achiever.html" style="display:flex;align-items:center;gap:12px;padding:.75rem 1.25rem;text-decoration:none;color:var(--ink);font-size:14px;font-weight:500">
+        <span style="font-size:18px">🏅</span> Your Famous Achiever
+      </a>
+      <a href="roster.html" style="display:flex;align-items:center;gap:12px;padding:.75rem 1.25rem;text-decoration:none;color:var(--purple);font-size:14px;font-weight:500">
+        <span style="font-size:18px">👥</span> Rep Roster
+        <span style="margin-left:auto;font-size:10px;font-weight:600;color:var(--purple);background:#F3F0FA;padding:2px 8px;border-radius:10px">🔒 Manager</span>
+      </a>
+    </div>
+    <div style="padding:1rem 1.25rem;border-top:0.5px solid var(--border);font-size:11px;color:var(--muted)">
+      Perennial · Internal use only
+    </div>
+  </div>
+
+  <!-- Top bar -->
+  <div class="topbar">
+    <div class="topbar-logo">
+      <button onclick="toggleOwnerMenu()" style="width:36px;height:36px;border-radius:9px;background:rgba(255,255,255,0.1);border:none;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;margin-right:4px">
+        <div style="width:16px;height:1.5px;background:#F5ECD4;border-radius:2px"></div>
+        <div style="width:16px;height:1.5px;background:#F5ECD4;border-radius:2px"></div>
+        <div style="width:16px;height:1.5px;background:#F5ECD4;border-radius:2px"></div>
+      </button>
+      <svg width="90" height="28" viewBox="0 0 240 72" fill="none">
+        <g transform="translate(36,36)">
+          <ellipse cx="0" cy="-28" rx="5" ry="9" fill="#C17F24" transform="rotate(0)"/>
+          <ellipse cx="0" cy="-28" rx="5" ry="9" fill="#C94B1E" transform="rotate(60)"/>
+          <ellipse cx="0" cy="-28" rx="5" ry="9" fill="#E8AC2D" transform="rotate(120)"/>
+          <ellipse cx="0" cy="-28" rx="5" ry="9" fill="#6B3A2A" transform="rotate(180)"/>
+          <ellipse cx="0" cy="-28" rx="5" ry="9" fill="#6B7C3E" transform="rotate(240)"/>
+          <ellipse cx="0" cy="-28" rx="5" ry="9" fill="#D4721A" transform="rotate(300)"/>
+          <text x="-8" y="10" font-family="Fraunces,Georgia,serif" font-size="28" font-weight="600" fill="#F5ECD4">P</text>
+        </g>
+        <text x="82" y="47" font-family="Fraunces,Georgia,serif" font-size="30" font-weight="600" fill="#F5ECD4" letter-spacing="-0.5">erennial</text>
+      </svg>
+      <div class="topbar-badge">Owner Portal</div>
+    </div>
+    <div class="topbar-right">
+      <span class="topbar-user" id="topbar-user"></span>
+      <button class="signout-btn" onclick="doSignOut()">Sign out</button>
+    </div>
+  </div>
+
+  <div class="page">
+    <div class="page-header">
+      <div class="page-eyebrow">Platform Overview</div>
+      <h1 class="page-title">All shops,<br><em>one view.</em></h1>
+    </div>
+
+    <!-- ── NETWORK SUMMARY ── -->
+    <div class="section">
+      <div class="section-title">Network Totals</div>
+      <div class="summary-row" id="summary-row">
+        <div class="summary-card"><div class="summary-val" id="sum-shops">—</div><div class="summary-label">Active shops</div></div>
+        <div class="summary-card"><div class="summary-val" id="sum-txn">—</div><div class="summary-label">Transactions</div></div>
+        <div class="summary-card"><div class="summary-val" id="sum-sales">—</div><div class="summary-label">Net Sales</div></div>
+        <div class="summary-card"><div class="summary-val" id="sum-ghf">—</div><div class="summary-label">GHF Units</div></div>
+        <div class="summary-card"><div class="summary-val" id="sum-plus">—</div><div class="summary-label">Plus Units</div></div>
+        <div class="summary-card"><div class="summary-val" id="sum-reps">—</div><div class="summary-label">Active Reps</div></div>
+      </div>
+    </div>
+
+    <!-- ── SHOP CARDS ── -->
+    <div class="section">
+      <div class="section-title">Shops — Live Data + Exports</div>
+      <div class="shops-grid" id="shops-grid">
+        <div class="shop-loading">Loading shop data from Firebase...</div>
+      </div>
+    </div>
+
+    <!-- ── MONTHLY REPORTS ── -->
+    <div class="section">
+      <div class="section-title">Monthly Brand Reports</div>
+
+      <div class="next-send" id="next-send-row">
+        <div>
+          <div class="next-send-label">Last sent</div>
+          <div class="next-send-val" id="last-sent-val">Never</div>
+        </div>
+        <div style="text-align:right">
+          <div class="next-send-label">Next auto-send</div>
+          <div class="next-send-val" id="next-send-val">—</div>
+        </div>
+      </div>
+
+      <div class="connect-notice">
+        <strong>Email service setup required</strong>
+        Connect EmailJS or SendGrid in the <code>sendReportEmail()</code> function to activate automated sending. Recipients and schedule are ready — just needs your email credentials.
+      </div>
+
+      <div class="report-card">
+        <div class="report-card-title">Glass House Farms</div>
+        <div class="report-card-sub">Monthly performance report — sent on the 1st of each month.</div>
+        <div class="report-grid">
+          <div class="report-field"><label>Contact Name</label><input type="text" id="ghf-name" placeholder="e.g. Sarah @ GHF"></div>
+          <div class="report-field"><label>Email</label><input type="email" id="ghf-email" placeholder="sarah@ghf.com"></div>
+        </div>
+        <button class="report-send-btn" onclick="sendReport('ghf')">Send GHF report now</button>
+        <button class="report-save-btn" onclick="saveRecipients()">Save recipients</button>
+        <div class="report-status" id="ghf-report-status"></div>
+      </div>
+
+      <div class="report-card">
+        <div class="report-card-title">Plus Products</div>
+        <div class="report-card-sub">Monthly performance report — sent on the 1st of each month.</div>
+        <div class="report-grid">
+          <div class="report-field"><label>Contact Name</label><input type="text" id="plus-name" placeholder="e.g. Mike @ Plus"></div>
+          <div class="report-field"><label>Email</label><input type="email" id="plus-email" placeholder="mike@plus.com"></div>
+        </div>
+        <button class="report-send-btn" onclick="sendReport('plus')">Send Plus report now</button>
+        <button class="report-save-btn" onclick="saveRecipients()">Save recipients</button>
+        <div class="report-status" id="plus-report-status"></div>
+      </div>
+    </div>
+
+    <div class="page-footer">Perennial Owner Portal · Internal use only · Not for distribution</div>
+  </div>
+</div>
+
+<!-- SheetJS for XLSX export -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+<script type="module">
+import { initializeApp }                       from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+import { getAuth, signInWithEmailAndPassword,
+         signOut, onAuthStateChanged,
+         setPersistence, browserSessionPersistence }
+                                               from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
+import { getDatabase, ref, get }               from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js';
+
+// ── SHOP REGISTRY ─────────────────────────────────────────────────
+// Add all shops here — one entry per deployed location
+const SHOPS = [
+  { code:'fsb', name:'Farmacy SB',         group:'farmacy', url:'https://farmacyrewards.github.io/fsb/',
+    firebase:{ apiKey:'AIzaSyCuJFGrsfmZQwNJtR4RxFwEv2f-dqGCLwc', authDomain:'farmacyrewards.firebaseapp.com', databaseURL:'https://farmacyrewards-default-rtdb.firebaseio.com', projectId:'farmacyrewards', storageBucket:'farmacyrewards.firebasestorage.app', messagingSenderId:'455717273109', appId:'1:455717273109:web:fb59aed853532bae12181c' }},
+  { code:'fsy', name:'Farmacy SY',         group:'farmacy', url:'https://farmacyrewards.github.io/fsy/',
+    firebase:{ apiKey:'AIzaSyA5yGzKol_2Ph3aTmlJaK30Wsxj_MquAe8', authDomain:'farmacyrewardsfsy.firebaseapp.com', databaseURL:'https://farmacyrewardsfsy-default-rtdb.firebaseio.com', projectId:'farmacyrewardsfsy', storageBucket:'farmacyrewardsfsy.firebasestorage.app', messagingSenderId:'288235542198', appId:'1:288235542198:web:f8a59890970de052643817' }},
+  { code:'fiv', name:'Farmacy Isla Vista', group:'farmacy', url:'https://farmacyrewards.github.io/fiv/',
+    firebase:{ apiKey:'AIzaSyDKinVtBp0DQQTnUfD88TTZbHWRovtQ_A0', authDomain:'farmacyrewardsfiv.firebaseapp.com', databaseURL:'https://farmacyrewardsfiv-default-rtdb.firebaseio.com', projectId:'farmacyrewardsfiv', storageBucket:'farmacyrewardsfiv.firebasestorage.app', messagingSenderId:'19049553075', appId:'1:19049553075:web:e1295422bced0d669e24c6' }},
+  { code:'nhc_gb', name:'NHC Grover Beach', group:'nhc', url:'https://farmacyrewards.github.io/nhcgb/',
+    firebase:{ apiKey:'AIzaSyDapngzogyQvW-uodkQrRdk4YpsnM12oEw', authDomain:'nhcrewardsgb.firebaseapp.com', databaseURL:'https://nhcrewardsgb-default-rtdb.firebaseio.com', projectId:'nhcrewardsgb', storageBucket:'nhcrewardsgb.firebasestorage.app', messagingSenderId:'54504822754', appId:'1:54504822754:web:f2f7bf894ac0b77a6ecbbb' }},
+  { code:'nhc_mb', name:'NHC Morro Bay',    group:'nhc', url:'https://farmacyrewards.github.io/nhcmb/',
+    firebase:{ apiKey:'AIzaSyAHjhjW5TPfQl6CNVhm3BoDnmKQlqKKpx4', authDomain:'nhcrewardsmb.firebaseapp.com', databaseURL:'https://nhcrewardsmb-default-rtdb.firebaseio.com', projectId:'nhcrewardsmb', storageBucket:'nhcrewardsmb.firebasestorage.app', messagingSenderId:'438617783513', appId:'1:438617783513:web:94b9ea6bd54ce9538f52c8' }},
+];
+
+// ── OWNER Firebase project (FSB used as auth host) ─────────────────
+const OWNER_CONFIG = SHOPS[0].firebase;
+const ownerApp  = initializeApp(OWNER_CONFIG, 'owner');
+const ownerAuth = getAuth(ownerApp);
+const ownerDb   = getDatabase(ownerApp);
+
+await setPersistence(ownerAuth, browserSessionPersistence);
+
+// ── AUTH STATE ─────────────────────────────────────────────────────
+onAuthStateChanged(ownerAuth, async user => {
+  if (!user) {
+    document.getElementById('login-screen').style.display = 'flex';
+    document.getElementById('app').style.display = 'none';
+    return;
+  }
+  // Check owner role
+  const snap = await get(ref(ownerDb, 'owners/' + user.uid + '/role'));
+  if (!snap.exists() || snap.val() !== 'owner') {
+    await signOut(ownerAuth);
+    showLoginMsg('This account does not have owner access.');
+    return;
+  }
+  // Owner confirmed
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('app').style.display = 'block';
+  document.getElementById('topbar-user').textContent = user.email;
+  loadAllShops();
+  initReportSection();
+});
+
+// ── LOGIN ──────────────────────────────────────────────────────────
+window.doLogin = async function() {
+  const email = document.getElementById('login-email').value.trim();
+  const pw    = document.getElementById('login-pw').value;
+  const btn   = document.getElementById('login-btn');
+  if (!email || !pw) { showLoginMsg('Enter email and password.'); return; }
+  btn.disabled = true; btn.textContent = 'Signing in...';
+  try {
+    await signInWithEmailAndPassword(ownerAuth, email, pw);
+  } catch(e) {
+    showLoginMsg('Incorrect email or password.');
+    btn.disabled = false; btn.textContent = 'Sign in';
+  }
+};
+
+window.doSignOut = async function() {
+  await signOut(ownerAuth);
+};
+
+window.toggleOwnerMenu = function(){
+  const overlay = document.getElementById('owner-menu-overlay');
+  const drawer  = document.getElementById('owner-menu-drawer');
+  const open = drawer.style.display === 'flex';
+  overlay.style.display = open ? 'none' : 'block';
+  drawer.style.display  = open ? 'none' : 'flex';
+};
+document.addEventListener('keydown', e => {
+  if(e.key === 'Escape'){
+    document.getElementById('owner-menu-overlay').style.display='none';
+    document.getElementById('owner-menu-drawer').style.display='none';
+  }
+});
+
+function showLoginMsg(msg) {
+  const el = document.getElementById('login-msg');
+  el.textContent = msg;
+}
+
+// ── LOAD ALL SHOPS ─────────────────────────────────────────────────
+window._shopData = {};
+
+async function loadAllShops() {
+  const grid = document.getElementById('shops-grid');
+  grid.innerHTML = '';
+
+  let totalTxn=0, totalSales=0, totalGhf=0, totalPlus=0, totalReps=0, liveCount=0;
+
+  for (const shop of SHOPS) {
+    // Init a Firebase app per shop (if not already)
+    let app;
+    try { app = initializeApp(shop.firebase, shop.code); }
+    catch(e) { const {getApp} = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js'); app = getApp(shop.code); }
+
+    const db = getDatabase(app);
+    const card = buildShopCard(shop, null);
+    grid.appendChild(card);
+
+    try {
+      const snap = await get(ref(db, 'leaderboard'));
+      if (snap.exists()) {
+        const data = snap.val();
+        const ld   = data.liveData || {};
+        const txnArr  = ld.txn   || [];
+        const salArr  = ld.sales || [];
+        const ghfArr  = ld.ghf   || [];
+        const pluArr  = ld.plus  || [];
+
+        const txn   = txnArr.reduce((s,r)=>s+(r.txn||0),0);
+        const sales = salArr.reduce((s,r)=>s+(r.sales||0),0);
+        const ghf   = ghfArr.reduce((s,r)=>s+(r.units||r.ghf||0),0);
+        const plus  = pluArr.reduce((s,r)=>s+(r.units||r.plus||0),0);
+        const reps  = txnArr.length;
+
+        totalTxn   += txn; totalSales += sales;
+        totalGhf   += ghf; totalPlus  += plus;
+        totalReps  += reps; liveCount++;
+
+        window._shopData[shop.code] = { shop, ld, txn, sales, ghf, plus, reps };
+        const updated = buildShopCard(shop, { txn, sales, ghf, plus, reps });
+        card.replaceWith(updated);
+      } else {
+        const noData = buildShopCard(shop, 'nodata');
+        card.replaceWith(noData);
+      }
+    } catch(e) {
+      const errCard = buildShopCard(shop, 'error');
+      card.replaceWith(errCard);
+    }
+  }
+
+  // Update summary
+  document.getElementById('sum-shops').textContent = liveCount;
+  document.getElementById('sum-txn').textContent   = totalTxn.toLocaleString();
+  document.getElementById('sum-sales').textContent = '$' + (totalSales/1000).toFixed(1) + 'K';
+  document.getElementById('sum-ghf').textContent   = totalGhf.toLocaleString();
+  document.getElementById('sum-plus').textContent  = totalPlus.toLocaleString();
+  document.getElementById('sum-reps').textContent  = totalReps;
+}
+
+function buildShopCard(shop, data) {
+  const card = document.createElement('div');
+  card.className = 'shop-card';
+  card.id = 'card-' + shop.code;
+
+  const groupLabel = shop.group === 'farmacy' ? 'Farmacy 805' : 'NHC';
+  const isLive = data && data !== 'nodata' && data !== 'error';
+  const statusClass = isLive ? 'live' : 'pending';
+
+  let kpiHtml = '';
+  if (isLive) {
+    kpiHtml = `
+      <div class="shop-kpis">
+        <div class="shop-kpi"><div class="shop-kpi-val">${data.txn.toLocaleString()}</div><div class="shop-kpi-label">Txns</div></div>
+        <div class="shop-kpi"><div class="shop-kpi-val">${data.ghf}</div><div class="shop-kpi-label">GHF</div></div>
+        <div class="shop-kpi"><div class="shop-kpi-val">${data.plus}</div><div class="shop-kpi-label">Plus</div></div>
+      </div>`;
+  } else {
+    const msg = data === 'error' ? 'Connection error' : data === 'nodata' ? 'No data yet' : 'Loading...';
+    kpiHtml = `<div class="shop-loading">${msg}</div>`;
+  }
+
+  card.innerHTML = `
+    <div class="shop-card-header">
+      <div>
+        <div class="shop-card-name">${shop.name}</div>
+        <div class="shop-card-group">${groupLabel}</div>
+      </div>
+      <div class="shop-status ${statusClass}"></div>
+    </div>
+    ${kpiHtml}
+    <div class="shop-card-footer">
+      <button class="shop-export-btn brand" onclick="exportShopBrand('${shop.code}')">Brand XLSX</button>
+      <button class="shop-export-btn retailer" onclick="exportShopRetailer('${shop.code}')">Retailer XLSX</button>
+      <a class="shop-link" href="${shop.url}" target="_blank">Open site ↗</a>
+    </div>`;
+  return card;
+}
+
+// ── EXPORTS ────────────────────────────────────────────────────────
+window.exportShopBrand = function(code) {
+  const d = window._shopData[code];
+  if (!d) { alert('No data loaded for ' + code); return; }
+  const ld = d.ld;
+  const wb = XLSX.utils.book_new();
+  const now = new Date();
+  const dateStr = now.toLocaleDateString('en-US',{month:'long',year:'numeric'});
+
+  // GHF sheet
+  const ghfRows = [['Rep','GHF Units'],
+    ...(ld.ghf||[]).map(r=>[r.name, r.units||r.ghf||0])];
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(ghfRows), 'GHF Units');
+
+  // Plus sheet
+  const plusRows = [['Rep','Plus Units'],
+    ...(ld.plus||[]).map(r=>[r.name, r.units||r.plus||0])];
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(plusRows), 'Plus Units');
+
+  XLSX.writeFile(wb, `Brand_Report_${code}_${dateStr.replace(' ','_')}.xlsx`);
+};
+
+window.exportShopRetailer = function(code) {
+  const d = window._shopData[code];
+  if (!d) { alert('No data loaded for ' + code); return; }
+  const ld = d.ld;
+  const wb = XLSX.utils.book_new();
+  const now = new Date();
+  const dateStr = now.toLocaleDateString('en-US',{month:'long',year:'numeric'});
+
+  const rows = [['Rep','Transactions','Net Sales','Avg Ticket','GHF Units','Plus Units']];
+  const txnArr  = ld.txn   || [];
+  const salArr  = ld.sales || [];
+  const ghfArr  = ld.ghf   || [];
+  const pluArr  = ld.plus  || [];
+  txnArr.forEach(r => {
+    const sal = (salArr.find(x=>x.name===r.name)||{}).sales || 0;
+    const ghf = (ghfArr.find(x=>x.name===r.name)||{}).units || 0;
+    const pls = (pluArr.find(x=>x.name===r.name)||{}).units || 0;
+    rows.push([r.name, r.txn||0, sal.toFixed(2), r.txn ? (sal/r.txn).toFixed(2) : '0', ghf, pls]);
+  });
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(rows), 'All Reps');
+  XLSX.writeFile(wb, `Retailer_Report_${code}_${dateStr.replace(' ','_')}.xlsx`);
+};
+
+// ── MONTHLY REPORTS ────────────────────────────────────────────────
+const REPORT_KEY = 'perennial_report_config';
+const SENT_KEY   = 'perennial_report_sent';
+
+function initReportSection() {
+  const cfg = getReportConfig();
+  if (cfg) {
+    document.getElementById('ghf-name').value  = cfg.ghfName  || '';
+    document.getElementById('ghf-email').value = cfg.ghfEmail || '';
+    document.getElementById('plus-name').value  = cfg.plusName  || '';
+    document.getElementById('plus-email').value = cfg.plusEmail || '';
+  }
+  const now       = new Date();
+  const monthKey  = now.getFullYear() + '-' + String(now.getMonth()+1).padStart(2,'0');
+  const lastSent  = localStorage.getItem(SENT_KEY) || 'Never';
+  const nextFirst = new Date(now.getFullYear(), now.getMonth()+1, 1);
+  const days      = Math.ceil((nextFirst - now)/(1000*60*60*24));
+
+  document.getElementById('last-sent-val').textContent  = lastSent === 'Never' ? 'Never' : lastSent + (lastSent === monthKey ? ' ✅' : '');
+  document.getElementById('next-send-val').textContent  = `1st of next month (${days} days)`;
+}
+
+function getReportConfig() {
+  try { return JSON.parse(localStorage.getItem(REPORT_KEY)); } catch(e) { return null; }
+}
+
+window.saveRecipients = function() {
+  const cfg = {
+    ghfName:   document.getElementById('ghf-name').value.trim(),
+    ghfEmail:  document.getElementById('ghf-email').value.trim(),
+    plusName:  document.getElementById('plus-name').value.trim(),
+    plusEmail: document.getElementById('plus-email').value.trim(),
+  };
+  localStorage.setItem(REPORT_KEY, JSON.stringify(cfg));
+  alert('Recipients saved.');
+};
+
+// Email hook — connect your service here
+async function sendReportEmail(toEmail, toName, brand, stats, month) {
+  // ── EmailJS example (uncomment when ready):
+  // await emailjs.send('SERVICE_ID','TEMPLATE_ID',{ to_email:toEmail, to_name:toName, brand, stats, month });
+  console.log('Would send to:', toEmail, 'brand:', brand, 'month:', month, 'stats:', stats);
+  await new Promise(r => setTimeout(r, 600));
+  return true;
+}
+
+window.sendReport = async function(brand) {
+  const cfg  = getReportConfig();
+  const el   = document.getElementById(brand + '-report-status');
+  const email = brand === 'ghf' ? cfg?.ghfEmail : cfg?.plusEmail;
+  const name  = brand === 'ghf' ? cfg?.ghfName  : cfg?.plusName;
+  if (!email) { el.className='report-status err'; el.textContent='Save a recipient email first.'; return; }
+
+  el.className='report-status'; el.textContent='Sending...';
+
+  // Build stats summary across all shops
+  let totalUnits = 0;
+  Object.values(window._shopData).forEach(d => {
+    const arr = brand === 'ghf' ? (d.ld.ghf||[]) : (d.ld.plus||[]);
+    totalUnits += arr.reduce((s,r)=>s+(r.units||0),0);
+  });
+  const month = new Date().toLocaleDateString('en-US',{month:'long',year:'numeric'});
+  const stats = `Total units across all shops: ${totalUnits} | Month: ${month}`;
+
+  try {
+    await sendReportEmail(email, name, brand.toUpperCase(), stats, month);
+    const monthKey = new Date().getFullYear() + '-' + String(new Date().getMonth()+1).padStart(2,'0');
+    localStorage.setItem(SENT_KEY, monthKey);
+    el.className='report-status ok'; el.textContent='Sent to ' + email + ' ✓';
+    initReportSection();
+  } catch(e) {
+    el.className='report-status err'; el.textContent='Send failed. Check email service setup.';
+  }
+};
+
+</script>
+</body>
+</html>
