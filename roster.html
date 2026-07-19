@@ -118,6 +118,26 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-h
 
 /* ── SQUADS ── */
 .squads-section{background:var(--surface);border:0.5px solid var(--border);border-radius:14px;overflow:hidden;margin-bottom:1.5rem}
+
+/* ── FLASH REWARDS & MYSTERY BOX (manager) ── */
+.fr-item{display:flex;align-items:center;gap:10px;padding:.7rem 0;border-bottom:0.5px solid var(--border)}
+.fr-item:last-child{border-bottom:none}
+.fr-item-emoji{font-size:20px;width:28px;text-align:center;flex-shrink:0}
+.fr-item-info{flex:1;min-width:0}
+.fr-item-name{font-size:13px;font-weight:600;color:var(--text)}
+.fr-item-meta{font-size:11px;color:var(--muted)}
+.fr-item-status{font-size:9.5px;font-weight:700;padding:2px 8px;border-radius:8px;white-space:nowrap}
+.fr-item-status.active{background:rgba(107,124,62,0.14);color:#3D5020}
+.fr-item-status.expired{background:rgba(138,122,104,0.12);color:var(--muted)}
+.fr-del-btn{font-size:11px;color:#8B2518;background:rgba(139,37,24,0.08);border:none;padding:5px 10px;border-radius:6px;cursor:pointer;font-family:inherit;margin-left:6px}
+.fr-add-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px}
+.fr-add-row.full{grid-template-columns:1fr}
+.fr-checkbox-row{display:flex;align-items:center;gap:8px;margin-bottom:10px;font-size:12.5px;color:var(--muted)}
+.fr-add-btn{width:100%;margin-top:8px;font-size:12.5px;font-weight:600;color:#fff;background:linear-gradient(135deg,var(--gold),var(--amber));border:none;padding:9px;border-radius:8px;cursor:pointer;font-family:inherit}
+.mb-pool-row{display:grid;grid-template-columns:1fr 70px 60px;gap:6px;margin-bottom:6px;align-items:center}
+.mb-pool-row input{padding:7px 8px;font-size:12px;border:1px solid var(--border);border-radius:6px;background:var(--bg);color:var(--text);font-family:inherit;outline:none}
+.mb-save-btn{width:100%;margin-top:10px;font-size:12.5px;font-weight:600;color:#fff;background:var(--purple);border:none;padding:9px;border-radius:8px;cursor:pointer;font-family:inherit}
+.mb-current-note{font-size:11px;color:var(--muted);background:var(--bg);border-radius:8px;padding:.6rem .75rem;margin-bottom:10px;line-height:1.5}
 .squads-header{background:linear-gradient(135deg,#2D1B69,#5B3F8A);padding:.875rem 1.25rem;display:flex;align-items:center;justify-content:space-between}
 .squads-header-title{font-size:13px;font-weight:600;color:#fff}
 .squads-toggle{display:flex;align-items:center;gap:8px;font-size:12px;color:rgba(255,255,255,0.85)}
@@ -175,16 +195,16 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-h
 </head>
 <script type="module">
   import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
-  import { getDatabase, ref, set } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js';
+  import { getDatabase, ref, set, get, push, remove } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js';
 
   const firebaseConfig = {
-    apiKey:            'PASTE_API_KEY_HERE',
-    authDomain:        'PASTE_AUTH_DOMAIN_HERE',
-    databaseURL:       'PASTE_DATABASE_URL_HERE',
-    projectId:         'PASTE_PROJECT_ID_HERE',
-    storageBucket:     'PASTE_STORAGE_BUCKET_HERE',
-    messagingSenderId: 'PASTE_MESSAGING_SENDER_ID_HERE',
-    appId:             'PASTE_APP_ID_HERE',
+    apiKey:            'AIzaSyBF79P6AenHXN1685_5o4k50E0Yjxdc7Ko',
+    authDomain:        'perennial-rewards.firebaseapp.com',
+    databaseURL:       'https://perennial-rewards-default-rtdb.firebaseio.com',
+    projectId:         'perennial-rewards',
+    storageBucket:     'perennial-rewards.firebasestorage.app',
+    messagingSenderId: '530822327585',
+    appId:             '1:530822327585:web:c85216e72f53c5380be260',
   };
 
   const app = initializeApp(firebaseConfig);
@@ -202,6 +222,24 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-h
   window._fbSetSquadsConfig = async function(shopKey, config){
     await set(ref(db, 'teamRewards/squads/' + shopKey + '/config'), config);
   };
+  window._fbGetFlashRewards = async function(shopKey){
+    const snap = await get(ref(db, 'flashRewards/' + shopKey));
+    return snap.exists() ? snap.val() : {};
+  };
+  window._fbAddFlashReward = async function(shopKey, item){
+    const newRef = push(ref(db, 'flashRewards/' + shopKey));
+    await set(newRef, item);
+  };
+  window._fbDeleteFlashReward = async function(shopKey, id){
+    await remove(ref(db, 'flashRewards/' + shopKey + '/' + id));
+  };
+  window._fbGetMysteryBox = async function(shopKey){
+    const snap = await get(ref(db, 'mysteryBox/' + shopKey + '/config'));
+    return snap.exists() ? snap.val() : null;
+  };
+  window._fbSaveMysteryBox = async function(shopKey, config){
+    await set(ref(db, 'mysteryBox/' + shopKey + '/config'), config);
+  };
 </script>
 <body>
 <!-- Hamburger overlay + drawer -->
@@ -215,6 +253,12 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-h
     <button class="ham-close-btn" onclick="closeDrawer()">X</button>
   </div>
   <nav class="ham-nav">
+    <a class="ham-nav-item" id="ham-owner" href="https://perennialrewards.github.io/base/owner.html" style="background:#1C1409">
+      <div class="ham-nav-icon" style="background:rgba(232,172,45,0.15)">&#128273;</div>
+      <div class="ham-nav-text"><div class="ham-nav-label" style="color:#fff">Owner Portal</div><div class="ham-nav-sub" style="color:rgba(245,236,212,0.5)">Cross-shop dashboard &amp; exports</div></div>
+      <div class="ham-nav-badge" style="background:#E8AC2D;color:#1C1409">Priority</div>
+    </a>
+    <div class="ham-divider"></div>
     <a class="ham-nav-item" id="ham-hub" href="https://perennialrewards.github.io/base/">
       <div class="ham-nav-icon">&#127942;</div>
       <div class="ham-nav-text"><div class="ham-nav-label">Current Competitions</div><div class="ham-nav-sub">Live team rankings</div></div>
@@ -226,6 +270,14 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-h
     <a class="ham-nav-item" id="ham-trophies" href="https://perennialrewards.github.io/base/trophies.html">
       <div class="ham-nav-icon">&#129351;</div>
       <div class="ham-nav-text"><div class="ham-nav-label">Trophies</div><div class="ham-nav-sub">Shop-wide milestone badges</div></div>
+    </a>
+    <a class="ham-nav-item" id="ham-profiles" href="https://perennialrewards.github.io/base/profiles.html">
+      <div class="ham-nav-icon">&#129476;</div>
+      <div class="ham-nav-text"><div class="ham-nav-label">Profiles</div><div class="ham-nav-sub">Team directory &amp; bios</div></div>
+    </a>
+    <a class="ham-nav-item" id="ham-achiever" href="https://perennialrewards.github.io/base/achiever.html">
+      <div class="ham-nav-icon">&#127941;</div>
+      <div class="ham-nav-text"><div class="ham-nav-label">Your Famous Achiever</div><div class="ham-nav-sub">2-minute quiz + bonus points</div></div>
     </a>
     <div class="ham-divider"></div>
     <a class="ham-nav-item mgr-item" id="ham-roster" href="https://perennialrewards.github.io/base/roster.html">
@@ -314,6 +366,59 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-h
         <label class="field-label" style="display:block;margin-bottom:5px">Prize for winning squad</label>
         <input class="notify-input" type="text" id="squad-prize" placeholder="e.g. 'Winning squad picks next shift swap'" onchange="saveSquadPrize()">
       </div>
+    </div>
+  </div>
+
+  <!-- Flash Rewards -->
+  <div class="squads-section">
+    <div class="squads-header" style="background:linear-gradient(135deg,#B8860B,#E8AC2D)">
+      <div class="squads-header-title">⚡ Flash Rewards</div>
+    </div>
+    <div class="squads-body visible">
+      <div id="flash-list"></div>
+      <div class="fr-add-row">
+        <input class="notify-input" type="text" id="fr-name" placeholder="Item name (e.g. Concert Tickets)">
+        <input class="notify-input" type="text" id="fr-emoji" placeholder="Emoji (e.g. 🎫)" maxlength="4">
+      </div>
+      <div class="fr-add-row">
+        <input class="notify-input" type="number" id="fr-cost" placeholder="Cost (pts)" min="10" step="10">
+        <input class="notify-input" type="number" id="fr-hours" placeholder="Duration (hours)" min="1" step="1">
+      </div>
+      <div class="fr-checkbox-row">
+        <input type="checkbox" id="fr-exclusive"> <label for="fr-exclusive">Exclusive item (not normally in marketplace)</label>
+      </div>
+      <div class="fr-add-row full">
+        <input class="notify-input" type="number" id="fr-original-cost" placeholder="Original cost, if discounted (optional)" min="0" step="10">
+      </div>
+      <button class="fr-add-btn" onclick="addFlashReward()">⚡ Launch flash reward</button>
+    </div>
+  </div>
+
+  <!-- Mystery Box -->
+  <div class="squads-section">
+    <div class="squads-header" style="background:linear-gradient(135deg,#2D1B69,#5B3F8A)">
+      <div class="squads-header-title">🎲 Mystery Box</div>
+    </div>
+    <div class="squads-body visible">
+      <div class="mb-current-note" id="mb-current-note">No active mystery box goal.</div>
+      <label class="field-label" style="display:block;margin-bottom:5px">Scope</label>
+      <select class="notify-input" id="mb-scope" onchange="renderMbScopeFields()" style="margin-bottom:10px">
+        <option value="shop">Whole shop</option>
+        <option value="squad">One squad</option>
+        <option value="individual">One rep</option>
+      </select>
+      <div id="mb-scope-fields" style="margin-bottom:10px"></div>
+      <label class="field-label" style="display:block;margin-bottom:5px">Metric</label>
+      <select class="notify-input" id="mb-metric" style="margin-bottom:10px">
+        <option value="sales">Net Sales ($)</option>
+        <option value="ghf">GHF Units</option>
+        <option value="plus">Plus Units</option>
+      </select>
+      <label class="field-label" style="display:block;margin-bottom:5px">Target</label>
+      <input class="notify-input" type="number" id="mb-target" placeholder="e.g. 5000" style="margin-bottom:10px">
+      <label class="field-label" style="display:block;margin-bottom:5px">Reward pool (what a box can contain)</label>
+      <div id="mb-pool-editor"></div>
+      <button class="mb-save-btn" onclick="saveMysteryBox()">🎲 Launch this mystery box goal</button>
     </div>
   </div>
 
@@ -408,6 +513,8 @@ function checkAuth(){
     document.getElementById('auth-screen').style.display = 'none';
     document.getElementById('main-content').style.display = 'block';
     renderSquadsPanel();
+    renderFlashList();
+    loadMysteryBoxCurrent();
   } else {
     const inp = document.getElementById('auth-input');
     document.getElementById('auth-error').textContent = 'Incorrect password.';
@@ -467,6 +574,132 @@ function deleteSquad(id){
   saveRoster(roster);
   renderSquadsPanel();
   renderRoster();
+}
+
+// ── Flash Rewards ────────────────────────────────────────────
+async function renderFlashList(){
+  const shopKey = SHOP_NAME.replace(/\s/g,'_');
+  const items = await window._fbGetFlashRewards(shopKey);
+  const now = Date.now();
+  const listEl = document.getElementById('flash-list');
+  const ids = Object.keys(items);
+  if(!ids.length){ listEl.innerHTML = '<div style="font-size:12px;color:var(--muted);padding:6px 0">No flash rewards yet.</div>'; return; }
+  listEl.innerHTML = ids.map(id=>{
+    const it = items[id];
+    const active = now >= it.startTime && now <= it.endTime;
+    const hoursLeft = Math.max(0, Math.round((it.endTime - now) / 3600000));
+    return `<div class="fr-item">
+      <div class="fr-item-emoji">${it.emoji||'⚡'}</div>
+      <div class="fr-item-info">
+        <div class="fr-item-name">${it.name}${it.exclusive?' <span style="color:var(--purple)">(exclusive)</span>':''}</div>
+        <div class="fr-item-meta">${it.cost} pts${it.originalCost?' (was '+it.originalCost+')':''} · ${active ? hoursLeft+'h left' : 'expired'}</div>
+      </div>
+      <div class="fr-item-status ${active?'active':'expired'}">${active?'Active':'Expired'}</div>
+      <button class="fr-del-btn" onclick="deleteFlashReward('${id}')">✕</button>
+    </div>`;
+  }).join('');
+}
+window.deleteFlashReward = async function(id){
+  const shopKey = SHOP_NAME.replace(/\s/g,'_');
+  await window._fbDeleteFlashReward(shopKey, id);
+  renderFlashList();
+};
+window.addFlashReward = async function(){
+  const name = document.getElementById('fr-name').value.trim();
+  const emoji = document.getElementById('fr-emoji').value.trim() || '⚡';
+  const cost = parseInt(document.getElementById('fr-cost').value) || 0;
+  const hours = parseInt(document.getElementById('fr-hours').value) || 0;
+  const exclusive = document.getElementById('fr-exclusive').checked;
+  const originalCost = parseInt(document.getElementById('fr-original-cost').value) || null;
+  if(!name || !cost || !hours){ alert('Name, cost, and duration are required.'); return; }
+  const shopKey = SHOP_NAME.replace(/\s/g,'_');
+  const now = Date.now();
+  await window._fbAddFlashReward(shopKey, {
+    name, emoji, cost, exclusive, originalCost,
+    startTime: now, endTime: now + hours*3600000,
+  });
+  document.getElementById('fr-name').value = '';
+  document.getElementById('fr-emoji').value = '';
+  document.getElementById('fr-cost').value = '';
+  document.getElementById('fr-hours').value = '';
+  document.getElementById('fr-original-cost').value = '';
+  document.getElementById('fr-exclusive').checked = false;
+  renderFlashList();
+};
+
+// ── Mystery Box ──────────────────────────────────────────────
+function renderMbScopeFields(){
+  const scope = document.getElementById('mb-scope').value;
+  const el = document.getElementById('mb-scope-fields');
+  if(scope === 'squad'){
+    const squads = getSquads();
+    el.innerHTML = '<select class="notify-input" id="mb-squad-select">'
+      + (squads.length ? squads.map(sq=>`<option value="${sq.id}">${sq.name}</option>`).join('') : '<option value="">No squads created yet</option>')
+      + '</select>';
+  } else if(scope === 'individual'){
+    const roster = getRoster();
+    el.innerHTML = '<select class="notify-input" id="mb-rep-select">'
+      + (roster.length ? roster.map(r=>`<option value="${r.name}">${r.name}</option>`).join('') : '<option value="">No reps on roster yet</option>')
+      + '</select>';
+  } else {
+    el.innerHTML = '';
+  }
+}
+function renderMbPoolEditor(pool){
+  pool = pool && pool.length ? pool : [
+    {label:'Small win', emoji:'🌰', points:25, weight:40},
+    {label:'Nice bump', emoji:'🎁', points:75, weight:30},
+    {label:'Solid haul', emoji:'💰', points:150, weight:20},
+    {label:'Jackpot', emoji:'🏆', points:500, weight:10},
+  ];
+  document.getElementById('mb-pool-editor').innerHTML = pool.map((p,i)=>`
+    <div class="mb-pool-row">
+      <input placeholder="Label" value="${p.label}" data-i="${i}" data-f="label">
+      <input type="number" placeholder="Points" value="${p.points}" data-i="${i}" data-f="points">
+      <input type="number" placeholder="Weight" value="${p.weight}" data-i="${i}" data-f="weight">
+    </div>`).join('');
+}
+window.saveMysteryBox = async function(){
+  const scope = document.getElementById('mb-scope').value;
+  const metric = document.getElementById('mb-metric').value;
+  const target = parseInt(document.getElementById('mb-target').value) || 0;
+  if(!target){ alert('Set a target value.'); return; }
+  let squadId = null, repName = null;
+  if(scope === 'squad'){
+    squadId = document.getElementById('mb-squad-select')?.value || null;
+    if(!squadId){ alert('Create a squad first, or choose a different scope.'); return; }
+  }
+  if(scope === 'individual'){
+    repName = document.getElementById('mb-rep-select')?.value || null;
+    if(!repName){ alert('Add a rep to the roster first, or choose a different scope.'); return; }
+  }
+  const rows = document.querySelectorAll('#mb-pool-editor .mb-pool-row');
+  const pool = Array.from(rows).map(row=>{
+    const inputs = row.querySelectorAll('input');
+    return { label: inputs[0].value.trim()||'Reward', points: parseInt(inputs[1].value)||0, weight: parseInt(inputs[2].value)||1 };
+  });
+  const shopKey = SHOP_NAME.replace(/\s/g,'_');
+  await window._fbSaveMysteryBox(shopKey, {
+    configId: 'mb_' + Date.now(),
+    scope, squadId, repName, metric, target, rewardPool: pool,
+    active: true, createdAt: Date.now(),
+  });
+  loadMysteryBoxCurrent();
+  alert('Mystery box goal launched — this replaces the previous one and resets who\u2019s already claimed.');
+};
+async function loadMysteryBoxCurrent(){
+  const shopKey = SHOP_NAME.replace(/\s/g,'_');
+  const cfg = await window._fbGetMysteryBox(shopKey);
+  const noteEl = document.getElementById('mb-current-note');
+  if(!cfg){ noteEl.textContent = 'No active mystery box goal.'; renderMbPoolEditor(); return; }
+  const scopeLabel = cfg.scope === 'shop' ? 'Whole shop' : cfg.scope === 'squad' ? 'Squad: ' + cfg.squadId : 'Rep: ' + cfg.repName;
+  const metricLabel = cfg.metric === 'sales' ? 'Net Sales' : cfg.metric === 'ghf' ? 'GHF Units' : 'Plus Units';
+  noteEl.textContent = 'Current goal: ' + scopeLabel + ' — ' + metricLabel + ' \u2265 ' + cfg.target.toLocaleString();
+  document.getElementById('mb-scope').value = cfg.scope;
+  renderMbScopeFields();
+  document.getElementById('mb-metric').value = cfg.metric;
+  document.getElementById('mb-target').value = cfg.target;
+  renderMbPoolEditor(cfg.rewardPool);
 }
 function renderSquadsPanel(){
   const enabled = squadsEnabled();

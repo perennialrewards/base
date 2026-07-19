@@ -15,13 +15,13 @@
   // → Your project → Project Settings → Your Apps → Config
   // ================================================================
   const firebaseConfig = {
-    apiKey:            'PASTE_API_KEY_HERE',
-    authDomain:        'PASTE_AUTH_DOMAIN_HERE',
-    databaseURL:       'PASTE_DATABASE_URL_HERE',
-    projectId:         'PASTE_PROJECT_ID_HERE',
-    storageBucket:     'PASTE_STORAGE_BUCKET_HERE',
-    messagingSenderId: 'PASTE_MESSAGING_SENDER_ID_HERE',
-    appId:             'PASTE_APP_ID_HERE',
+    apiKey:            'AIzaSyBF79P6AenHXN1685_5o4k50E0Yjxdc7Ko',
+    authDomain:        'perennial-rewards.firebaseapp.com',
+    databaseURL:       'https://perennial-rewards-default-rtdb.firebaseio.com',
+    projectId:         'perennial-rewards',
+    storageBucket:     'perennial-rewards.firebasestorage.app',
+    messagingSenderId: '530822327585',
+    appId:             '1:530822327585:web:c85216e72f53c5380be260',
   };
   // ================================================================
   // STOP — do not edit anything below this line
@@ -36,10 +36,18 @@
       const squadSnap  = await get(ref(db, 'teamRewards/squads/' + window.SHOP_KEY));
       const assignSnap = await get(ref(db, 'squadAssign/' + window.SHOP_KEY));
       const allTimeSnap = await get(ref(db, 'points_alltime/' + window.SHOP_KEY));
+      const bonusSnap = await get(ref(db, 'points_bonus/' + window.SHOP_KEY));
+      const mysterySnap = await get(ref(db, 'points_mystery/' + window.SHOP_KEY));
       window._squadConfig = squadSnap.exists() ? (squadSnap.val().config || {}) : {};
       window._squadList   = squadSnap.exists() ? (squadSnap.val().list || []) : [];
       window._squadAssign = assignSnap.exists() ? assignSnap.val() : {};
-      window._allTimePoints = allTimeSnap.exists() ? allTimeSnap.val() : {};
+      const rawAllTime = allTimeSnap.exists() ? allTimeSnap.val() : {};
+      const rawBonus   = bonusSnap.exists() ? bonusSnap.val() : {};
+      const rawMystery = mysterySnap.exists() ? mysterySnap.val() : {};
+      window._allTimePoints = {};
+      new Set([...Object.keys(rawAllTime), ...Object.keys(rawBonus), ...Object.keys(rawMystery)]).forEach(k => {
+        window._allTimePoints[k] = (rawAllTime[k]||0) + (rawBonus[k]||0) + (rawMystery[k]||0);
+      });
       if (snap.exists()) {
         const data = snap.val();
         lastLiveData = data.liveData;
@@ -521,6 +529,11 @@
     <div style="font-size:12px;color:rgba(255,255,255,0.5);margin-top:2px">Rewards Program</div>
   </div>
   <div style="padding:1rem 0;flex:1">
+    <a href="owner.html" style="display:flex;align-items:center;gap:12px;padding:.875rem 1.25rem;text-decoration:none;color:#fff;font-size:14px;font-weight:600;background:#1C1409">
+      <span style="font-size:18px">🔑</span> Owner Portal
+      <span style="margin-left:auto;font-size:9px;font-weight:700;color:#E8AC2D;background:rgba(232,172,45,0.18);padding:2px 7px;border-radius:9px;text-transform:uppercase;letter-spacing:.3px">Priority</span>
+    </a>
+    <div style="border-top:0.5px solid rgba(61,43,26,0.15);margin:.5rem 1.25rem"></div>
     <a href="index.html" style="display:flex;align-items:center;gap:12px;padding:.875rem 1.25rem;text-decoration:none;color:var(--charcoal);font-size:14px;font-weight:500">
       <span style="font-size:18px">🏆</span> Current Competitions
     </a>
@@ -530,8 +543,11 @@
     <a href="trophies.html" style="display:flex;align-items:center;gap:12px;padding:.875rem 1.25rem;text-decoration:none;color:var(--charcoal);font-size:14px;font-weight:500">
       <span style="font-size:18px">🥇</span> Trophies
     </a>
-    <a href="motivation-quiz.html" style="display:flex;align-items:center;gap:12px;padding:.875rem 1.25rem;text-decoration:none;color:var(--charcoal);font-size:14px;font-weight:500">
-      <span style="font-size:18px">🧠</span> Motivation Quiz
+    <a href="profiles.html" style="display:flex;align-items:center;gap:12px;padding:.875rem 1.25rem;text-decoration:none;color:var(--charcoal);font-size:14px;font-weight:500">
+      <span style="font-size:18px">🪪</span> Profiles
+    </a>
+    <a href="achiever.html" style="display:flex;align-items:center;gap:12px;padding:.875rem 1.25rem;text-decoration:none;color:var(--charcoal);font-size:14px;font-weight:500">
+      <span style="font-size:18px">🏅</span> Your Famous Achiever
     </a>
     <div style="border-top:0.5px solid rgba(61,43,26,0.15);margin:.5rem 1.25rem"></div>
     <a href="roster.html" style="display:flex;align-items:center;gap:12px;padding:.875rem 1.25rem;text-decoration:none;color:#5B3F8A;font-size:14px;font-weight:500">

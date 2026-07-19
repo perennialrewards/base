@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Perennial — Your Famous Achiever</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,600;1,9..144,400&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#1C1409; --brown:#3D2B1A; --cream:#F5ECD4; --cream2:#EDE0C4;
+  --amber:#C17F24; --gold:#E8AC2D; --rust:#A63D2F; --moss:#6B7C3E;
+  --border:rgba(61,43,26,0.15); --muted:#8A7A68; --white:#FFFFFF; --purple:#5B3F8A;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Inter',system-ui,sans-serif;background:var(--cream);min-height:100vh;color:var(--ink)}
+
+.banner{width:100%;background:var(--ink);padding:2rem 1.25rem 2.5rem;text-align:center;position:relative;border-radius:0 0 32px 32px}
+.banner-logo img{height:52px;width:auto;margin-bottom:.75rem}
+.banner-title{font-family:'Fraunces',serif;font-size:1.75rem;font-weight:700;color:#fff;margin-bottom:.25rem}
+.banner-sub{font-family:'Fraunces',serif;font-size:1.05rem;color:#fff;font-style:italic;opacity:.85}
+.ham-btn{position:absolute;top:16px;left:16px;width:40px;height:40px;border-radius:10px;background:rgba(255,255,255,0.12);border:none;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px}
+.ham-btn div{width:18px;height:2px;background:#fff;border-radius:2px}
+
+.page{max-width:480px;margin:0 auto;padding:1.25rem}
+.pin-card{background:var(--white);border:0.5px solid var(--border);border-radius:16px;padding:2rem 1.5rem;margin-bottom:1rem;text-align:center}
+.field-group{margin-bottom:1rem;text-align:left}
+.field-label{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin-bottom:6px}
+select.field-input,input.field-input{width:100%;padding:10px 12px;font-size:14px;border:1.5px solid var(--border);border-radius:9px;background:var(--cream);color:var(--ink);font-family:inherit;outline:none}
+.btn-primary{width:100%;padding:13px;font-size:14px;font-weight:600;color:#fff;background:var(--ink);border:none;border-radius:10px;cursor:pointer;font-family:inherit}
+.btn-primary:hover{opacity:.9}
+.err-msg{font-size:12px;color:#EF4444;min-height:16px;margin-bottom:.5rem}
+
+/* Intro */
+.intro-emoji{font-size:40px;margin-bottom:.75rem}
+.intro-title{font-family:'Fraunces',serif;font-size:1.4rem;font-weight:600;margin-bottom:.5rem}
+.intro-body{font-size:13px;color:var(--muted);line-height:1.6;margin-bottom:1.5rem}
+
+/* Quiz */
+.quiz-wrap{display:none}
+.progress-bar-bg{height:6px;background:var(--cream2);border-radius:6px;overflow:hidden;margin-bottom:8px}
+.progress-bar-fill{height:100%;background:linear-gradient(90deg,var(--amber),var(--gold));border-radius:6px;transition:width .3s}
+.progress-label{font-size:11px;color:var(--muted);text-align:center;margin-bottom:1.25rem}
+.q-card{background:var(--white);border:0.5px solid var(--border);border-radius:16px;padding:1.75rem 1.5rem;text-align:center}
+.q-prompt{font-family:'Fraunces',serif;font-size:1.15rem;font-weight:600;color:var(--ink);margin-bottom:1.5rem;line-height:1.4}
+.q-option{display:block;width:100%;padding:1rem 1.1rem;margin-bottom:10px;background:var(--cream);border:1.5px solid var(--border);border-radius:12px;font-size:13.5px;color:var(--ink);font-family:inherit;text-align:left;cursor:pointer;transition:border-color .12s,background .12s}
+.q-option:hover{border-color:var(--amber);background:#fff}
+.q-option:last-child{margin-bottom:0}
+
+/* Reveal */
+.reveal-wrap{display:none}
+.reveal-card{background:linear-gradient(135deg,var(--ink),var(--brown));border-radius:20px;padding:2.25rem 1.75rem;text-align:center;margin-bottom:1rem}
+.reveal-eyebrow{font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--gold);margin-bottom:1rem}
+.reveal-emoji{font-size:52px;margin-bottom:.75rem}
+.reveal-title{font-family:'Fraunces',serif;font-size:1.6rem;font-weight:600;color:#fff;margin-bottom:.6rem}
+.reveal-body{font-size:13.5px;color:rgba(245,236,212,0.8);line-height:1.6;max-width:340px;margin:0 auto}
+.bonus-banner{background:linear-gradient(135deg,var(--gold),var(--amber));border-radius:14px;padding:1rem 1.25rem;text-align:center;margin-bottom:1rem}
+.bonus-banner-title{font-family:'Fraunces',serif;font-size:1.05rem;font-weight:600;color:var(--ink)}
+.bonus-banner-sub{font-size:12px;color:rgba(28,20,9,0.7);margin-top:2px}
+.already-note{font-size:12px;color:var(--muted);text-align:center;margin-bottom:1rem}
+.action-link{background:var(--white);border:0.5px solid var(--border);border-radius:12px;padding:1rem;text-decoration:none;display:flex;align-items:center;gap:10px;margin-bottom:.75rem}
+.action-link-icon{font-size:20px}
+.action-link-title{font-size:13px;font-weight:600;color:var(--ink)}
+.action-link-sub{font-size:11px;color:var(--muted)}
+.sign-out{text-align:center;margin-top:.75rem}
+.sign-out button{font-size:12px;color:var(--muted);background:none;border:none;cursor:pointer;text-decoration:underline;font-family:inherit}
+</style>
+</head>
+<body>
+
+<!-- Side menu -->
+<div id="menu-overlay" onclick="toggleMenu()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:300"></div>
+<div id="menu-drawer" style="display:none;position:fixed;top:0;left:0;width:260px;height:100%;background:#fff;z-index:400;box-shadow:4px 0 20px rgba(0,0,0,0.15);flex-direction:column">
+  <div style="background:#1C1409;padding:1.5rem 1.25rem 1.25rem">
+    <div style="font-size:14px;font-weight:600;color:#fff">Perennial</div>
+    <div style="font-size:12px;color:rgba(255,255,255,0.5);margin-top:2px">Rewards Program</div>
+  </div>
+  <div style="padding:1rem 0;flex:1">
+    <a href="owner.html" style="display:flex;align-items:center;gap:12px;padding:.875rem 1.25rem;text-decoration:none;color:#fff;font-size:14px;font-weight:600;background:#1C1409">
+      <span style="font-size:18px">🔑</span> Owner Portal
+      <span style="margin-left:auto;font-size:9px;font-weight:700;color:#E8AC2D;background:rgba(232,172,45,0.18);padding:2px 7px;border-radius:9px;text-transform:uppercase;letter-spacing:.3px">Priority</span>
+    </a>
+    <div style="border-top:0.5px solid rgba(61,43,26,0.15);margin:.5rem 1.25rem"></div>
+    <a href="index.html" style="display:flex;align-items:center;gap:12px;padding:.875rem 1.25rem;text-decoration:none;color:#1C1409;font-size:14px;font-weight:500">
+      <span style="font-size:18px">🏆</span> Current Competitions
+    </a>
+    <a href="points.html" style="display:flex;align-items:center;gap:12px;padding:.875rem 1.25rem;text-decoration:none;color:#1C1409;font-size:14px;font-weight:500">
+      <span style="font-size:18px">⭐</span> My Rewards
+    </a>
+    <a href="trophies.html" style="display:flex;align-items:center;gap:12px;padding:.875rem 1.25rem;text-decoration:none;color:#1C1409;font-size:14px;font-weight:500">
+      <span style="font-size:18px">🥇</span> Trophies
+    </a>
+    <a href="profiles.html" style="display:flex;align-items:center;gap:12px;padding:.875rem 1.25rem;text-decoration:none;color:#1C1409;font-size:14px;font-weight:500">
+      <span style="font-size:18px">🪪</span> Profiles
+    </a>
+    <a href="achiever.html" style="display:flex;align-items:center;gap:12px;padding:.875rem 1.25rem;text-decoration:none;color:#1C1409;font-size:14px;font-weight:500;background:#F5ECD4">
+      <span style="font-size:18px">🏅</span> Your Famous Achiever
+    </a>
+    <div style="border-top:0.5px solid rgba(61,43,26,0.15);margin:.5rem 1.25rem"></div>
+    <a href="roster.html" style="display:flex;align-items:center;gap:12px;padding:.875rem 1.25rem;text-decoration:none;color:#5B3F8A;font-size:14px;font-weight:500">
+      <span style="font-size:18px">👥</span> Rep Roster
+      <span style="margin-left:auto;font-size:10px;font-weight:600;color:#5B3F8A;background:#F3F0FA;padding:2px 8px;border-radius:10px">🔒 Manager</span>
+    </a>
+  </div>
+  <div style="padding:1rem 1.25rem;border-top:0.5px solid rgba(61,43,26,0.15);font-size:11px;color:#8A7A68">
+    Perennial · Internal use only
+  </div>
+</div>
+
+<div class="banner">
+  <button class="ham-btn" onclick="toggleMenu()"><div></div><div></div><div></div></button>
+  <div class="banner-logo"><img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQwIiBoZWlnaHQ9IjcyIiB2aWV3Qm94PSIwIDAgMjQwIDcyIiBmaWxsPSJub25lIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxnIHRyYW5zZm9ybT0idHJhbnNsYXRlKDM2LDM2KSI+PGVsbGlwc2UgY3g9IjAiIGN5PSItMjgiIHJ4PSI1IiByeT0iOSIgZmlsbD0iI0MxN0YyNCIgdHJhbnNmb3JtPSJyb3RhdGUoMCkiLz48ZWxsaXBzZSBjeD0iMCIgY3k9Ii0yOCIgcng9IjUiIHJ5PSI5IiBmaWxsPSIjQzk0QjFFIiBvcGFjaXR5PSIwLjk1IiB0cmFuc2Zvcm09InJvdGF0ZSgzMCkiLz48ZWxsaXBzZSBjeD0iMCIgY3k9Ii0yOCIgcng9IjUiIHJ5PSI5IiBmaWxsPSIjQjg1QzM4IiBvcGFjaXR5PSIwLjkiIHRyYW5zZm9ybT0icm90YXRlKDYwKSIvPjxlbGxpcHNlIGN4PSIwIiBjeT0iLTI4IiByeD0iNSIgcnk9IjkiIGZpbGw9IiNENDk1MkEiIG9wYWNpdHk9IjAuODUiIHRyYW5zZm9ybT0icm90YXRlKDkwKSIvPjxlbGxpcHNlIGN4PSIwIiBjeT0iLTI4IiByeD0iNSIgcnk9IjkiIGZpbGw9IiNBNjNEMkYiIG9wYWNpdHk9IjAuODUiIHRyYW5zZm9ybT0icm90YXRlKDEyMCkiLz48ZWxsaXBzZSBjeD0iMCIgY3k9Ii0yOCIgcng9IjUiIHJ5PSI5IiBmaWxsPSIjRThBQzJEIiBvcGFjaXR5PSIwLjgiIHRyYW5zZm9ybT0icm90YXRlKDE1MCkiLz48ZWxsaXBzZSBjeD0iMCIgY3k9Ii0yOCIgcng9IjUiIHJ5PSI5IiBmaWxsPSIjNkIzQTJBIiBvcGFjaXR5PSIwLjgiIHRyYW5zZm9ybT0icm90YXRlKDE4MCkiLz48ZWxsaXBzZSBjeD0iMCIgY3k9Ii0yOCIgcng9IjUiIHJ5PSI5IiBmaWxsPSIjQzA1QzJDIiBvcGFjaXR5PSIwLjgiIHRyYW5zZm9ybT0icm90YXRlKDIxMCkiLz48ZWxsaXBzZSBjeD0iMCIgY3k9Ii0yOCIgcng9IjUiIHJ5PSI5IiBmaWxsPSIjNkI3QzNFIiBvcGFjaXR5PSIwLjc1IiB0cmFuc2Zvcm09InJvdGF0ZSgyNDApIi8+PGVsbGlwc2UgY3g9IjAiIGN5PSItMjgiIHJ4PSI1IiByeT0iOSIgZmlsbD0iI0Q0QTgzMiIgb3BhY2l0eT0iMC44IiB0cmFuc2Zvcm09InJvdGF0ZSgyNzApIi8+PGVsbGlwc2UgY3g9IjAiIGN5PSItMjgiIHJ4PSI1IiByeT0iOSIgZmlsbD0iIzhCMjUxOCIgb3BhY2l0eT0iMC44IiB0cmFuc2Zvcm09InJvdGF0ZSgzMDApIi8+PGVsbGlwc2UgY3g9IjAiIGN5PSItMjgiIHJ4PSI1IiByeT0iOSIgZmlsbD0iI0Q0NzIxQSIgb3BhY2l0eT0iMC44NSIgdHJhbnNmb3JtPSJyb3RhdGUoMzMwKSIvPjxjaXJjbGUgY3g9IjAiIGN5PSIwIiByPSIxOCIgc3Ryb2tlPSIjQzE3RjI0IiBzdHJva2Utd2lkdGg9IjAuNSIgZmlsbD0ibm9uZSIgb3BhY2l0eT0iMC4yNSIvPjx0ZXh0IHg9Ii04IiB5PSIxMCIgZm9udC1mYW1pbHk9IkZyYXVuY2VzLEdlb3JnaWEsc2VyaWYiIGZvbnQtc2l6ZT0iMjgiIGZvbnQtd2VpZ2h0PSI2MDAiIGZpbGw9IiNGNUVDRDQiPlA8L3RleHQ+PC9nPjx0ZXh0IHg9IjgyIiB5PSI0NyIgZm9udC1mYW1pbHk9IkZyYXVuY2VzLEdlb3JnaWEsc2VyaWYiIGZvbnQtc2l6ZT0iMzAiIGZvbnQtd2VpZ2h0PSI2MDAiIGZpbGw9IiNGNUVDRDQiIGxldHRlci1zcGFjaW5nPSItMC41Ij5lcmVubmlhbDwvdGV4dD48L3N2Zz4=" alt="Perennial"></div>
+  <div class="banner-title">Your Famous Achiever</div>
+  <div class="banner-sub">10 questions. One archetype. A little something for playing along.</div>
+</div>
+
+<div class="page">
+
+  <!-- PIN wall -->
+  <div class="pin-card" id="pin-wall">
+    <div class="field-group">
+      <div class="field-label">Your name</div>
+      <select class="field-input" id="pts-name"><option value="">Select your name...</option></select>
+    </div>
+    <div class="field-group">
+      <div class="field-label">PIN</div>
+      <input class="field-input" type="password" id="pts-pin" placeholder="Enter your PIN" inputmode="numeric" maxlength="6">
+    </div>
+    <div class="err-msg" id="pin-error"></div>
+    <button class="btn-primary" onclick="ptsLogin()">Continue</button>
+  </div>
+
+  <!-- Intro (shown after PIN, before quiz starts) -->
+  <div id="intro-wrap" style="display:none">
+    <div class="pin-card">
+      <div class="intro-emoji">🏅</div>
+      <div class="intro-title">Find your Famous Achiever</div>
+      <div class="intro-body">10 quick either/or questions — no wrong answers. At the end you'll get your Achiever type, plus a little something for playing along.</div>
+      <button class="btn-primary" onclick="startQuiz()">Reveal my type →</button>
+    </div>
+  </div>
+
+  <!-- Quiz -->
+  <div class="quiz-wrap" id="quiz-wrap">
+    <div class="progress-bar-bg"><div class="progress-bar-fill" id="progress-fill" style="width:10%"></div></div>
+    <div class="progress-label" id="progress-label">Question 1 of 10</div>
+    <div id="question-slot"></div>
+  </div>
+
+  <!-- Reveal (employee sees this — never the full breakdown) -->
+  <div class="reveal-wrap" id="reveal-wrap">
+    <div class="reveal-card">
+      <div class="reveal-eyebrow">Your Famous Achiever</div>
+      <div class="reveal-emoji" id="reveal-emoji">🎯</div>
+      <div class="reveal-title" id="reveal-title"></div>
+      <div class="reveal-body" id="reveal-body"></div>
+    </div>
+    <div class="bonus-banner" id="bonus-banner">
+      <div class="bonus-banner-title">🎉 +10 bonus points added!</div>
+      <div class="bonus-banner-sub">Check My Rewards to see your updated balance.</div>
+    </div>
+    <div class="already-note" id="already-note" style="display:none">You've already taken this — here's your Achiever type.</div>
+    <a href="points.html" class="action-link">
+      <div class="action-link-icon">⭐</div>
+      <div><div class="action-link-title">My Rewards</div><div class="action-link-sub">See your updated points</div></div>
+    </a>
+    <div class="sign-out"><button onclick="location.reload()">Take again as someone else</button></div>
+  </div>
+
+</div>
+
+<script type="module">
+  import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+  import { getDatabase, ref, get, set, runTransaction } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js';
+
+  const firebaseConfig = {
+    apiKey:            'AIzaSyBF79P6AenHXN1685_5o4k50E0Yjxdc7Ko',
+    authDomain:        'perennial-rewards.firebaseapp.com',
+    databaseURL:       'https://perennial-rewards-default-rtdb.firebaseio.com',
+    projectId:         'perennial-rewards',
+    storageBucket:     'perennial-rewards.firebasestorage.app',
+    messagingSenderId: '530822327585',
+    appId:             '1:530822327585:web:c85216e72f53c5380be260',
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db  = getDatabase(app);
+  const SHOP_NAME = 'Perennial';
+  const shopKey   = SHOP_NAME.replace(/\s/g,'_');
+  let currentName = '';
+
+  // ── 8 Archetypes ──────────────────────────────────────────────
+  const ARCHETYPES = {
+    visionary: {emoji:'🧭', title:'The Visionary', desc:"You're driven by purpose. A shift feels different when you know it's part of something bigger."},
+    climber:   {emoji:'📈', title:'The Climber',   desc:'You\u2019re driven by growth. Every shift is a rep toward becoming the best version of yourself.'},
+    innovator: {emoji:'🎨', title:'The Innovator', desc:"You're driven by curiosity. You'd rather find a better way than follow the old one."},
+    collector: {emoji:'💰', title:'The Collector', desc:"You're driven by ownership. Points, titles, badges — you like watching what's yours add up."},
+    connector: {emoji:'🤝', title:'The Connector', desc:'You\u2019re driven by people. A good shift is one where the team wins together.'},
+    closer:    {emoji:'⏳', title:'The Closer',    desc:'You\u2019re driven by the clock. Nothing focuses you like a deadline closing in.'},
+    wildcard:  {emoji:'🎲', title:'The Wildcard',  desc:'You\u2019re driven by surprise. Predictable is fine. Unexpected is better.'},
+    guardian:  {emoji:'🛡️', title:'The Guardian',  desc:'You\u2019re driven by consistency. Streaks aren\u2019t just numbers — they\u2019re a point of pride.'},
+  };
+
+  // ── 10 forced-choice questions ───────────────────────────────
+  const QUESTIONS = [
+    {prompt:'What pulls you into a shift?', a:{key:'visionary',text:'Knowing it\u2019s part of something bigger'}, b:{key:'climber',text:'A chance to get better at what I do'}},
+    {prompt:'You just solved a problem your own way. What matters more?', a:{key:'innovator',text:'That it was a new approach nobody tried'}, b:{key:'collector',text:'That it added to what I\u2019ve built'}},
+    {prompt:'A great day at work is one where...', a:{key:'connector',text:'The whole team wins together'}, b:{key:'closer',text:'You close it out right before time runs out'}},
+    {prompt:'Which sounds more like you?', a:{key:'wildcard',text:'I like not knowing what\u2019s coming next'}, b:{key:'guardian',text:'I like keeping a streak alive, no matter what'}},
+    {prompt:'What actually motivates you day to day?', a:{key:'visionary',text:'A cause bigger than any one shift'}, b:{key:'innovator',text:'Finding a smarter way to do things'}},
+    {prompt:'What feels better to earn?', a:{key:'climber',text:'A new title or rank'}, b:{key:'collector',text:'A stack of points and rewards'}},
+    {prompt:'You have a little extra time today. What do you do with it?', a:{key:'connector',text:'Help a teammate hit their goal'}, b:{key:'guardian',text:'Make sure nothing slips and breaks your streak'}},
+    {prompt:'What gets your attention faster?', a:{key:'closer',text:'A deadline closing in'}, b:{key:'wildcard',text:'A surprise bonus out of nowhere'}},
+    {prompt:'Which feels more rewarding?', a:{key:'visionary',text:'Knowing your work matters to the bigger picture'}, b:{key:'connector',text:'Being recognized by your team'}},
+    {prompt:'What\u2019s more satisfying?', a:{key:'climber',text:'Hitting a new personal best'}, b:{key:'closer',text:'Beating the clock on a big sale'}},
+  ];
+
+  let qIndex = 0;
+  const wins = {};
+
+  window.ptsLogin = async function(){
+    const name = document.getElementById('pts-name').value;
+    const pin  = document.getElementById('pts-pin').value.trim();
+    const err  = document.getElementById('pin-error');
+    if(!name){ err.textContent = 'Select your name.'; return; }
+    if(!pin){ err.textContent = 'Enter your PIN.'; return; }
+    err.textContent = 'Checking...';
+    const saved = (await getPinFirebase(name)) || getPin(name);
+    if(!saved){ err.textContent = 'No PIN set — ask your manager.'; return; }
+    if(pin !== String(saved)){ err.textContent = 'Incorrect PIN.'; return; }
+    err.textContent = '';
+    currentName = name;
+    document.getElementById('pin-wall').style.display = 'none';
+
+    // Already taken? Skip straight to reveal.
+    const safeName = name.replace(/\s/g,'_');
+    let already = null;
+    try {
+      const snap = await get(ref(db, 'octalysis/' + shopKey + '/' + safeName));
+      if(snap.exists()) already = snap.val();
+    } catch(e){ console.warn('Achiever lookup failed:', e); }
+    if(!already){
+      const local = localStorage.getItem('achiever_' + shopKey + '_' + safeName);
+      if(local) already = JSON.parse(local);
+    }
+    if(already && already.topDrive){
+      window.showReveal(already.topDrive, true);
+    } else {
+      document.getElementById('intro-wrap').style.display = 'block';
+    }
+  };
+
+  function getPin(name){
+    return localStorage.getItem('rep_pin_Perennial_' + name.replace(/\s/g,'_')) || '';
+  }
+  async function getPinFirebase(name){
+    try {
+      const snap = await get(ref(db, 'pins/Perennial/' + name.replace(/\s/g,'_')));
+      return snap.exists() ? String(snap.val()) : null;
+    } catch(e){ return null; }
+  }
+
+  async function loadNames(){
+    try {
+      const snap = await get(ref(db, 'leaderboard/liveData/txn'));
+      if(snap.exists()){
+        const sel = document.getElementById('pts-name');
+        snap.val().forEach(r => {
+          const o = document.createElement('option');
+          o.value = r.name; o.textContent = r.name;
+          sel.appendChild(o);
+        });
+      }
+    } catch(e){ console.warn('Could not load names:', e); }
+  }
+  loadNames();
+
+  window.startQuiz = function(){
+    document.getElementById('intro-wrap').style.display = 'none';
+    document.getElementById('quiz-wrap').style.display = 'block';
+    qIndex = 0;
+    Object.keys(ARCHETYPES).forEach(k => wins[k] = 0);
+    renderQuestion();
+  };
+
+  function renderQuestion(){
+    const q = QUESTIONS[qIndex];
+    document.getElementById('progress-fill').style.width = ((qIndex+1)/QUESTIONS.length*100) + '%';
+    document.getElementById('progress-label').textContent = 'Question ' + (qIndex+1) + ' of ' + QUESTIONS.length;
+    document.getElementById('question-slot').innerHTML =
+      '<div class="q-card"><div class="q-prompt">' + q.prompt + '</div>'
+      + '<button class="q-option" onclick="answerQ(\'' + q.a.key + '\')">' + q.a.text + '</button>'
+      + '<button class="q-option" onclick="answerQ(\'' + q.b.key + '\')">' + q.b.text + '</button>'
+      + '</div>';
+  }
+
+  window.answerQ = function(key){
+    wins[key] = (wins[key]||0) + 1;
+    qIndex++;
+    if(qIndex < QUESTIONS.length){
+      renderQuestion();
+    } else {
+      finishQuiz();
+    }
+  };
+
+  async function finishQuiz(){
+    const scores = Object.keys(wins).map(k => ({key:k, wins:wins[k]}));
+    scores.sort((a,b) => b.wins - a.wins);
+    const topDrive = scores[0].key;
+    const safeName = currentName.replace(/\s/g,'_');
+
+    const payload = {
+      name: currentName,
+      scores: scores,   // full breakdown — manager-only, never shown to the employee
+      topDrive: topDrive,
+      bonusAwarded: true,
+      timestamp: Date.now(),
+    };
+
+    localStorage.setItem('achiever_' + shopKey + '_' + safeName, JSON.stringify({topDrive, timestamp: payload.timestamp}));
+
+    try {
+      await set(ref(db, 'octalysis/' + shopKey + '/' + safeName), payload);
+      // Bonus points live in their own node so they're never clobbered by the
+      // manager's next upload (points_alltime gets overwritten wholesale on
+      // every upload — a raw set() here would silently erase the bonus).
+      await runTransaction(ref(db, 'points_bonus/' + shopKey + '/' + safeName), cur => (cur||0) + 10);
+    } catch(e){ console.warn('Achiever save failed, continuing:', e); }
+
+    document.getElementById('quiz-wrap').style.display = 'none';
+    window.showReveal(topDrive, false);
+  }
+
+  window.showReveal = function(topDrive, alreadyTaken){
+    const d = ARCHETYPES[topDrive] || ARCHETYPES.visionary;
+    document.getElementById('reveal-emoji').textContent = d.emoji;
+    document.getElementById('reveal-title').textContent = d.title;
+    document.getElementById('reveal-body').textContent = d.desc;
+    document.getElementById('bonus-banner').style.display = alreadyTaken ? 'none' : 'block';
+    document.getElementById('already-note').style.display = alreadyTaken ? 'block' : 'none';
+    document.getElementById('reveal-wrap').style.display = 'block';
+  };
+
+  window.toggleMenu = function(){
+    const overlay = document.getElementById('menu-overlay');
+    const drawer  = document.getElementById('menu-drawer');
+    const open = drawer.style.display === 'flex';
+    overlay.style.display = open ? 'none' : 'block';
+    drawer.style.display  = open ? 'none' : 'flex';
+  };
+  document.addEventListener('keydown', e => {
+    if(e.key === 'Escape'){
+      document.getElementById('menu-overlay').style.display='none';
+      document.getElementById('menu-drawer').style.display='none';
+    }
+  });
+</script>
+</body>
+</html>

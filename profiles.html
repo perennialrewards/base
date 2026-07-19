@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Perennial — Profiles</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,600;1,9..144,400&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#1C1409; --brown:#3D2B1A; --cream:#F5ECD4; --cream2:#EDE0C4;
+  --amber:#C17F24; --gold:#E8AC2D; --rust:#A63D2F; --moss:#6B7C3E;
+  --border:rgba(61,43,26,0.15); --muted:#8A7A68; --white:#FFFFFF; --purple:#5B3F8A;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Inter',system-ui,sans-serif;background:var(--cream);min-height:100vh;color:var(--ink)}
+
+.banner{width:100%;background:var(--ink);padding:2rem 1.25rem 2.5rem;text-align:center;position:relative;border-radius:0 0 32px 32px}
+.banner-logo img{height:52px;width:auto;margin-bottom:.75rem}
+.banner-title{font-family:'Fraunces',serif;font-size:1.75rem;font-weight:700;color:#fff;margin-bottom:.25rem}
+.banner-sub{font-family:'Fraunces',serif;font-size:1.05rem;color:#fff;font-style:italic;opacity:.85}
+.ham-btn{position:absolute;top:16px;left:16px;width:40px;height:40px;border-radius:10px;background:rgba(255,255,255,0.12);border:none;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px}
+.ham-btn div{width:18px;height:2px;background:#fff;border-radius:2px}
+
+.page{max-width:560px;margin:0 auto;padding:1.25rem 1.25rem 3rem}
+.page-loading{text-align:center;padding:3rem 1rem;color:var(--muted);font-size:13px}
+
+/* Edit-my-profile card */
+.edit-card{background:var(--white);border:0.5px solid var(--border);border-radius:16px;padding:1.5rem;margin-bottom:1.5rem}
+.edit-card-title{font-size:15px;font-weight:600;color:var(--ink);margin-bottom:4px}
+.edit-card-sub{font-size:12px;color:var(--muted);margin-bottom:1.1rem}
+.field-group{margin-bottom:1rem;text-align:left}
+.field-label{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin-bottom:6px}
+select.field-input,input.field-input,textarea.field-input{width:100%;padding:10px 12px;font-size:14px;border:1.5px solid var(--border);border-radius:9px;background:var(--cream);color:var(--ink);font-family:inherit;outline:none}
+textarea.field-input{resize:none}
+.btn-primary{width:100%;padding:12px;font-size:14px;font-weight:600;color:#fff;background:var(--ink);border:none;border-radius:10px;cursor:pointer;font-family:inherit}
+.err-msg{font-size:12px;color:#EF4444;min-height:16px;margin-bottom:.5rem}
+.ok-msg{font-size:12px;color:var(--moss);min-height:16px;margin-bottom:.5rem}
+
+.icon-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:8px}
+.icon-opt{aspect-ratio:1;border-radius:10px;border:2px solid var(--border);background:var(--cream);font-size:20px;display:flex;align-items:center;justify-content:center;cursor:pointer}
+.icon-opt.sel{border-color:var(--ink);background:var(--white)}
+.color-row{display:flex;gap:8px;flex-wrap:wrap}
+.color-opt{width:32px;height:32px;border-radius:50%;cursor:pointer;border:3px solid transparent}
+.color-opt.sel{border-color:var(--ink)}
+
+.bio-counter{font-size:10px;color:var(--muted);text-align:right;margin-top:-4px;margin-bottom:.75rem}
+
+/* Directory */
+.section-title{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin:1.5rem 0 .75rem}
+.profile-card{background:var(--white);border:0.5px solid var(--border);border-radius:14px;margin-bottom:.75rem;overflow:hidden;cursor:pointer}
+.profile-row{display:flex;align-items:center;gap:12px;padding:.9rem 1.1rem}
+.profile-avatar{width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+.profile-info{flex:1;min-width:0}
+.profile-name{font-size:14px;font-weight:600;color:var(--ink)}
+.profile-meta{font-size:11px;color:var(--muted);margin-top:1px;display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.mini-badge{font-size:9.5px;font-weight:700;padding:2px 7px;border-radius:8px}
+.profile-detail{display:none;padding:0 1.1rem 1.1rem;border-top:0.5px solid var(--border);margin-top:0}
+.profile-detail.open{display:block}
+.profile-bio{font-size:12.5px;color:var(--brown);line-height:1.5;padding-top:.9rem;font-style:italic}
+.profile-stats{display:flex;gap:16px;margin-top:.75rem;flex-wrap:wrap}
+.profile-stat{font-size:11px;color:var(--muted)}
+.profile-stat strong{color:var(--ink);font-weight:600}
+
+.empty-state{text-align:center;padding:2rem 1rem;color:var(--muted);font-size:13px}
+
+/* Gifting */
+.gift-btn{width:100%;margin-top:.9rem;padding:10px;font-size:13px;font-weight:600;color:#fff;background:linear-gradient(135deg,var(--gold),var(--amber));border:none;border-radius:9px;cursor:pointer;font-family:inherit}
+.gift-btn:disabled{opacity:.4;cursor:not-allowed}
+.gift-modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:500;align-items:center;justify-content:center;padding:1.25rem}
+.gift-modal-bg.open{display:flex}
+.gift-modal{background:var(--white);border-radius:16px;padding:1.5rem;max-width:360px;width:100%}
+.gift-modal-title{font-size:15px;font-weight:600;color:var(--ink);margin-bottom:4px}
+.gift-modal-sub{font-size:12px;color:var(--muted);margin-bottom:1.1rem}
+.gift-modal-close{float:right;background:none;border:none;font-size:18px;color:var(--muted);cursor:pointer}
+.gift-balance-note{font-size:11px;color:var(--muted);margin-bottom:.75rem}
+.generosity-badge{display:inline-flex;align-items:center;gap:5px;font-size:10.5px;font-weight:700;padding:3px 10px;border-radius:12px;margin-top:.5rem}
+.generosity-badge.g0{background:rgba(138,122,104,0.12);color:var(--muted)}
+.generosity-badge.g1{background:rgba(107,124,62,0.14);color:#3D5020}
+.generosity-badge.g2{background:rgba(193,127,36,0.16);color:var(--amber)}
+.generosity-badge.g3{background:rgba(232,172,45,0.2);color:#B8860B}
+.generosity-badge.g4{background:linear-gradient(135deg,#2D1B69,#5B3F8A);color:#fff}
+
+/* Gift feed */
+.gift-feed-item{display:flex;align-items:center;gap:10px;padding:.7rem 0;border-bottom:0.5px solid var(--border);font-size:12.5px}
+.gift-feed-item:last-child{border-bottom:none}
+.gift-feed-icon{font-size:16px;flex-shrink:0}
+.gift-feed-text{flex:1;color:var(--brown)}
+.gift-feed-text strong{color:var(--ink)}
+.gift-feed-time{font-size:10px;color:var(--muted);white-space:nowrap}
+</style>
+</head>
+<body>
+
+<!-- Side menu -->
+<div id="menu-overlay" onclick="toggleMenu()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:300"></div>
+<div id="menu-drawer" style="display:none;position:fixed;top:0;left:0;width:260px;height:100%;background:#fff;z-index:400;box-shadow:4px 0 20px rgba(0,0,0,0.15);flex-direction:column">
+  <div style="background:#1C1409;padding:1.5rem 1.25rem 1.25rem">
+    <div style="font-size:14px;font-weight:600;color:#fff">Perennial</div>
+    <div style="font-size:12px;color:rgba(255,255,255,0.5);margin-top:2px">Rewards Program</div>
+  </div>
+  <div style="padding:1rem 0;flex:1">
+    <a href="owner.html" style="display:flex;align-items:center;gap:12px;padding:.875rem 1.25rem;text-decoration:none;color:#fff;font-size:14px;font-weight:600;background:#1C1409">
+      <span style="font-size:18px">🔑</span> Owner Portal
+      <span style="margin-left:auto;font-size:9px;font-weight:700;color:#E8AC2D;background:rgba(232,172,45,0.18);padding:2px 7px;border-radius:9px;text-transform:uppercase;letter-spacing:.3px">Priority</span>
+    </a>
+    <div style="border-top:0.5px solid rgba(61,43,26,0.15);margin:.5rem 1.25rem"></div>
+    <a href="index.html" style="display:flex;align-items:center;gap:12px;padding:.875rem 1.25rem;text-decoration:none;color:#1C1409;font-size:14px;font-weight:500">
+      <span style="font-size:18px">🏆</span> Current Competitions
+    </a>
+    <a href="points.html" style="display:flex;align-items:center;gap:12px;padding:.875rem 1.25rem;text-decoration:none;color:#1C1409;font-size:14px;font-weight:500">
+      <span style="font-size:18px">⭐</span> My Rewards
+    </a>
+    <a href="trophies.html" style="display:flex;align-items:center;gap:12px;padding:.875rem 1.25rem;text-decoration:none;color:#1C1409;font-size:14px;font-weight:500">
+      <span style="font-size:18px">🥇</span> Trophies
+    </a>
+    <a href="profiles.html" style="display:flex;align-items:center;gap:12px;padding:.875rem 1.25rem;text-decoration:none;color:#1C1409;font-size:14px;font-weight:500;background:#F5ECD4">
+      <span style="font-size:18px">🪪</span> Profiles
+    </a>
+    <a href="achiever.html" style="display:flex;align-items:center;gap:12px;padding:.875rem 1.25rem;text-decoration:none;color:#1C1409;font-size:14px;font-weight:500">
+      <span style="font-size:18px">🏅</span> Your Famous Achiever
+    </a>
+    <div style="border-top:0.5px solid rgba(61,43,26,0.15);margin:.5rem 1.25rem"></div>
+    <a href="roster.html" style="display:flex;align-items:center;gap:12px;padding:.875rem 1.25rem;text-decoration:none;color:#5B3F8A;font-size:14px;font-weight:500">
+      <span style="font-size:18px">👥</span> Rep Roster
+      <span style="margin-left:auto;font-size:10px;font-weight:600;color:#5B3F8A;background:#F3F0FA;padding:2px 8px;border-radius:10px">🔒 Manager</span>
+    </a>
+  </div>
+  <div style="padding:1rem 1.25rem;border-top:0.5px solid rgba(61,43,26,0.15);font-size:11px;color:#8A7A68">
+    Perennial · Internal use only
+  </div>
+</div>
+
+<div class="banner">
+  <button class="ham-btn" onclick="toggleMenu()"><div></div><div></div><div></div></button>
+  <div class="banner-logo"><img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQwIiBoZWlnaHQ9IjcyIiB2aWV3Qm94PSIwIDAgMjQwIDcyIiBmaWxsPSJub25lIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxnIHRyYW5zZm9ybT0idHJhbnNsYXRlKDM2LDM2KSI+PGVsbGlwc2UgY3g9IjAiIGN5PSItMjgiIHJ4PSI1IiByeT0iOSIgZmlsbD0iI0MxN0YyNCIgdHJhbnNmb3JtPSJyb3RhdGUoMCkiLz48ZWxsaXBzZSBjeD0iMCIgY3k9Ii0yOCIgcng9IjUiIHJ5PSI5IiBmaWxsPSIjQzk0QjFFIiBvcGFjaXR5PSIwLjk1IiB0cmFuc2Zvcm09InJvdGF0ZSgzMCkiLz48ZWxsaXBzZSBjeD0iMCIgY3k9Ii0yOCIgcng9IjUiIHJ5PSI5IiBmaWxsPSIjQjg1QzM4IiBvcGFjaXR5PSIwLjkiIHRyYW5zZm9ybT0icm90YXRlKDYwKSIvPjxlbGxpcHNlIGN4PSIwIiBjeT0iLTI4IiByeD0iNSIgcnk9IjkiIGZpbGw9IiNENDk1MkEiIG9wYWNpdHk9IjAuODUiIHRyYW5zZm9ybT0icm90YXRlKDkwKSIvPjxlbGxpcHNlIGN4PSIwIiBjeT0iLTI4IiByeD0iNSIgcnk9IjkiIGZpbGw9IiNBNjNEMkYiIG9wYWNpdHk9IjAuODUiIHRyYW5zZm9ybT0icm90YXRlKDEyMCkiLz48ZWxsaXBzZSBjeD0iMCIgY3k9Ii0yOCIgcng9IjUiIHJ5PSI5IiBmaWxsPSIjRThBQzJEIiBvcGFjaXR5PSIwLjgiIHRyYW5zZm9ybT0icm90YXRlKDE1MCkiLz48ZWxsaXBzZSBjeD0iMCIgY3k9Ii0yOCIgcng9IjUiIHJ5PSI5IiBmaWxsPSIjNkIzQTJBIiBvcGFjaXR5PSIwLjgiIHRyYW5zZm9ybT0icm90YXRlKDE4MCkiLz48ZWxsaXBzZSBjeD0iMCIgY3k9Ii0yOCIgcng9IjUiIHJ5PSI5IiBmaWxsPSIjQzA1QzJDIiBvcGFjaXR5PSIwLjgiIHRyYW5zZm9ybT0icm90YXRlKDIxMCkiLz48ZWxsaXBzZSBjeD0iMCIgY3k9Ii0yOCIgcng9IjUiIHJ5PSI5IiBmaWxsPSIjNkI3QzNFIiBvcGFjaXR5PSIwLjc1IiB0cmFuc2Zvcm09InJvdGF0ZSgyNDApIi8+PGVsbGlwc2UgY3g9IjAiIGN5PSItMjgiIHJ4PSI1IiByeT0iOSIgZmlsbD0iI0Q0QTgzMiIgb3BhY2l0eT0iMC44IiB0cmFuc2Zvcm09InJvdGF0ZSgyNzApIi8+PGVsbGlwc2UgY3g9IjAiIGN5PSItMjgiIHJ4PSI1IiByeT0iOSIgZmlsbD0iIzhCMjUxOCIgb3BhY2l0eT0iMC44IiB0cmFuc2Zvcm09InJvdGF0ZSgzMDApIi8+PGVsbGlwc2UgY3g9IjAiIGN5PSItMjgiIHJ4PSI1IiByeT0iOSIgZmlsbD0iI0Q0NzIxQSIgb3BhY2l0eT0iMC44NSIgdHJhbnNmb3JtPSJyb3RhdGUoMzMwKSIvPjxjaXJjbGUgY3g9IjAiIGN5PSIwIiByPSIxOCIgc3Ryb2tlPSIjQzE3RjI0IiBzdHJva2Utd2lkdGg9IjAuNSIgZmlsbD0ibm9uZSIgb3BhY2l0eT0iMC4yNSIvPjx0ZXh0IHg9Ii04IiB5PSIxMCIgZm9udC1mYW1pbHk9IkZyYXVuY2VzLEdlb3JnaWEsc2VyaWYiIGZvbnQtc2l6ZT0iMjgiIGZvbnQtd2VpZ2h0PSI2MDAiIGZpbGw9IiNGNUVDRDQiPlA8L3RleHQ+PC9nPjx0ZXh0IHg9IjgyIiB5PSI0NyIgZm9udC1mYW1pbHk9IkZyYXVuY2VzLEdlb3JnaWEsc2VyaWYiIGZvbnQtc2l6ZT0iMzAiIGZvbnQtd2VpZ2h0PSI2MDAiIGZpbGw9IiNGNUVDRDQiIGxldHRlci1zcGFjaW5nPSItMC41Ij5lcmVubmlhbDwvdGV4dD48L3N2Zz4=" alt="Perennial"></div>
+  <div class="banner-title">Profiles</div>
+  <div class="banner-sub">Get to know the team</div>
+</div>
+
+<div class="page">
+
+  <!-- Edit My Profile -->
+  <div class="edit-card">
+    <div class="edit-card-title">🪪 Edit My Profile</div>
+    <div class="edit-card-sub" id="edit-sub">Sign in to customize your avatar and bio.</div>
+
+    <div id="edit-pin-wall">
+      <div class="field-group">
+        <div class="field-label">Your name</div>
+        <select class="field-input" id="pts-name"><option value="">Select your name...</option></select>
+      </div>
+      <div class="field-group">
+        <div class="field-label">PIN</div>
+        <input class="field-input" type="password" id="pts-pin" placeholder="Enter your PIN" inputmode="numeric" maxlength="6">
+      </div>
+      <div class="err-msg" id="pin-error"></div>
+      <button class="btn-primary" onclick="editLogin()">Continue</button>
+    </div>
+
+    <div id="edit-form" style="display:none">
+      <div class="field-group">
+        <div class="field-label">Icon</div>
+        <div class="icon-grid" id="icon-grid"></div>
+      </div>
+      <div class="field-group">
+        <div class="field-label">Color</div>
+        <div class="color-row" id="color-row"></div>
+      </div>
+      <div class="field-group">
+        <div class="field-label">Bio</div>
+        <textarea class="field-input" id="bio-input" rows="2" maxlength="80" placeholder="A line about you..." oninput="updateBioCounter()"></textarea>
+      </div>
+      <div class="bio-counter" id="bio-counter">0 / 80</div>
+      <div class="ok-msg" id="save-msg"></div>
+      <button class="btn-primary" onclick="saveProfile()">Save profile</button>
+    </div>
+  </div>
+
+  <!-- Directory -->
+  <div class="section-title">Team</div>
+  <div id="directory"><div class="page-loading">Loading team profiles...</div></div>
+
+  <div class="section-title">Recent Gifts</div>
+  <div id="gift-feed" class="edit-card" style="padding:1rem 1.25rem"></div>
+
+</div>
+
+<!-- Gift modal -->
+<div class="gift-modal-bg" id="gift-modal-bg">
+  <div class="gift-modal">
+    <button class="gift-modal-close" onclick="closeGiftModal()">✕</button>
+    <div class="gift-modal-title" id="gift-modal-title">Gift points</div>
+    <div class="gift-modal-sub">Comes out of your own balance — nothing extra is created.</div>
+    <div class="gift-balance-note" id="gift-balance-note"></div>
+    <div class="field-group">
+      <div class="field-label">Amount</div>
+      <input class="field-input" type="number" id="gift-amount" min="10" step="10" placeholder="e.g. 50">
+    </div>
+    <div class="field-group">
+      <div class="field-label">Message (optional)</div>
+      <input class="field-input" type="text" id="gift-message" maxlength="60" placeholder="Nice work covering that rush!">
+    </div>
+    <div class="err-msg" id="gift-error"></div>
+    <button class="btn-primary" onclick="sendGift()">Send gift</button>
+  </div>
+</div>
+
+<script type="module">
+  import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+  import { getDatabase, ref, get, set, runTransaction, push } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js';
+
+  const firebaseConfig = {
+    apiKey:            'AIzaSyBF79P6AenHXN1685_5o4k50E0Yjxdc7Ko',
+    authDomain:        'perennial-rewards.firebaseapp.com',
+    databaseURL:       'https://perennial-rewards-default-rtdb.firebaseio.com',
+    projectId:         'perennial-rewards',
+    storageBucket:     'perennial-rewards.firebasestorage.app',
+    messagingSenderId: '530822327585',
+    appId:             '1:530822327585:web:c85216e72f53c5380be260',
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db  = getDatabase(app);
+  const SHOP_NAME = 'Perennial';
+  const shopKey   = SHOP_NAME.replace(/\s/g,'_');
+  let currentName = '';
+
+  const ICONS  = ['🌿','🔥','⭐','🎯','🚀','💎','🦁','🐝','🌵','🍁','🎨','🏆'];
+  const COLORS = ['#C17F24','#C94B1E','#B85C38','#D4952A','#A63D2F','#E8AC2D','#6B3A2A','#C05C2C','#6B7C3E','#D4A832','#8B2518','#D4721A','#5B3F8A'];
+
+  const SKILL_TITLES = [
+    {pts:0,    name:'Novice'},        {pts:250,  name:'Budtender'},
+    {pts:750,  name:'Specialist'},    {pts:2000, name:'Closer'},
+    {pts:5000, name:'Master Closer'},
+  ];
+  const MILESTONE_TIERS = [
+    {pts:500, name:'Sprout',emoji:'🌱'}, {pts:1000, name:'Sapling',emoji:'🌿'},
+    {pts:2500, name:'Harvest',emoji:'🍂'}, {pts:5000, name:'Evergreen',emoji:'🌲'},
+  ];
+  const ARCHETYPE_TITLES = {
+    visionary:'The Visionary', climber:'The Climber', innovator:'The Innovator',
+    collector:'The Collector', connector:'The Connector', closer:'The Closer',
+    wildcard:'The Wildcard', guardian:'The Guardian',
+  };
+  const GENEROSITY_TIERS = [
+    {pts:0,    name:'',                    cls:'g0'},
+    {pts:100,  name:'🌰 Seed-Sower',        cls:'g1'},
+    {pts:300,  name:'🤝 Helping Hand',      cls:'g2'},
+    {pts:750,  name:'🌻 Community Builder', cls:'g3'},
+    {pts:1500, name:'🌳 Pillar of the Team',cls:'g4'},
+  ];
+  function generosityFor(pts){ return [...GENEROSITY_TIERS].reverse().find(t => pts >= t.pts); }
+  let giftTargetName = '';
+  let giverBalance = 0;
+
+  let selectedIcon = ICONS[0];
+  let selectedColor = COLORS[0];
+
+  function ini(n){ return n.split(' ').map(p=>p[0]).join('').toUpperCase().slice(0,2); }
+  function titleFor(pts){ return [...SKILL_TITLES].reverse().find(t => pts >= t.pts)?.name || 'Novice'; }
+  function milestoneFor(pts){ return [...MILESTONE_TIERS].reverse().find(t => pts >= t.pts) || null; }
+
+  function getPin(name){ return localStorage.getItem('rep_pin_Perennial_' + name.replace(/\s/g,'_')) || ''; }
+  async function getPinFirebase(name){
+    try {
+      const snap = await get(ref(db, 'pins/Perennial/' + name.replace(/\s/g,'_')));
+      return snap.exists() ? String(snap.val()) : null;
+    } catch(e){ return null; }
+  }
+
+  async function loadNames(){
+    try {
+      const snap = await get(ref(db, 'leaderboard/liveData/txn'));
+      if(snap.exists()){
+        const sel = document.getElementById('pts-name');
+        snap.val().forEach(r => {
+          const o = document.createElement('option');
+          o.value = r.name; o.textContent = r.name;
+          sel.appendChild(o);
+        });
+      }
+    } catch(e){ console.warn('Could not load names:', e); }
+  }
+
+  window.editLogin = async function(){
+    const name = document.getElementById('pts-name').value;
+    const pin  = document.getElementById('pts-pin').value.trim();
+    const err  = document.getElementById('pin-error');
+    if(!name){ err.textContent = 'Select your name.'; return; }
+    if(!pin){ err.textContent = 'Enter your PIN.'; return; }
+    err.textContent = 'Checking...';
+    const saved = (await getPinFirebase(name)) || getPin(name);
+    if(!saved){ err.textContent = 'No PIN set — ask your manager.'; return; }
+    if(pin !== String(saved)){ err.textContent = 'Incorrect PIN.'; return; }
+    err.textContent = '';
+    currentName = name;
+    document.getElementById('edit-pin-wall').style.display = 'none';
+    document.getElementById('edit-sub').textContent = 'Editing as ' + name;
+    document.getElementById('edit-form').style.display = 'block';
+
+    let existing = null;
+    try {
+      const snap = await get(ref(db, 'profiles/' + shopKey + '/' + name.replace(/\s/g,'_')));
+      if(snap.exists()) existing = snap.val();
+    } catch(e){ console.warn('Profile load failed:', e); }
+
+    selectedIcon  = existing?.icon  || ICONS[0];
+    selectedColor = existing?.color || COLORS[0];
+    document.getElementById('bio-input').value = existing?.bio || '';
+    updateBioCounter();
+    renderIconGrid();
+    renderColorRow();
+    loadDirectory();
+  };
+
+  function renderIconGrid(){
+    document.getElementById('icon-grid').innerHTML = ICONS.map(ic =>
+      `<div class="icon-opt${ic===selectedIcon?' sel':''}" onclick="pickIcon('${ic}')">${ic}</div>`
+    ).join('');
+  }
+  function renderColorRow(){
+    document.getElementById('color-row').innerHTML = COLORS.map(c =>
+      `<div class="color-opt${c===selectedColor?' sel':''}" style="background:${c}" onclick="pickColor('${c}')"></div>`
+    ).join('');
+  }
+  window.pickIcon  = function(ic){ selectedIcon = ic; renderIconGrid(); };
+  window.pickColor = function(c){ selectedColor = c; renderColorRow(); };
+  window.updateBioCounter = function(){
+    const len = document.getElementById('bio-input').value.length;
+    document.getElementById('bio-counter').textContent = len + ' / 80';
+  };
+
+  window.saveProfile = async function(){
+    const bio = document.getElementById('bio-input').value.trim();
+    const msg = document.getElementById('save-msg');
+    const payload = { icon: selectedIcon, color: selectedColor, bio, updatedAt: Date.now() };
+    try {
+      await set(ref(db, 'profiles/' + shopKey + '/' + currentName.replace(/\s/g,'_')), payload);
+      msg.textContent = 'Saved ✓';
+      loadDirectory();
+    } catch(e){
+      msg.textContent = 'Save failed — check connection.';
+      console.error('Profile save error:', e);
+    }
+  };
+
+  async function loadDirectory(){
+    const el = document.getElementById('directory');
+    try {
+      const [namesSnap, profSnap, allTimeSnap, bonusSnap, squadListSnap, squadAssignSnap, achieverSnap, giftSentSnap, mysterySnap] = await Promise.all([
+        get(ref(db, 'leaderboard/liveData/txn')),
+        get(ref(db, 'profiles/' + shopKey)),
+        get(ref(db, 'points_alltime/' + shopKey)),
+        get(ref(db, 'points_bonus/' + shopKey)),
+        get(ref(db, 'teamRewards/squads/' + shopKey + '/list')),
+        get(ref(db, 'squadAssign/' + shopKey)),
+        get(ref(db, 'octalysis/' + shopKey)),
+        get(ref(db, 'points_gift_sent/' + shopKey)),
+        get(ref(db, 'points_mystery/' + shopKey)),
+      ]);
+
+      if(!namesSnap.exists()){
+        el.innerHTML = '<div class="empty-state">No reps found yet — check back once data has been uploaded.</div>';
+        return;
+      }
+
+      const profiles   = profSnap.exists() ? profSnap.val() : {};
+      const allTime     = allTimeSnap.exists() ? allTimeSnap.val() : {};
+      const bonus        = bonusSnap.exists() ? bonusSnap.val() : {};
+      const squadList     = squadListSnap.exists() ? squadListSnap.val() : [];
+      const squadAssign  = squadAssignSnap.exists() ? squadAssignSnap.val() : {};
+      const achieverData = achieverSnap.exists() ? achieverSnap.val() : {};
+      const giftSent      = giftSentSnap.exists() ? giftSentSnap.val() : {};
+      const mystery        = mysterySnap.exists() ? mysterySnap.val() : {};
+
+      const reps = namesSnap.val().map((r,i) => {
+        const key = r.name.replace(/\s/g,'_');
+        const lifetime = (allTime[key]||0) + (bonus[key]||0) + (mystery[key]||0);
+        const prof = profiles[key] || {};
+        const squad = squadList.find(s => s.id === squadAssign[key]);
+        const achieverKey = achieverData[key]?.topDrive;
+        return {
+          name: r.name, key, lifetime,
+          icon: prof.icon || '🌿', color: prof.color || COLORS[i % COLORS.length],
+          bio: prof.bio || '', hasProfile: !!prof.icon,
+          squadName: squad ? squad.name : null,
+          archetype: achieverKey ? ARCHETYPE_TITLES[achieverKey] : null,
+          gifted: giftSent[key] || 0,
+        };
+      }).sort((a,b) => b.lifetime - a.lifetime);
+
+      el.innerHTML = reps.map((rep,i) => {
+        const title = titleFor(rep.lifetime);
+        const ms = milestoneFor(rep.lifetime);
+        const gen = generosityFor(rep.gifted);
+        const isSelf = currentName && rep.name === currentName;
+        return `<div class="profile-card">
+          <div class="profile-row" onclick="toggleDetail(${i})">
+            <div class="profile-avatar" style="background:${rep.color}">${rep.icon}</div>
+            <div class="profile-info">
+              <div class="profile-name">${rep.name}</div>
+              <div class="profile-meta">
+                <span class="mini-badge" style="background:rgba(91,63,138,0.12);color:#5B3F8A">${title}</span>
+                ${rep.squadName ? `<span class="mini-badge" style="background:rgba(193,127,36,0.12);color:#C17F24">${rep.squadName}</span>` : ''}
+              </div>
+            </div>
+          </div>
+          <div class="profile-detail" id="detail-${i}">
+            ${rep.bio ? `<div class="profile-bio">"${rep.bio}"</div>` : `<div class="profile-bio" style="opacity:.5">No bio yet.</div>`}
+            <div class="profile-stats">
+              <div class="profile-stat"><strong>${rep.lifetime.toLocaleString()}</strong> lifetime pts</div>
+              ${ms ? `<div class="profile-stat">${ms.emoji} <strong>${ms.name}</strong> milestone</div>` : ''}
+              ${rep.archetype ? `<div class="profile-stat">🏅 <strong>${rep.archetype}</strong></div>` : ''}
+            </div>
+            ${gen.name ? `<div class="generosity-badge ${gen.cls}">${gen.name}</div>` : ''}
+            ${isSelf ? '' : `<button class="gift-btn" onclick="openGiftModal('${rep.name.replace(/'/g,"\\'")}')">🎁 Gift points to ${rep.name.split(' ')[0]}</button>`}
+          </div>
+        </div>`;
+      }).join('');
+    } catch(e){
+      console.error('Directory load error:', e);
+      el.innerHTML = '<div class="empty-state">Could not load profiles — check connection and refresh.</div>';
+    }
+  }
+
+  window.toggleDetail = function(i){
+    const d = document.getElementById('detail-' + i);
+    d.classList.toggle('open');
+  };
+
+  window.openGiftModal = async function(targetName){
+    if(!currentName){
+      alert('Sign in above under "Edit My Profile" first — that\u2019s how we confirm who\u2019s sending the gift.');
+      return;
+    }
+    giftTargetName = targetName;
+    document.getElementById('gift-modal-title').textContent = 'Gift points to ' + targetName;
+    document.getElementById('gift-amount').value = '';
+    document.getElementById('gift-message').value = '';
+    document.getElementById('gift-error').textContent = '';
+    document.getElementById('gift-balance-note').textContent = 'Checking your balance...';
+    document.getElementById('gift-modal-bg').classList.add('open');
+
+    // Recompute the giver's live spendable balance the same way points.html does
+    try {
+      const safe = currentName.replace(/\s/g,'_');
+      const [allTimeSnap, bonusSnap, spentSnap, giftSentSnap, giftRecdSnap] = await Promise.all([
+        get(ref(db, 'points_alltime/' + shopKey + '/' + safe)),
+        get(ref(db, 'points_bonus/' + shopKey + '/' + safe)),
+        get(ref(db, 'points_spent/' + shopKey + '/' + safe)),
+        get(ref(db, 'points_gift_sent/' + shopKey + '/' + safe)),
+        get(ref(db, 'points_gift_received/' + shopKey + '/' + safe)),
+      ]);
+      const lifetime = (allTimeSnap.exists()?allTimeSnap.val():0) + (bonusSnap.exists()?bonusSnap.val():0);
+      const spent    = spentSnap.exists() ? spentSnap.val() : 0;
+      const gSent    = giftSentSnap.exists() ? giftSentSnap.val() : 0;
+      const gRecd    = giftRecdSnap.exists() ? giftRecdSnap.val() : 0;
+      giverBalance = Math.max(0, lifetime + gRecd - spent - gSent);
+      document.getElementById('gift-balance-note').textContent = 'You have ' + giverBalance.toLocaleString() + ' pts available to gift.';
+    } catch(e){
+      giverBalance = 0;
+      document.getElementById('gift-balance-note').textContent = 'Could not load your balance — try again.';
+    }
+  };
+
+  window.closeGiftModal = function(){
+    document.getElementById('gift-modal-bg').classList.remove('open');
+  };
+
+  window.sendGift = async function(){
+    const err = document.getElementById('gift-error');
+    const amount = parseInt(document.getElementById('gift-amount').value) || 0;
+    const message = document.getElementById('gift-message').value.trim();
+    if(amount < 10){ err.textContent = 'Minimum gift is 10 pts.'; return; }
+    if(amount > giverBalance){ err.textContent = 'You only have ' + giverBalance.toLocaleString() + ' pts available.'; return; }
+    err.textContent = '';
+
+    const giverSafe  = currentName.replace(/\s/g,'_');
+    const targetSafe = giftTargetName.replace(/\s/g,'_');
+    try {
+      await runTransaction(ref(db, 'points_gift_sent/' + shopKey + '/' + giverSafe), cur => (cur||0) + amount);
+      await runTransaction(ref(db, 'points_gift_received/' + shopKey + '/' + targetSafe), cur => (cur||0) + amount);
+      await push(ref(db, 'giftFeed/' + shopKey), {
+        from: currentName, to: giftTargetName, amount, message: message || '',
+        timestamp: Date.now(),
+      });
+      closeGiftModal();
+      loadDirectory();
+      loadGiftFeed();
+    } catch(e){
+      err.textContent = 'Could not send gift — check connection and try again.';
+      console.error('Gift send error:', e);
+    }
+  };
+
+  async function loadGiftFeed(){
+    const el = document.getElementById('gift-feed');
+    try {
+      const snap = await get(ref(db, 'giftFeed/' + shopKey));
+      if(!snap.exists()){
+        el.innerHTML = '<div class="empty-state" style="padding:1rem 0">No gifts yet — be the first to send one.</div>';
+        return;
+      }
+      const items = Object.values(snap.val()).sort((a,b) => b.timestamp - a.timestamp).slice(0, 15);
+      el.innerHTML = items.map(g => {
+        const mins = Math.max(1, Math.round((Date.now() - g.timestamp) / 60000));
+        const when = mins < 60 ? mins + 'm ago' : mins < 1440 ? Math.round(mins/60) + 'h ago' : Math.round(mins/1440) + 'd ago';
+        return `<div class="gift-feed-item">
+          <div class="gift-feed-icon">🎁</div>
+          <div class="gift-feed-text"><strong>${g.from}</strong> gifted <strong>${g.amount} pts</strong> to <strong>${g.to}</strong>${g.message ? ' — "' + g.message + '"' : ''}</div>
+          <div class="gift-feed-time">${when}</div>
+        </div>`;
+      }).join('');
+    } catch(e){
+      console.error('Gift feed load error:', e);
+      el.innerHTML = '<div class="empty-state" style="padding:1rem 0">Could not load recent gifts.</div>';
+    }
+  }
+
+  window.toggleMenu = function(){
+    const overlay = document.getElementById('menu-overlay');
+    const drawer  = document.getElementById('menu-drawer');
+    const open = drawer.style.display === 'flex';
+    overlay.style.display = open ? 'none' : 'block';
+    drawer.style.display  = open ? 'none' : 'flex';
+  };
+  document.addEventListener('keydown', e => {
+    if(e.key === 'Escape'){
+      document.getElementById('menu-overlay').style.display='none';
+      document.getElementById('menu-drawer').style.display='none';
+    }
+  });
+
+  loadNames();
+  loadDirectory();
+  loadGiftFeed();
+</script>
+</body>
+</html>

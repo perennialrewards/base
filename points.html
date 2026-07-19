@@ -111,14 +111,25 @@
     <div style="font-size:12px;color:rgba(255,255,255,0.5);margin-top:2px">Rewards Program</div>
   </div>
   <div style="padding:1rem 0;flex:1">
+    <a href="owner.html" style="display:flex;align-items:center;gap:12px;padding:.875rem 1.25rem;text-decoration:none;color:#fff;font-size:14px;font-weight:600;background:#1C1409">
+      <span style="font-size:18px">🔑</span> Owner Portal
+      <span style="margin-left:auto;font-size:9px;font-weight:700;color:#E8AC2D;background:rgba(232,172,45,0.18);padding:2px 7px;border-radius:9px;text-transform:uppercase;letter-spacing:.3px">Priority</span>
+    </a>
+    <div style="border-top:0.5px solid rgba(61,43,26,0.15);margin:.5rem 1.25rem"></div>
     <a href="index.html" style="display:flex;align-items:center;gap:12px;padding:.875rem 1.25rem;text-decoration:none;color:#1C1409;font-size:14px;font-weight:500">
       <span style="font-size:18px">🏆</span> Current Competitions
     </a>
     <a href="points.html" style="display:flex;align-items:center;gap:12px;padding:.875rem 1.25rem;text-decoration:none;color:#1C1409;font-size:14px;font-weight:500;background:#F5ECD4">
       <span style="font-size:18px">⭐</span> My Rewards
     </a>
-    <a href="motivation-quiz.html" style="display:flex;align-items:center;gap:12px;padding:.875rem 1.25rem;text-decoration:none;color:#1C1409;font-size:14px;font-weight:500">
-      <span style="font-size:18px">🧠</span> Motivation Quiz
+    <a href="trophies.html" style="display:flex;align-items:center;gap:12px;padding:.875rem 1.25rem;text-decoration:none;color:#1C1409;font-size:14px;font-weight:500">
+      <span style="font-size:18px">🥇</span> Trophies
+    </a>
+    <a href="profiles.html" style="display:flex;align-items:center;gap:12px;padding:.875rem 1.25rem;text-decoration:none;color:#1C1409;font-size:14px;font-weight:500">
+      <span style="font-size:18px">🪪</span> Profiles
+    </a>
+    <a href="achiever.html" style="display:flex;align-items:center;gap:12px;padding:.875rem 1.25rem;text-decoration:none;color:#1C1409;font-size:14px;font-weight:500">
+      <span style="font-size:18px">🏅</span> Your Famous Achiever
     </a>
     <div style="border-top:0.5px solid rgba(61,43,26,0.15);margin:.5rem 1.25rem"></div>
     <a href="roster.html" style="display:flex;align-items:center;gap:12px;padding:.875rem 1.25rem;text-decoration:none;color:#5B3F8A;font-size:14px;font-weight:500">
@@ -183,6 +194,30 @@
         <div class="motivation-tag-body" id="motivation-tag-body"></div>
       </div>
     </div>
+    <!-- Mystery Box -->
+    <div id="mystery-box-section" class="pin-card" style="display:none;margin-bottom:1rem;background:linear-gradient(135deg,#2D1B69,#5B3F8A);color:#fff;text-align:center;padding:1.75rem 1.5rem">
+      <div id="mb-locked-view">
+        <div style="font-size:36px;margin-bottom:.5rem" id="mb-emoji">🎲</div>
+        <div style="font-size:15px;font-weight:600;margin-bottom:4px" id="mb-goal-label">Mystery Box</div>
+        <div style="font-size:12px;opacity:.75;margin-bottom:1rem" id="mb-goal-sub"></div>
+        <div style="height:8px;background:rgba(255,255,255,0.2);border-radius:8px;overflow:hidden;margin-bottom:6px">
+          <div id="mb-progress-fill" style="height:100%;width:0%;background:linear-gradient(90deg,#E8AC2D,#C17F24);border-radius:8px;transition:width .4s"></div>
+        </div>
+        <div style="font-size:11px;opacity:.7" id="mb-progress-label"></div>
+      </div>
+      <div id="mb-ready-view" style="display:none">
+        <div style="font-size:40px;margin-bottom:.5rem">🎁</div>
+        <div style="font-size:16px;font-weight:600;margin-bottom:.4rem">Goal hit! Your mystery box is ready.</div>
+        <button onclick="openMysteryBox()" style="width:100%;padding:12px;font-size:14px;font-weight:600;color:#1C1409;background:linear-gradient(135deg,#E8AC2D,#C17F24);border:none;border-radius:10px;cursor:pointer;font-family:inherit">Open box</button>
+      </div>
+      <div id="mb-result-view" style="display:none">
+        <div style="font-size:44px;margin-bottom:.5rem" id="mb-result-emoji">🏆</div>
+        <div style="font-size:15px;font-weight:600;margin-bottom:2px" id="mb-result-label"></div>
+        <div style="font-size:12px;opacity:.8" id="mb-result-pts"></div>
+      </div>
+      <div id="mb-claimed-view" style="display:none;font-size:12px;opacity:.75">You already opened this box. Check back for the next one.</div>
+    </div>
+
     <!-- Flex Points Marketplace -->
     <div id="redeem-section" class="pin-card" style="margin-bottom:1rem">
       <div style="font-size:15px;font-weight:600;color:var(--charcoal);margin-bottom:4px">🎯 Flex Points Marketplace</div>
@@ -225,31 +260,29 @@
 
 <script type="module">
   import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
-  import { getDatabase, ref, get } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js';
+  import { getDatabase, ref, get, set, runTransaction } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js';
 
   const firebaseConfig = {
-    apiKey:            'PASTE_API_KEY_HERE',
-    authDomain:        'PASTE_AUTH_DOMAIN_HERE',
-    databaseURL:       'PASTE_DATABASE_URL_HERE',
-    projectId:         'PASTE_PROJECT_ID_HERE',
-    storageBucket:     'PASTE_STORAGE_BUCKET_HERE',
-    messagingSenderId: 'PASTE_MESSAGING_SENDER_ID_HERE',
-    appId:             'PASTE_APP_ID_HERE',
+    apiKey:            'AIzaSyBF79P6AenHXN1685_5o4k50E0Yjxdc7Ko',
+    authDomain:        'perennial-rewards.firebaseapp.com',
+    databaseURL:       'https://perennial-rewards-default-rtdb.firebaseio.com',
+    projectId:         'perennial-rewards',
+    storageBucket:     'perennial-rewards.firebasestorage.app',
+    messagingSenderId: '530822327585',
+    appId:             '1:530822327585:web:c85216e72f53c5380be260',
   };
 
   const app = initializeApp(firebaseConfig);
   const db  = getDatabase(app);
 
   const SHOP_NAME = 'Perennial';
-  const DRIVE_INFO = {
-    meaning:   {label:'Epic Meaning & Calling',        feature:'team goals and shop-wide competitions'},
-    growth:    {label:'Development & Accomplishment',  feature:'your redemption tiers and point progress'},
-    feedback:  {label:'Empowerment & Feedback',        feature:'the live leaderboard'},
-    ownership: {label:'Ownership & Possession',        feature:'your points balance and redemptions'},
-    social:    {label:'Social Influence & Relatedness',feature:'your leaderboard rank vs teammates'},
-    scarcity:  {label:'Scarcity & Impatience',         feature:'limited-time competitions'},
-    curiosity: {label:'Unpredictability & Curiosity',  feature:'surprise bonus drops'},
-    avoidance: {label:'Loss & Avoidance',               feature:'streaks — don\u2019t break the chain'},
+  const shopKey = SHOP_NAME.replace(/\s/g,'_');
+  // Archetype titles only — no scoring breakdown here. The full breakdown is
+  // manager-only, saved to Firebase under octalysis/{shop}/{rep} by achiever.html.
+  const ARCHETYPE_TITLES = {
+    visionary:'The Visionary', climber:'The Climber', innovator:'The Innovator',
+    collector:'The Collector', connector:'The Connector', closer:'The Closer',
+    wildcard:'The Wildcard', guardian:'The Guardian',
   };
   const TIERS = [
     {pts:500,  name:'Sprout',   reward:'$5 Gift Card',         emoji:'🌱'},
@@ -269,7 +302,7 @@
   // system. Points are earned once (lifetime, feeds Milestones/Skill Trees
   // and never decreases) but spendable *balance* goes down as items are
   // redeemed here, tracked separately in points_spent/.
-  const CATALOG = [
+  const BASE_CATALOG = [
     {id:'gc5',   cat:'Gift Cards', name:'$5 Gift Card',           cost:500,  emoji:'🎁'},
     {id:'gc10',  cat:'Gift Cards', name:'$10 Gift Card',          cost:1000, emoji:'🎁'},
     {id:'gc25',  cat:'Gift Cards', name:'$25 Gift Card',          cost:2500, emoji:'💳'},
@@ -279,8 +312,28 @@
     {id:'ptoF',  cat:'Time & Flexibility', name:'Full-Day PTO',          cost:3000, emoji:'🌴'},
     {id:'swag',  cat:'Swag', name:'Perennial Swag Pack',          cost:800,  emoji:'👕'},
   ];
+  let CATALOG = BASE_CATALOG;
   let selectedItem = null;
   let flexBalance = 0;
+
+  async function loadFlashRewards(){
+    try {
+      const snap = await get(ref(db, 'flashRewards/' + SHOP_NAME.replace(/\s/g,'_')));
+      if(!snap.exists()){ CATALOG = BASE_CATALOG; return; }
+      const now = Date.now();
+      const active = Object.entries(snap.val())
+        .filter(([id,it]) => now >= it.startTime && now <= it.endTime)
+        .map(([id,it]) => ({
+          id: 'flash_'+id, cat:'⚡ Flash Reward', name:it.name, cost:it.cost, emoji:it.emoji||'⚡',
+          isFlash:true, exclusive:it.exclusive, originalCost:it.originalCost, endTime:it.endTime,
+        }));
+      // Exclusive flash items only show while the window is open; discounted
+      // items that mirror an existing catalog entry replace it for the window.
+      const nonExclusiveNames = active.filter(i=>!i.exclusive).map(i=>i.name);
+      const remainingBase = BASE_CATALOG.filter(i => !nonExclusiveNames.includes(i.name));
+      CATALOG = [...active, ...remainingBase];
+    } catch(e){ console.warn('Flash rewards load failed:', e); CATALOG = BASE_CATALOG; }
+  }
 
   // ── PIN functions ──────────────────────────────────────────────
   function getPin(name){
@@ -332,24 +385,40 @@
     document.getElementById('personal-name').textContent = name + ' — Lifetime Points';
     try {
       const shopKey = SHOP_NAME.replace(/\s/g,'_');
-      const [pointsSnap, allTimeSnap, spentSnap] = await Promise.all([
+      const safeName = name.replace(/\s/g,'_');
+      const [pointsSnap, allTimeSnap, spentSnap, bonusSnap, giftSentSnap, giftRecdSnap, mysterySnap] = await Promise.all([
         get(ref(db, 'leaderboard/liveData/points')),
-        get(ref(db, 'points_alltime/' + shopKey + '/' + name.replace(/\s/g,'_'))),
-        get(ref(db, 'points_spent/' + shopKey + '/' + name.replace(/\s/g,'_')))
+        get(ref(db, 'points_alltime/' + shopKey + '/' + safeName)),
+        get(ref(db, 'points_spent/' + shopKey + '/' + safeName)),
+        get(ref(db, 'points_bonus/' + shopKey + '/' + safeName)),
+        get(ref(db, 'points_gift_sent/' + shopKey + '/' + safeName)),
+        get(ref(db, 'points_gift_received/' + shopKey + '/' + safeName)),
+        get(ref(db, 'points_mystery/' + shopKey + '/' + safeName))
       ]);
       let monthly = 0;
       if(pointsSnap.exists()){
         const rep = pointsSnap.val().find(function(r){ return r.name === name; });
         if(rep) monthly = rep.monthlyPts || 0;
       }
-      const lifetime = allTimeSnap.exists() ? (allTimeSnap.val() || 0) : monthly;
-      const spent = spentSnap.exists() ? (spentSnap.val() || 0) : 0;
-      flexBalance = Math.max(0, lifetime - spent);
+      const bonus     = bonusSnap.exists() ? (bonusSnap.val() || 0) : 0;
+      const mystery   = mysterySnap.exists() ? (mysterySnap.val() || 0) : 0;
+      // Lifetime stays sales-earned (+bonus, +mystery box wins — both are
+      // only unlocked by hitting a real goal) and is never inflated by
+      // receiving gifts, so nobody can buy prestige with unearned points.
+      const lifetime  = (allTimeSnap.exists() ? (allTimeSnap.val() || 0) : monthly) + bonus + mystery;
+      const spent     = spentSnap.exists() ? (spentSnap.val() || 0) : 0;
+      const giftSent  = giftSentSnap.exists() ? (giftSentSnap.val() || 0) : 0;
+      const giftRecd  = giftRecdSnap.exists() ? (giftRecdSnap.val() || 0) : 0;
+      // Spendable balance is zero-sum on gifts: what you give away leaves
+      // your balance, what you receive adds to it — no new points minted.
+      flexBalance = Math.max(0, lifetime + giftRecd - spent - giftSent);
       document.getElementById('personal-pts').textContent = lifetime.toLocaleString();
       document.getElementById('personal-pts-sub').textContent = monthly.toLocaleString() + ' pts this period';
       document.getElementById('flex-balance').textContent = flexBalance.toLocaleString();
       document.getElementById('flex-balance-sub').textContent = spent > 0 ? spent.toLocaleString() + ' pts redeemed so far' : 'pts';
+      await loadFlashRewards();
       renderMarketplace();
+      loadMysteryBox(name);
       document.getElementById('tier-list').innerHTML = TIERS.map(function(t){
         const pct = Math.min(Math.round(lifetime / t.pts * 100), 100);
         const unlocked = lifetime >= t.pts;
@@ -378,7 +447,7 @@
       }).join('');
     } catch(e){ console.warn('Points load error:', e); }
 
-    // Motivation quiz personalization tag
+    // Your Famous Achiever personalization tag
     try {
       const safeName = name.replace(/[.#$\[\]\/\s]/g, '_');
       let result = null;
@@ -386,23 +455,20 @@
       if (snap.exists()) {
         result = snap.val();
       } else {
-        const local = localStorage.getItem('octalysis_' + shopKey + '_' + name.replace(/\s/g,'_'));
+        const local = localStorage.getItem('achiever_' + shopKey + '_' + safeName);
         if (local) result = JSON.parse(local);
       }
-      if (result && result.top3 && result.top3.length) {
-        const top = DRIVE_INFO[result.top3[0]];
-        if (top) {
-          document.getElementById('motivation-tag-body').innerHTML =
-            'You\u2019re driven by <strong>' + top.label + '</strong> — keep an eye on ' + top.feature + '. '
-            + '<a href="motivation-quiz.html">Retake the quiz</a>';
-          document.getElementById('motivation-tag').style.display = 'block';
-        }
+      if (result && result.topDrive && ARCHETYPE_TITLES[result.topDrive]) {
+        document.getElementById('motivation-tag-body').innerHTML =
+          'You\u2019re <strong>' + ARCHETYPE_TITLES[result.topDrive] + '</strong>. '
+          + '<a href="achiever.html">See your Achiever type</a>';
+        document.getElementById('motivation-tag').style.display = 'block';
       } else {
         document.getElementById('motivation-tag-body').innerHTML =
-          'Take the 2-minute <a href="motivation-quiz.html">motivation quiz</a> to see what drives you.';
+          'Take the 2-minute <a href="achiever.html">Famous Achiever quiz</a> — earn a 10pt bonus for playing along.';
         document.getElementById('motivation-tag').style.display = 'block';
       }
-    } catch(e){ console.warn('Motivation tag load error:', e); }
+    } catch(e){ console.warn('Achiever tag load error:', e); }
   }
 
   function ptsSignOut(){
@@ -429,6 +495,109 @@
     if(e.key === 'Escape'){ document.getElementById('menu-overlay').style.display='none'; document.getElementById('menu-drawer').style.display='none'; }
   });
 
+  // ── Mystery Box ──────────────────────────────────────────────
+  const METRIC_LABELS = { sales:'Net Sales', ghf:'GHF Units', plus:'Plus Units' };
+  async function loadMysteryBox(name){
+    const box = document.getElementById('mystery-box-section');
+    try {
+      const cfgSnap = await get(ref(db, 'mysteryBox/' + shopKey + '/config'));
+      if(!cfgSnap.exists() || !cfgSnap.val().active){ box.style.display = 'none'; return; }
+      const cfg = cfgSnap.val();
+      const safeName = name.replace(/\s/g,'_');
+
+      // Scope check — is this rep even eligible for the current goal?
+      if(cfg.scope === 'individual' && cfg.repName !== name){ box.style.display = 'none'; return; }
+      let inSquad = true;
+      if(cfg.scope === 'squad'){
+        const assignSnap = await get(ref(db, 'squadAssign/' + shopKey + '/' + safeName));
+        inSquad = assignSnap.exists() && assignSnap.val() === cfg.squadId;
+        if(!inSquad){ box.style.display = 'none'; return; }
+      }
+
+      // Already claimed this goal?
+      const claimSnap = await get(ref(db, 'mysteryBox/' + shopKey + '/claims/' + cfg.configId + '/' + safeName));
+      box.style.display = 'block';
+      document.getElementById('mb-locked-view').style.display = 'none';
+      document.getElementById('mb-ready-view').style.display = 'none';
+      document.getElementById('mb-result-view').style.display = 'none';
+      document.getElementById('mb-claimed-view').style.display = 'none';
+      if(claimSnap.exists()){
+        document.getElementById('mb-claimed-view').style.display = 'block';
+        return;
+      }
+
+      // Compute current progress against the metric
+      const dataPath = cfg.metric === 'sales' ? 'sales' : cfg.metric === 'ghf' ? 'ghf' : 'plus';
+      const liveSnap = await get(ref(db, 'leaderboard/liveData/' + dataPath));
+      const rows = liveSnap.exists() ? liveSnap.val() : [];
+      let current = 0;
+      if(cfg.scope === 'shop'){
+        current = rows.reduce((s,r) => s + (r.sales||r.units||r.ghf||r.plus||0), 0);
+      } else if(cfg.scope === 'squad'){
+        const assignAllSnap = await get(ref(db, 'squadAssign/' + shopKey));
+        const assignAll = assignAllSnap.exists() ? assignAllSnap.val() : {};
+        current = rows.reduce((s,r) => {
+          const key = r.name.replace(/\s/g,'_');
+          return assignAll[key] === cfg.squadId ? s + (r.sales||r.units||r.ghf||r.plus||0) : s;
+        }, 0);
+      } else {
+        const row = rows.find(r => r.name === name);
+        current = row ? (row.sales||row.units||row.ghf||row.plus||0) : 0;
+      }
+
+      const scopeLabel = cfg.scope === 'shop' ? 'Shop goal' : cfg.scope === 'squad' ? 'Squad goal' : 'Your goal';
+      document.getElementById('mb-goal-label').textContent = scopeLabel;
+      document.getElementById('mb-goal-sub').textContent = METRIC_LABELS[cfg.metric] + ': ' + current.toLocaleString() + ' / ' + cfg.target.toLocaleString();
+
+      if(current >= cfg.target){
+        document.getElementById('mb-locked-view').style.display = 'none';
+        document.getElementById('mb-ready-view').style.display = 'block';
+        window._mbCurrentConfig = cfg;
+      } else {
+        document.getElementById('mb-locked-view').style.display = 'block';
+        const pct = Math.min(100, Math.round(current/cfg.target*100));
+        document.getElementById('mb-progress-fill').style.width = pct + '%';
+        document.getElementById('mb-progress-label').textContent = pct + '% there';
+      }
+    } catch(e){ console.warn('Mystery box load failed:', e); box.style.display = 'none'; }
+  }
+
+  window.openMysteryBox = async function(){
+    const cfg = window._mbCurrentConfig;
+    if(!cfg) return;
+    const pool = cfg.rewardPool || [];
+    const totalWeight = pool.reduce((s,p) => s + (p.weight||1), 0);
+    let roll = Math.random() * totalWeight;
+    let picked = pool[0];
+    for(const p of pool){
+      if(roll < (p.weight||1)){ picked = p; break; }
+      roll -= (p.weight||1);
+    }
+    const name = document.getElementById('pts-name').value;
+    const safeName = name.replace(/\s/g,'_');
+    try {
+      await set(ref(db, 'mysteryBox/' + shopKey + '/claims/' + cfg.configId + '/' + safeName), {
+        result: picked, claimedAt: Date.now(),
+      });
+      await runTransaction(ref(db, 'points_mystery/' + shopKey + '/' + safeName), cur => (cur||0) + picked.points);
+    } catch(e){ console.warn('Mystery box claim failed:', e); }
+
+    document.getElementById('mb-ready-view').style.display = 'none';
+    document.getElementById('mb-result-view').style.display = 'block';
+    document.getElementById('mb-result-emoji').textContent = picked.emoji || '🎉';
+    document.getElementById('mb-result-label').textContent = picked.label;
+    document.getElementById('mb-result-pts').textContent = '+' + picked.points + ' points added';
+  };
+
+  function flashTimeLeft(endTime){
+    const ms = endTime - Date.now();
+    if(ms <= 0) return 'ending soon';
+    const hrs = Math.floor(ms / 3600000);
+    if(hrs >= 24) return Math.floor(hrs/24) + 'd left';
+    if(hrs >= 1) return hrs + 'h left';
+    return Math.max(1, Math.floor(ms/60000)) + 'm left';
+  }
+
   function renderMarketplace(){
     const cats = [...new Set(CATALOG.map(i => i.cat))];
     document.getElementById('flex-marketplace').innerHTML = cats.map(cat => {
@@ -436,12 +605,21 @@
       const cards = items.map(item => {
         const locked = flexBalance < item.cost;
         const sel = selectedItem && selectedItem.id === item.id;
+        const flashBorder = item.isFlash ? 'border-color:#E8AC2D;border-width:2px;' : '';
+        const costLine = item.originalCost
+          ? `<span style="text-decoration:line-through;color:var(--gray);margin-right:5px">${item.originalCost}</span>${item.cost.toLocaleString()} pts`
+          : `${item.cost.toLocaleString()} pts`;
+        const countdown = item.isFlash
+          ? `<div style="font-size:9.5px;color:#B8860B;font-weight:700;margin-top:2px">⏳ ${flashTimeLeft(item.endTime)}</div>` : '';
+        const exclTag = item.exclusive
+          ? `<div style="font-size:8.5px;font-weight:700;color:#5B3F8A;text-transform:uppercase;letter-spacing:.3px;margin-top:2px">Exclusive</div>` : '';
         return `<div class="flex-item${locked ? ' locked' : ''}"
-                     style="${sel ? 'border-color:#5B3F8A;border-width:2px;' : ''}"
+                     style="${sel ? 'border-color:#5B3F8A;border-width:2px;' : flashBorder}"
                      onclick="${locked ? '' : "selectFlexItem('" + item.id + "')"}">
           <div class="flex-item-emoji">${item.emoji}</div>
           <div class="flex-item-name">${item.name}</div>
-          <div class="flex-item-cost">${item.cost.toLocaleString()} pts</div>
+          <div class="flex-item-cost">${costLine}</div>
+          ${countdown}${exclTag}
         </div>`;
       }).join('');
       return `<div class="flex-category">${cat}</div><div class="flex-grid">${cards}</div>`;

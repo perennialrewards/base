@@ -63,6 +63,11 @@ body{font-family:'Inter',system-ui,sans-serif;background:#F5ECD4;min-height:100v
     <div style="font-size:12px;color:rgba(255,255,255,0.5);margin-top:2px">Rewards Program</div>
   </div>
   <div style="padding:1rem 0;flex:1">
+    <a href="owner.html" style="display:flex;align-items:center;gap:12px;padding:.875rem 1.25rem;text-decoration:none;color:#fff;font-size:14px;font-weight:600;background:#1C1409">
+      <span style="font-size:18px">🔑</span> Owner Portal
+      <span style="margin-left:auto;font-size:9px;font-weight:700;color:#E8AC2D;background:rgba(232,172,45,0.18);padding:2px 7px;border-radius:9px;text-transform:uppercase;letter-spacing:.3px">Priority</span>
+    </a>
+    <div style="border-top:0.5px solid rgba(61,43,26,0.15);margin:.5rem 1.25rem"></div>
     <a href="index.html" style="display:flex;align-items:center;gap:12px;padding:.875rem 1.25rem;text-decoration:none;color:#1C1409;font-size:14px;font-weight:500">
       <span style="font-size:18px">🏆</span> Current Competitions
     </a>
@@ -71,6 +76,12 @@ body{font-family:'Inter',system-ui,sans-serif;background:#F5ECD4;min-height:100v
     </a>
     <a href="trophies.html" style="display:flex;align-items:center;gap:12px;padding:.875rem 1.25rem;text-decoration:none;color:#1C1409;font-size:14px;font-weight:500;background:#F5ECD4">
       <span style="font-size:18px">🥇</span> Trophies
+    </a>
+    <a href="profiles.html" style="display:flex;align-items:center;gap:12px;padding:.875rem 1.25rem;text-decoration:none;color:#1C1409;font-size:14px;font-weight:500">
+      <span style="font-size:18px">🪪</span> Profiles
+    </a>
+    <a href="achiever.html" style="display:flex;align-items:center;gap:12px;padding:.875rem 1.25rem;text-decoration:none;color:#1C1409;font-size:14px;font-weight:500">
+      <span style="font-size:18px">🏅</span> Your Famous Achiever
     </a>
     <div style="border-top:0.5px solid rgba(61,43,26,0.15);margin:.5rem 1.25rem"></div>
     <a href="roster.html" style="display:flex;align-items:center;gap:12px;padding:.875rem 1.25rem;text-decoration:none;color:#5B3F8A;font-size:14px;font-weight:500">
@@ -105,13 +116,13 @@ body{font-family:'Inter',system-ui,sans-serif;background:#F5ECD4;min-height:100v
   import { getDatabase, ref, get } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js';
 
   const firebaseConfig = {
-    apiKey:            'PASTE_API_KEY_HERE',
-    authDomain:        'PASTE_AUTH_DOMAIN_HERE',
-    databaseURL:       'PASTE_DATABASE_URL_HERE',
-    projectId:         'PASTE_PROJECT_ID_HERE',
-    storageBucket:     'PASTE_STORAGE_BUCKET_HERE',
-    messagingSenderId: 'PASTE_MESSAGING_SENDER_ID_HERE',
-    appId:             'PASTE_APP_ID_HERE',
+    apiKey:            'AIzaSyBF79P6AenHXN1685_5o4k50E0Yjxdc7Ko',
+    authDomain:        'perennial-rewards.firebaseapp.com',
+    databaseURL:       'https://perennial-rewards-default-rtdb.firebaseio.com',
+    projectId:         'perennial-rewards',
+    storageBucket:     'perennial-rewards.firebasestorage.app',
+    messagingSenderId: '530822327585',
+    appId:             '1:530822327585:web:c85216e72f53c5380be260',
   };
 
   const app = initializeApp(firebaseConfig);
@@ -141,9 +152,11 @@ body{font-family:'Inter',system-ui,sans-serif;background:#F5ECD4;min-height:100v
     renderLegend();
     const listEl = document.getElementById('trophy-list');
     try {
-      const [namesSnap, ptsSnap] = await Promise.all([
+      const [namesSnap, ptsSnap, bonusSnap, mysterySnap] = await Promise.all([
         get(ref(db, 'leaderboard/liveData/txn')),
-        get(ref(db, 'points_alltime/' + SHOP_KEY))
+        get(ref(db, 'points_alltime/' + SHOP_KEY)),
+        get(ref(db, 'points_bonus/' + SHOP_KEY)),
+        get(ref(db, 'points_mystery/' + SHOP_KEY))
       ]);
 
       if(!namesSnap.exists()){
@@ -152,9 +165,11 @@ body{font-family:'Inter',system-ui,sans-serif;background:#F5ECD4;min-height:100v
       }
 
       const allTime = ptsSnap.exists() ? ptsSnap.val() : {};
+      const bonus   = bonusSnap.exists() ? bonusSnap.val() : {};
+      const mystery = mysterySnap.exists() ? mysterySnap.val() : {};
       const reps = namesSnap.val().map(r => {
         const key = r.name.replace(/\s/g,'_');
-        return { name: r.name, lifetime: allTime[key] || 0 };
+        return { name: r.name, lifetime: (allTime[key] || 0) + (bonus[key] || 0) + (mystery[key] || 0) };
       }).sort((a,b) => b.lifetime - a.lifetime);
 
       listEl.innerHTML = reps.map((rep, i) => {
