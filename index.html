@@ -8,7 +8,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
 <script type="module">
   import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
-  import { getDatabase, ref, set, get } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js';
+  import { getDatabase, ref, set, get, push } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js';
 
   // ================================================================
   // FIREBASE CONFIG — fill in from console.firebase.google.com
@@ -38,6 +38,8 @@
       const allTimeSnap = await get(ref(db, 'points_alltime/' + window.SHOP_KEY));
       const bonusSnap = await get(ref(db, 'points_bonus/' + window.SHOP_KEY));
       const mysterySnap = await get(ref(db, 'points_mystery/' + window.SHOP_KEY));
+      const achievementsSnap = await get(ref(db, 'achievements/' + window.SHOP_KEY + '/current'));
+      window._achievements = achievementsSnap.exists() ? achievementsSnap.val() : null;
       window._squadConfig = squadSnap.exists() ? (squadSnap.val().config || {}) : {};
       window._squadList   = squadSnap.exists() ? (squadSnap.val().list || []) : [];
       window._squadAssign = assignSnap.exists() ? assignSnap.val() : {};
@@ -84,6 +86,22 @@
       console.error('All-time points sync error:', err);
       return false;
     }
+  };
+
+  window.getLastRanks = async function(shopKey){
+    try {
+      const snap = await get(ref(db, 'achievements/' + shopKey + '/lastRanks'));
+      return snap.exists() ? snap.val() : {};
+    } catch(err){ console.warn('Last-ranks load error:', err); return {}; }
+  };
+
+  window.saveAchievements = async function(shopKey, achievementData, newRanks){
+    try {
+      await set(ref(db, 'achievements/' + shopKey + '/current'), achievementData);
+      await push(ref(db, 'achievements/' + shopKey + '/history'), achievementData);
+      await set(ref(db, 'achievements/' + shopKey + '/lastRanks'), newRanks);
+      return true;
+    } catch(err){ console.error('Achievement save error:', err); return false; }
   };
 </script>
 <style>
@@ -239,6 +257,16 @@
   .squad-member-bar-fill{height:100%;border-radius:6px}
   .squad-member-val{font-size:11px;font-weight:600;color:var(--muted);text-align:right;min-width:36px}
   .squad-member-empty{font-size:12px;color:var(--muted);padding:8px 0}
+  .ach-chip{display:inline-block;font-size:9px;font-weight:700;padding:1px 7px;border-radius:8px;margin-top:3px;margin-right:4px}
+  .ach-mvp{background:rgba(232,172,45,0.2);color:#B8860B}
+  .ach-ghf{background:rgba(107,124,62,0.15);color:#3D5020}
+  .ach-plus{background:rgba(91,63,138,0.15);color:#5B3F8A}
+  .ach-iron{background:rgba(239,68,68,0.12);color:#DC2626}
+  .shop-ach-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:1.25rem}
+  .shop-ach-chip{background:var(--white);border:0.5px solid var(--border);border-radius:12px;padding:.75rem .875rem;display:flex;align-items:center;gap:9px}
+  .shop-ach-emoji{font-size:18px;flex-shrink:0}
+  .shop-ach-label{font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:.3px;color:var(--muted)}
+  .shop-ach-name{font-size:12px;font-weight:600;color:var(--charcoal);margin-top:1px}
   .rep-row:last-child{border-bottom:none}
   .rep-row:hover{background:var(--cream)}
   .rep-row.hl{background:linear-gradient(90deg,var(--teal-light),transparent)}
@@ -1020,30 +1048,58 @@
         +'<div class="podium-sub">'+sq.repCount+' rep'+(sq.repCount!==1?'s':'')+'</div></div>';
     }).join('');
 
+    const ach = window._achievements || null;
+
     const rows = scored.map((sq,i)=>{
+      const sqAch = ach && ach.squads ? ach.squads[sq.id] : null;
       const memberRows = sq.members.length ? sq.members.map(m=>{
         const pct = sq.score > 0 ? Math.round(m.score / sq.score * 100) : 0;
+        const badges = [];
+        if(sqAch){
+          if(sqAch.mvp && sqAch.mvp.name === m.name) badges.push('<span class="ach-chip ach-mvp">🥇 MVP</span>');
+          if(sqAch.brandChampGHF && sqAch.brandChampGHF.name === m.name) badges.push('<span class="ach-chip ach-ghf">🌲 GHF Champ</span>');
+          if(sqAch.brandChampPlus && sqAch.brandChampPlus.name === m.name) badges.push('<span class="ach-chip ach-plus">🟪 Plus Champ</span>');
+          if(sqAch.ironRep && sqAch.ironRep.name === m.name) badges.push('<span class="ach-chip ach-iron">🔥 Iron Rep</span>');
+        }
         return '<div class="squad-member-row">'
-          +'<div class="squad-member-name">'+m.name+'</div>'
+          +'<div class="squad-member-name">'+m.name+(badges.length?'<br>'+badges.join(''):'')+'</div>'
           +'<div class="squad-member-bar-bg"><div class="squad-member-bar-fill" style="width:'+pct+'%;background:'+sq.color+'"></div></div>'
           +'<div class="squad-member-val">'+m.score.toLocaleString()+'</div>'
           +'</div>';
       }).join('') : '<div class="squad-member-empty">No members assigned yet.</div>';
 
+      const crown = (ach && ach.squadOfMonth && ach.squadOfMonth.squadId === sq.id) ? ' 👑' : '';
+
       return '<div class="rep-row squad-row-clickable'+(i===0?' hl':'')+'" onclick="toggleSquadDetail('+i+')">'
         +'<div class="rank">'+rl(i)+'</div>'
         +'<div class="rep-info"><div class="avatar" style="background:'+sq.color+'22;color:'+sq.color+'">'+(sq.icon || renderIni(sq.name))+'</div>'
-        +'<div class="rep-name">'+sq.name+'<span style="font-size:10px;color:var(--muted);font-weight:500;margin-left:6px">'+sq.repCount+' rep'+(sq.repCount!==1?'s':'')+' ▾</span></div></div>'
+        +'<div class="rep-name">'+sq.name+crown+'<span style="font-size:10px;color:var(--muted);font-weight:500;margin-left:6px">'+sq.repCount+' rep'+(sq.repCount!==1?'s':'')+' ▾</span></div></div>'
         +'<div class="val">'+sq.score.toLocaleString()+' pts</div></div>'
         +'<div class="squad-detail" id="squad-detail-'+i+'">'+memberRows+'</div>';
     }).join('');
+
+    const monthBanner = (ach && ach.squadOfMonth) ? '<div class="reward-banner" style="background:linear-gradient(135deg,#2D1B69,#5B3F8A);border:none">'
+      +'<div class="reward-icon-wrap" style="background:rgba(255,255,255,0.15)">👑</div><div class="reward-text">'
+      +'<div class="reward-eyebrow" style="color:rgba(245,236,212,0.7)">Squad of the Month</div>'
+      +'<div class="reward-headline" style="color:#fff">'+ach.squadOfMonth.squadName+' — '+ach.squadOfMonth.score.toLocaleString()+' pts</div></div></div>'
+      : '';
 
     const prizeBanner = cfg.prize
       ? '<div class="reward-banner"><div class="reward-icon-wrap">🏆</div><div class="reward-text">'
         +'<div class="reward-eyebrow">Squad Prize</div><div class="reward-headline">'+cfg.prize+'</div></div></div>'
       : '';
 
-    document.getElementById('board-squads').innerHTML = prizeBanner
+    const sw = ach ? ach.shopWide : null;
+    const shopChips = [];
+    if(sw){
+      if(sw.brandChampGHF) shopChips.push('<div class="shop-ach-chip"><span class="shop-ach-emoji">🌲</span><div><div class="shop-ach-label">GHF Champion</div><div class="shop-ach-name">'+sw.brandChampGHF.name+' · '+sw.brandChampGHF.units+' units</div></div></div>');
+      if(sw.brandChampPlus) shopChips.push('<div class="shop-ach-chip"><span class="shop-ach-emoji">🟪</span><div><div class="shop-ach-label">Plus Champion</div><div class="shop-ach-name">'+sw.brandChampPlus.name+' · '+sw.brandChampPlus.units+' units</div></div></div>');
+      if(sw.atvKing) shopChips.push('<div class="shop-ach-chip"><span class="shop-ach-emoji">🛒</span><div><div class="shop-ach-label">ATV Leader</div><div class="shop-ach-name">'+sw.atvKing.name+' · $'+sw.atvKing.avg.toFixed(2)+'</div></div></div>');
+      if(sw.comeback) shopChips.push('<div class="shop-ach-chip"><span class="shop-ach-emoji">📈</span><div><div class="shop-ach-label">Comeback of the Month</div><div class="shop-ach-name">'+sw.comeback.name+' · #'+sw.comeback.fromRank+' → #'+sw.comeback.toRank+'</div></div></div>');
+    }
+    const shopAchSection = shopChips.length ? '<div class="shop-ach-grid">'+shopChips.join('')+'</div>' : '';
+
+    document.getElementById('board-squads').innerHTML = monthBanner + prizeBanner + shopAchSection
       +'<div class="podium">'+podium+'</div>'
       +'<div class="card"><div class="thead squads">'
       +'<div style="text-align:center">#</div><div>Squad</div>'
@@ -1361,6 +1417,80 @@
     const fire = getStreak(STREAK_KEY_FIRE(name));
     const rank = getStreak(STREAK_KEY_RANK(name));
     return (fire * 50) + (rank * 100);
+  }
+
+  // ── Squad & Shop Achievements ────────────────────────────────
+  // Computed fresh on every upload — "best of this period," not lifetime.
+  // A running history is kept in Firebase alongside the current snapshot.
+  async function computeAndSaveAchievements(reps){
+    const shopKey = SHOP_NAME.replace(/\s/g,'_');
+    const period = new Date().toISOString().slice(0,7);
+
+    const ghfSorted = [...reps].filter(r=>r.ghf>0).sort((a,b)=>b.ghf-a.ghf);
+    const plusSorted = [...reps].filter(r=>r.plus>0).sort((a,b)=>b.plus-a.plus);
+    const atvSorted = [...reps].filter(r=>r.txn>=5).sort((a,b)=>b.avg-a.avg);
+
+    const brandChampGHF  = ghfSorted[0]  ? {name:ghfSorted[0].name,  units:ghfSorted[0].ghf}  : null;
+    const brandChampPlus = plusSorted[0] ? {name:plusSorted[0].name, units:plusSorted[0].plus} : null;
+    const atvKing         = atvSorted[0]  ? {name:atvSorted[0].name,  avg:atvSorted[0].avg}     : null;
+
+    // Comeback of the Month — biggest rank improvement vs the last upload
+    let comeback = null;
+    const lastRanks = await window.getLastRanks(shopKey);
+    const newRanked = [...reps].sort((a,b)=>b.monthlyPts-a.monthlyPts);
+    const newRanks = {};
+    newRanked.forEach((r,i)=>{ newRanks[r.name] = i+1; });
+    newRanked.forEach((r,i)=>{
+      const fromRank = lastRanks[r.name];
+      const toRank = i+1;
+      if(fromRank && fromRank > toRank){
+        const improvement = fromRank - toRank;
+        if(!comeback || improvement > comeback.rankImprovement){
+          comeback = { name:r.name, rankImprovement:improvement, fromRank, toRank };
+        }
+      }
+    });
+
+    // Squad-level: MVP, brand champs, iron rep, squad totals
+    const squads = window._squadList || [];
+    const assign = window._squadAssign || {};
+    const squadResults = {};
+    squads.forEach(sq=>{
+      const memberNames = Object.keys(assign).filter(k=>assign[k]===sq.id).map(k=>k.replace(/_/g,' '));
+      const members = reps.filter(r=>memberNames.includes(r.name));
+      if(!members.length) return;
+      const scored = members.map(m=>({...m, score: Math.round((m.ghf||0)*9 + (m.plus||0)*9 + (m.sales||0)*0.01)}));
+      const mvpRep  = [...scored].sort((a,b)=>b.score-a.score)[0];
+      const ghfRep  = [...scored].filter(m=>m.ghf>0).sort((a,b)=>b.ghf-a.ghf)[0];
+      const plusRep = [...scored].filter(m=>m.plus>0).sort((a,b)=>b.plus-a.plus)[0];
+      const ironRep = [...scored].map(m=>({...m, fire:getStreak(STREAK_KEY_FIRE(m.name))})).sort((a,b)=>b.fire-a.fire)[0];
+      const totalScore = scored.reduce((s,m)=>s+m.score,0);
+      squadResults[sq.id] = {
+        squadName: sq.name, squadColor: sq.color, squadIcon: sq.icon || '',
+        mvp: mvpRep ? {name:mvpRep.name, score:mvpRep.score} : null,
+        brandChampGHF: ghfRep ? {name:ghfRep.name, units:ghfRep.ghf} : null,
+        brandChampPlus: plusRep ? {name:plusRep.name, units:plusRep.plus} : null,
+        ironRep: (ironRep && ironRep.fire>0) ? {name:ironRep.name, streak:ironRep.fire} : null,
+        totalScore,
+      };
+    });
+
+    let squadOfMonth = null;
+    const squadEntries = Object.entries(squadResults);
+    if(squadEntries.length){
+      const top = squadEntries.sort((a,b)=>b[1].totalScore-a[1].totalScore)[0];
+      squadOfMonth = { squadId: top[0], squadName: top[1].squadName, squadColor: top[1].squadColor, squadIcon: top[1].squadIcon, score: top[1].totalScore };
+    }
+
+    const achievementData = {
+      period, updatedAt: Date.now(),
+      shopWide: { brandChampGHF, brandChampPlus, atvKing, comeback },
+      squads: squadResults,
+      squadOfMonth,
+    };
+
+    await window.saveAchievements(shopKey, achievementData, newRanks);
+    window._achievements = achievementData;
   }
 
   function fireStreakEmoji(months){
@@ -1924,6 +2054,7 @@
         const top5Names = liveData.txn.slice(0,5).map(r=>r.name);
         updateStreaks(reps, top5Names);
         await creditMonthlyPoints(reps);
+        await computeAndSaveAchievements(reps);
         const saved=await window.saveToFirebase(liveData,updatedAt);
         document.getElementById('sync-status').textContent=saved
           ?'✅ Synced — all devices now show updated data'

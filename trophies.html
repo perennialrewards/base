@@ -48,6 +48,18 @@ body{font-family:'Inter',system-ui,sans-serif;background:#F5ECD4;min-height:100v
 .badge.t4.unlocked{background:linear-gradient(135deg,#2D1B69,#5B3F8A);box-shadow:0 2px 10px rgba(91,63,138,0.4)}
 
 .empty-state{text-align:center;padding:3rem 1rem;color:#8A7A68;font-size:13px}
+.section-title{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:#8A7A68;margin:1.5rem 0 .75rem}
+.shop-ach-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.shop-ach-chip{background:#FFFFFF;border:0.5px solid rgba(61,43,26,0.15);border-radius:12px;padding:.75rem .875rem;display:flex;align-items:center;gap:9px}
+.shop-ach-emoji{font-size:18px;flex-shrink:0}
+.shop-ach-label{font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:.3px;color:#8A7A68}
+.shop-ach-name{font-size:12px;font-weight:600;color:#1C1409;margin-top:1px}
+.hof-item{display:flex;align-items:center;gap:12px;background:#FFFFFF;border:0.5px solid rgba(61,43,26,0.15);border-radius:12px;padding:.85rem 1rem;margin-bottom:.6rem}
+.hof-badge{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.hof-info{flex:1}
+.hof-name{font-size:13px;font-weight:600;color:#1C1409}
+.hof-period{font-size:10.5px;color:#8A7A68;margin-top:1px}
+.hof-score{font-size:12px;font-weight:700;color:#5B3F8A}
 
 .page-footer{font-size:11px;color:#8A7A68;text-align:center;margin-top:1.5rem}
 
@@ -111,6 +123,13 @@ body{font-family:'Inter',system-ui,sans-serif;background:#F5ECD4;min-height:100v
 <div class="page">
   <div class="legend" id="legend"></div>
   <div id="trophy-list"><div class="page-loading">Loading trophy case...</div></div>
+
+  <div class="section-title">This Period's Achievements</div>
+  <div id="period-achievements"><div class="page-loading">Loading...</div></div>
+
+  <div class="section-title">Hall of Fame — Squad of the Month History</div>
+  <div id="hof-history"><div class="page-loading">Loading history...</div></div>
+
   <div class="page-footer">Perennial · Milestones update automatically as points are earned</div>
 </div>
 
@@ -215,7 +234,63 @@ body{font-family:'Inter',system-ui,sans-serif;background:#F5ECD4;min-height:100v
     }
   });
 
+  async function loadPeriodAchievements(){
+    const el = document.getElementById('period-achievements');
+    try {
+      const snap = await get(ref(db, 'achievements/' + SHOP_KEY + '/current'));
+      if(!snap.exists()){
+        el.innerHTML = '<div class="empty-state" style="padding:1.5rem 0">No achievements yet — check back after the next data upload.</div>';
+        return;
+      }
+      const ach = snap.val();
+      const sw = ach.shopWide || {};
+      const chips = [];
+      if(sw.brandChampGHF) chips.push(`<div class="shop-ach-chip"><span class="shop-ach-emoji">🌲</span><div><div class="shop-ach-label">GHF Champion</div><div class="shop-ach-name">${sw.brandChampGHF.name} · ${sw.brandChampGHF.units} units</div></div></div>`);
+      if(sw.brandChampPlus) chips.push(`<div class="shop-ach-chip"><span class="shop-ach-emoji">🟪</span><div><div class="shop-ach-label">Plus Champion</div><div class="shop-ach-name">${sw.brandChampPlus.name} · ${sw.brandChampPlus.units} units</div></div></div>`);
+      if(sw.atvKing) chips.push(`<div class="shop-ach-chip"><span class="shop-ach-emoji">🛒</span><div><div class="shop-ach-label">ATV Leader</div><div class="shop-ach-name">${sw.atvKing.name} · $${sw.atvKing.avg.toFixed(2)}</div></div></div>`);
+      if(sw.comeback) chips.push(`<div class="shop-ach-chip"><span class="shop-ach-emoji">📈</span><div><div class="shop-ach-label">Comeback of the Month</div><div class="shop-ach-name">${sw.comeback.name} · #${sw.comeback.fromRank} → #${sw.comeback.toRank}</div></div></div>`);
+      if(ach.squadOfMonth) chips.push(`<div class="shop-ach-chip"><span class="shop-ach-emoji">👑</span><div><div class="shop-ach-label">Squad of the Month</div><div class="shop-ach-name">${ach.squadOfMonth.squadName} · ${ach.squadOfMonth.score.toLocaleString()} pts</div></div></div>`);
+      el.innerHTML = chips.length ? `<div class="shop-ach-grid">${chips.join('')}</div>` : '<div class="empty-state" style="padding:1.5rem 0">Nothing to show yet for this period.</div>';
+    } catch(e){
+      console.error('Period achievements load error:', e);
+      el.innerHTML = '<div class="empty-state" style="padding:1.5rem 0">Could not load — refresh to try again.</div>';
+    }
+  }
+
+  async function loadHallOfFame(){
+    const el = document.getElementById('hof-history');
+    try {
+      const snap = await get(ref(db, 'achievements/' + SHOP_KEY + '/history'));
+      if(!snap.exists()){
+        el.innerHTML = '<div class="empty-state" style="padding:1.5rem 0">No history yet.</div>';
+        return;
+      }
+      const entries = Object.values(snap.val())
+        .filter(e => e.squadOfMonth)
+        .sort((a,b) => b.updatedAt - a.updatedAt)
+        .slice(0, 12);
+      if(!entries.length){
+        el.innerHTML = '<div class="empty-state" style="padding:1.5rem 0">No Squad of the Month winners recorded yet.</div>';
+        return;
+      }
+      el.innerHTML = entries.map(e => `
+        <div class="hof-item">
+          <div class="hof-badge" style="background:${e.squadOfMonth.squadColor || '#C17F24'}">${e.squadOfMonth.squadIcon || '👑'}</div>
+          <div class="hof-info">
+            <div class="hof-name">${e.squadOfMonth.squadName}</div>
+            <div class="hof-period">${e.period}</div>
+          </div>
+          <div class="hof-score">${e.squadOfMonth.score.toLocaleString()} pts</div>
+        </div>`).join('');
+    } catch(e){
+      console.error('Hall of fame load error:', e);
+      el.innerHTML = '<div class="empty-state" style="padding:1.5rem 0">Could not load history.</div>';
+    }
+  }
+
   loadTrophyCase();
+  loadPeriodAchievements();
+  loadHallOfFame();
 </script>
 
 </body>
