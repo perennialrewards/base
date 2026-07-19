@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Perennial — Squad Vote</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,600;1,9..144,400&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#1C1409; --brown:#3D2B1A; --cream:#F5ECD4; --cream2:#EDE0C4;
+  --amber:#C17F24; --gold:#E8AC2D; --rust:#A63D2F; --moss:#6B7C3E;
+  --border:rgba(61,43,26,0.15); --muted:#8A7A68; --white:#FFFFFF; --purple:#5B3F8A;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Inter',system-ui,sans-serif;background:var(--cream);min-height:100vh;color:var(--ink)}
+
+.banner{width:100%;background:var(--ink);padding:2rem 1.25rem 2.5rem;text-align:center;position:relative;border-radius:0 0 32px 32px}
+.banner-logo img{height:52px;width:auto;margin-bottom:.75rem}
+.banner-title{font-family:'Fraunces',serif;font-size:1.75rem;font-weight:700;color:#fff;margin-bottom:.25rem}
+.banner-sub{font-family:'Fraunces',serif;font-size:1.05rem;color:#fff;font-style:italic;opacity:.85}
+.ham-btn{position:absolute;top:16px;left:16px;width:40px;height:40px;border-radius:10px;background:rgba(255,255,255,0.12);border:none;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px}
+.ham-btn div{width:18px;height:2px;background:#fff;border-radius:2px}
+
+.page{max-width:480px;margin:0 auto;padding:1.25rem 1.25rem 3rem}
+.pin-card{background:var(--white);border:0.5px solid var(--border);border-radius:16px;padding:2rem 1.5rem;margin-bottom:1rem;text-align:center}
+.field-group{margin-bottom:1rem;text-align:left}
+.field-label{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin-bottom:6px}
+select.field-input,input.field-input{width:100%;padding:10px 12px;font-size:14px;border:1.5px solid var(--border);border-radius:9px;background:var(--cream);color:var(--ink);font-family:inherit;outline:none}
+.btn-primary{width:100%;padding:12px;font-size:14px;font-weight:600;color:#fff;background:var(--ink);border:none;border-radius:10px;cursor:pointer;font-family:inherit}
+.err-msg{font-size:12px;color:#EF4444;min-height:16px;margin-bottom:.5rem}
+.ok-msg{font-size:12px;color:var(--moss);min-height:16px}
+
+.current-id-card{background:linear-gradient(135deg,var(--ink),var(--brown));border-radius:18px;padding:1.75rem 1.5rem;text-align:center;margin-bottom:1.25rem}
+.current-id-eyebrow{font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--gold);margin-bottom:.75rem}
+.current-id-badge{width:64px;height:64px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:28px;margin:0 auto .75rem}
+.current-id-name{font-family:'Fraunces',serif;font-size:1.3rem;font-weight:600;color:#fff}
+
+.section-title{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin:1.5rem 0 .75rem}
+
+.icon-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:8px}
+.icon-opt{aspect-ratio:1;border-radius:10px;border:2px solid var(--border);background:var(--cream);font-size:20px;display:flex;align-items:center;justify-content:center;cursor:pointer}
+.icon-opt.sel{border-color:var(--ink);background:var(--white)}
+.color-row{display:flex;gap:8px;flex-wrap:wrap}
+.color-opt{width:32px;height:32px;border-radius:50%;cursor:pointer;border:3px solid transparent}
+.color-opt.sel{border-color:var(--ink)}
+
+.proposal-card{background:var(--white);border:0.5px solid var(--border);border-radius:14px;padding:1rem 1.1rem;margin-bottom:.75rem;display:flex;align-items:center;gap:12px}
+.proposal-card.leading{border-color:var(--gold);border-width:2px}
+.proposal-badge{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.proposal-info{flex:1;min-width:0}
+.proposal-name{font-size:13.5px;font-weight:600;color:var(--ink)}
+.proposal-by{font-size:10.5px;color:var(--muted)}
+.proposal-votes{font-size:11px;font-weight:700;color:var(--muted);text-align:center;min-width:44px}
+.vote-btn{padding:7px 14px;font-size:12px;font-weight:600;border-radius:9px;border:1.5px solid var(--border);background:var(--cream);color:var(--ink);cursor:pointer;font-family:inherit;white-space:nowrap}
+.vote-btn.voted{background:var(--ink);color:#fff;border-color:var(--ink)}
+
+.empty-state{text-align:center;padding:2rem 1rem;color:var(--muted);font-size:13px}
+.note{font-size:11px;color:var(--muted);line-height:1.6;margin-top:.5rem}
+</style>
+</head>
+<body>
+
+<!-- Side menu -->
+<div id="menu-overlay" onclick="toggleMenu()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:300"></div>
+<div id="menu-drawer" style="display:none;position:fixed;top:0;left:0;width:260px;height:100%;background:#fff;z-index:400;box-shadow:4px 0 20px rgba(0,0,0,0.15);flex-direction:column">
+  <div style="background:#1C1409;padding:1.5rem 1.25rem 1.25rem">
+    <div style="font-size:14px;font-weight:600;color:#fff">Perennial</div>
+    <div style="font-size:12px;color:rgba(255,255,255,0.5);margin-top:2px">Rewards Program</div>
+  </div>
+  <div style="padding:1rem 0;flex:1">
+    <a href="owner.html" style="display:flex;align-items:center;gap:12px;padding:.875rem 1.25rem;text-decoration:none;color:#fff;font-size:14px;font-weight:600;background:#1C1409">
+      <span style="font-size:18px">🔑</span> Owner Portal
+      <span style="margin-left:auto;font-size:9px;font-weight:700;color:#E8AC2D;background:rgba(232,172,45,0.18);padding:2px 7px;border-radius:9px;text-transform:uppercase;letter-spacing:.3px">Priority</span>
+    </a>
+    <div style="border-top:0.5px solid rgba(61,43,26,0.15);margin:.5rem 1.25rem"></div>
+    <a href="index.html" style="display:flex;align-items:center;gap:12px;padding:.875rem 1.25rem;text-decoration:none;color:#1C1409;font-size:14px;font-weight:500">
+      <span style="font-size:18px">🏆</span> Current Competitions
+    </a>
+    <a href="points.html" style="display:flex;align-items:center;gap:12px;padding:.875rem 1.25rem;text-decoration:none;color:#1C1409;font-size:14px;font-weight:500">
+      <span style="font-size:18px">⭐</span> My Rewards
+    </a>
+    <a href="trophies.html" style="display:flex;align-items:center;gap:12px;padding:.875rem 1.25rem;text-decoration:none;color:#1C1409;font-size:14px;font-weight:500">
+      <span style="font-size:18px">🥇</span> Trophies
+    </a>
+    <a href="profiles.html" style="display:flex;align-items:center;gap:12px;padding:.875rem 1.25rem;text-decoration:none;color:#1C1409;font-size:14px;font-weight:500">
+      <span style="font-size:18px">🪪</span> Profiles
+    </a>
+    <a href="squad-vote.html" style="display:flex;align-items:center;gap:12px;padding:.875rem 1.25rem;text-decoration:none;color:#1C1409;font-size:14px;font-weight:500;background:#F5ECD4">
+      <span style="font-size:18px">🗳️</span> Squad Vote
+    </a>
+    <a href="achiever.html" style="display:flex;align-items:center;gap:12px;padding:.875rem 1.25rem;text-decoration:none;color:#1C1409;font-size:14px;font-weight:500">
+      <span style="font-size:18px">🏅</span> Your Famous Achiever
+    </a>
+    <div style="border-top:0.5px solid rgba(61,43,26,0.15);margin:.5rem 1.25rem"></div>
+    <a href="roster.html" style="display:flex;align-items:center;gap:12px;padding:.875rem 1.25rem;text-decoration:none;color:#5B3F8A;font-size:14px;font-weight:500">
+      <span style="font-size:18px">👥</span> Rep Roster
+      <span style="margin-left:auto;font-size:10px;font-weight:600;color:#5B3F8A;background:#F3F0FA;padding:2px 8px;border-radius:10px">🔒 Manager</span>
+    </a>
+  </div>
+  <div style="padding:1rem 1.25rem;border-top:0.5px solid rgba(61,43,26,0.15);font-size:11px;color:#8A7A68">
+    Perennial · Internal use only
+  </div>
+</div>
+
+<div class="banner">
+  <button class="ham-btn" onclick="toggleMenu()"><div></div><div></div><div></div></button>
+  <div class="banner-logo"><img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQwIiBoZWlnaHQ9IjcyIiB2aWV3Qm94PSIwIDAgMjQwIDcyIiBmaWxsPSJub25lIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxnIHRyYW5zZm9ybT0idHJhbnNsYXRlKDM2LDM2KSI+PGVsbGlwc2UgY3g9IjAiIGN5PSItMjgiIHJ4PSI1IiByeT0iOSIgZmlsbD0iI0MxN0YyNCIgdHJhbnNmb3JtPSJyb3RhdGUoMCkiLz48ZWxsaXBzZSBjeD0iMCIgY3k9Ii0yOCIgcng9IjUiIHJ5PSI5IiBmaWxsPSIjQzk0QjFFIiBvcGFjaXR5PSIwLjk1IiB0cmFuc2Zvcm09InJvdGF0ZSgzMCkiLz48ZWxsaXBzZSBjeD0iMCIgY3k9Ii0yOCIgcng9IjUiIHJ5PSI5IiBmaWxsPSIjQjg1QzM4IiBvcGFjaXR5PSIwLjkiIHRyYW5zZm9ybT0icm90YXRlKDYwKSIvPjxlbGxpcHNlIGN4PSIwIiBjeT0iLTI4IiByeD0iNSIgcnk9IjkiIGZpbGw9IiNENDk1MkEiIG9wYWNpdHk9IjAuODUiIHRyYW5zZm9ybT0icm90YXRlKDkwKSIvPjxlbGxpcHNlIGN4PSIwIiBjeT0iLTI4IiByeD0iNSIgcnk9IjkiIGZpbGw9IiNBNjNEMkYiIG9wYWNpdHk9IjAuODUiIHRyYW5zZm9ybT0icm90YXRlKDEyMCkiLz48ZWxsaXBzZSBjeD0iMCIgY3k9Ii0yOCIgcng9IjUiIHJ5PSI5IiBmaWxsPSIjRThBQzJEIiBvcGFjaXR5PSIwLjgiIHRyYW5zZm9ybT0icm90YXRlKDE1MCkiLz48ZWxsaXBzZSBjeD0iMCIgY3k9Ii0yOCIgcng9IjUiIHJ5PSI5IiBmaWxsPSIjNkIzQTJBIiBvcGFjaXR5PSIwLjgiIHRyYW5zZm9ybT0icm90YXRlKDE4MCkiLz48ZWxsaXBzZSBjeD0iMCIgY3k9Ii0yOCIgcng9IjUiIHJ5PSI5IiBmaWxsPSIjQzA1QzJDIiBvcGFjaXR5PSIwLjgiIHRyYW5zZm9ybT0icm90YXRlKDIxMCkiLz48ZWxsaXBzZSBjeD0iMCIgY3k9Ii0yOCIgcng9IjUiIHJ5PSI5IiBmaWxsPSIjNkI3QzNFIiBvcGFjaXR5PSIwLjc1IiB0cmFuc2Zvcm09InJvdGF0ZSgyNDApIi8+PGVsbGlwc2UgY3g9IjAiIGN5PSItMjgiIHJ4PSI1IiByeT0iOSIgZmlsbD0iI0Q0QTgzMiIgb3BhY2l0eT0iMC44IiB0cmFuc2Zvcm09InJvdGF0ZSgyNzApIi8+PGVsbGlwc2UgY3g9IjAiIGN5PSItMjgiIHJ4PSI1IiByeT0iOSIgZmlsbD0iIzhCMjUxOCIgb3BhY2l0eT0iMC44IiB0cmFuc2Zvcm09InJvdGF0ZSgzMDApIi8+PGVsbGlwc2UgY3g9IjAiIGN5PSItMjgiIHJ4PSI1IiByeT0iOSIgZmlsbD0iI0Q0NzIxQSIgb3BhY2l0eT0iMC44NSIgdHJhbnNmb3JtPSJyb3RhdGUoMzMwKSIvPjxjaXJjbGUgY3g9IjAiIGN5PSIwIiByPSIxOCIgc3Ryb2tlPSIjQzE3RjI0IiBzdHJva2Utd2lkdGg9IjAuNSIgZmlsbD0ibm9uZSIgb3BhY2l0eT0iMC4yNSIvPjx0ZXh0IHg9Ii04IiB5PSIxMCIgZm9udC1mYW1pbHk9IkZyYXVuY2VzLEdlb3JnaWEsc2VyaWYiIGZvbnQtc2l6ZT0iMjgiIGZvbnQtd2VpZ2h0PSI2MDAiIGZpbGw9IiNGNUVDRDQiPlA8L3RleHQ+PC9nPjx0ZXh0IHg9IjgyIiB5PSI0NyIgZm9udC1mYW1pbHk9IkZyYXVuY2VzLEdlb3JnaWEsc2VyaWYiIGZvbnQtc2l6ZT0iMzAiIGZvbnQtd2VpZ2h0PSI2MDAiIGZpbGw9IiNGNUVDRDQiIGxldHRlci1zcGFjaW5nPSItMC41Ij5lcmVubmlhbDwvdGV4dD48L3N2Zz4=" alt="Perennial"></div>
+  <div class="banner-title">Squad Vote</div>
+  <div class="banner-sub">Your squad. Your call.</div>
+</div>
+
+<div class="page">
+
+  <!-- PIN wall -->
+  <div class="pin-card" id="pin-wall">
+    <div class="field-group">
+      <div class="field-label">Your name</div>
+      <select class="field-input" id="pts-name"><option value="">Select your name...</option></select>
+    </div>
+    <div class="field-group">
+      <div class="field-label">PIN</div>
+      <input class="field-input" type="password" id="pts-pin" placeholder="Enter your PIN" inputmode="numeric" maxlength="6">
+    </div>
+    <div class="err-msg" id="pin-error"></div>
+    <button class="btn-primary" onclick="voteLogin()">Continue</button>
+  </div>
+
+  <!-- No squad assigned -->
+  <div id="no-squad-view" style="display:none">
+    <div class="empty-state">You're not assigned to a squad yet — ask your manager to add you on the roster.</div>
+  </div>
+
+  <!-- Main voting view -->
+  <div id="vote-view" style="display:none">
+    <div class="current-id-card">
+      <div class="current-id-eyebrow">Your Squad — Current Look</div>
+      <div class="current-id-badge" id="current-id-badge"></div>
+      <div class="current-id-name" id="current-id-name"></div>
+    </div>
+
+    <div class="section-title">Propose a New Look</div>
+    <div class="pin-card" style="text-align:left">
+      <div class="field-group">
+        <div class="field-label">Squad name</div>
+        <input class="field-input" type="text" id="prop-name" maxlength="24" placeholder="Keep it work-safe">
+      </div>
+      <div class="field-group">
+        <div class="field-label">Icon</div>
+        <div class="icon-grid" id="prop-icon-grid"></div>
+      </div>
+      <div class="field-group">
+        <div class="field-label">Color</div>
+        <div class="color-row" id="prop-color-row"></div>
+      </div>
+      <div class="err-msg" id="prop-error"></div>
+      <div class="ok-msg" id="prop-ok"></div>
+      <button class="btn-primary" onclick="submitProposal()">Submit proposal</button>
+      <div class="note">One active proposal per person — submitting again replaces your last one. Names are checked for basic profanity, but use your judgment.</div>
+    </div>
+
+    <div class="section-title">Vote</div>
+    <div id="proposal-list"><div class="empty-state">Loading proposals...</div></div>
+  </div>
+
+</div>
+
+<script type="module">
+  import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+  import { getDatabase, ref, get, set, push } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js';
+
+  const firebaseConfig = {
+    apiKey:            'AIzaSyBF79P6AenHXN1685_5o4k50E0Yjxdc7Ko',
+    authDomain:        'perennial-rewards.firebaseapp.com',
+    databaseURL:       'https://perennial-rewards-default-rtdb.firebaseio.com',
+    projectId:         'perennial-rewards',
+    storageBucket:     'perennial-rewards.firebasestorage.app',
+    messagingSenderId: '530822327585',
+    appId:             '1:530822327585:web:c85216e72f53c5380be260',
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db  = getDatabase(app);
+  const SHOP_NAME = 'Perennial';
+  const shopKey   = SHOP_NAME.replace(/\s/g,'_');
+  let currentName = '', mySquadId = '', mySafe = '';
+
+  const ICONS  = ['🌿','🔥','⭐','🎯','🚀','💎','🦁','🐝','🌵','🍁','🎨','🏆','⚡','🌊','🦅','🐺'];
+  const COLORS = ['#C17F24','#C94B1E','#B85C38','#D4952A','#A63D2F','#E8AC2D','#6B3A2A','#C05C2C','#6B7C3E','#D4A832','#8B2518','#D4721A','#5B3F8A'];
+
+  // Lightweight work-safe filter — not exhaustive, catches common cases.
+  // This is a courtesy check, not a moderation system: use judgment.
+  const BLOCKLIST = ['fuck','shit','bitch','ass','dick','cunt','nigger','fag','whore','slut','rape','nazi','cock','pussy'];
+  function isWorkSafe(name){
+    const lower = name.toLowerCase().replace(/[^a-z0-9\s]/g,'');
+    return !BLOCKLIST.some(w => lower.includes(w));
+  }
+
+  let selectedIcon = ICONS[0];
+  let selectedColor = COLORS[0];
+
+  function getPin(name){ return localStorage.getItem('rep_pin_Perennial_' + name.replace(/\s/g,'_')) || ''; }
+  async function getPinFirebase(name){
+    try {
+      const snap = await get(ref(db, 'pins/Perennial/' + name.replace(/\s/g,'_')));
+      return snap.exists() ? String(snap.val()) : null;
+    } catch(e){ return null; }
+  }
+  async function loadNames(){
+    try {
+      const snap = await get(ref(db, 'leaderboard/liveData/txn'));
+      if(snap.exists()){
+        const sel = document.getElementById('pts-name');
+        snap.val().forEach(r => {
+          const o = document.createElement('option');
+          o.value = r.name; o.textContent = r.name;
+          sel.appendChild(o);
+        });
+      }
+    } catch(e){ console.warn('Could not load names:', e); }
+  }
+
+  window.voteLogin = async function(){
+    const name = document.getElementById('pts-name').value;
+    const pin  = document.getElementById('pts-pin').value.trim();
+    const err  = document.getElementById('pin-error');
+    if(!name){ err.textContent = 'Select your name.'; return; }
+    if(!pin){ err.textContent = 'Enter your PIN.'; return; }
+    err.textContent = 'Checking...';
+    const saved = (await getPinFirebase(name)) || getPin(name);
+    if(!saved){ err.textContent = 'No PIN set — ask your manager.'; return; }
+    if(pin !== String(saved)){ err.textContent = 'Incorrect PIN.'; return; }
+    err.textContent = '';
+    currentName = name;
+    mySafe = name.replace(/\s/g,'_');
+    document.getElementById('pin-wall').style.display = 'none';
+
+    try {
+      const assignSnap = await get(ref(db, 'squadAssign/' + shopKey + '/' + mySafe));
+      mySquadId = assignSnap.exists() ? assignSnap.val() : '';
+    } catch(e){ mySquadId = ''; }
+
+    if(!mySquadId){
+      document.getElementById('no-squad-view').style.display = 'block';
+      return;
+    }
+    document.getElementById('vote-view').style.display = 'block';
+    renderIconGrid();
+    renderColorRow();
+    loadVoteView();
+  };
+
+  function renderIconGrid(){
+    document.getElementById('prop-icon-grid').innerHTML = ICONS.map(ic =>
+      `<div class="icon-opt${ic===selectedIcon?' sel':''}" onclick="pickIcon('${ic}')">${ic}</div>`
+    ).join('');
+  }
+  function renderColorRow(){
+    document.getElementById('prop-color-row').innerHTML = COLORS.map(c =>
+      `<div class="color-opt${c===selectedColor?' sel':''}" style="background:${c}" onclick="pickColor('${c}')"></div>`
+    ).join('');
+  }
+  window.pickIcon  = function(ic){ selectedIcon = ic; renderIconGrid(); };
+  window.pickColor = function(c){ selectedColor = c; renderColorRow(); };
+
+  async function loadVoteView(){
+    try {
+      const squadListSnap = await get(ref(db, 'teamRewards/squads/' + shopKey + '/list'));
+      const squadList = squadListSnap.exists() ? squadListSnap.val() : [];
+      const mySquad = squadList.find(s => s.id === mySquadId);
+      if(mySquad){
+        document.getElementById('current-id-badge').style.background = mySquad.color || '#C17F24';
+        document.getElementById('current-id-badge').textContent = mySquad.icon || '🛡️';
+        document.getElementById('current-id-name').textContent = mySquad.name;
+      }
+      await renderProposals(squadList, mySquad);
+    } catch(e){
+      console.error('Vote view load error:', e);
+      document.getElementById('proposal-list').innerHTML = '<div class="empty-state">Could not load — check connection and refresh.</div>';
+    }
+  }
+
+  window.submitProposal = async function(){
+    const nameInput = document.getElementById('prop-name').value.trim();
+    const err = document.getElementById('prop-error');
+    const ok  = document.getElementById('prop-ok');
+    err.textContent = ''; ok.textContent = '';
+    if(nameInput.length < 3){ err.textContent = 'Name needs to be at least 3 characters.'; return; }
+    if(!/^[a-zA-Z0-9\s'\-]+$/.test(nameInput)){ err.textContent = 'Letters, numbers, spaces, and basic punctuation only.'; return; }
+    if(!isWorkSafe(nameInput)){ err.textContent = 'Please keep it work-safe.'; return; }
+
+    try {
+      await set(ref(db, 'squadIdentity/' + shopKey + '/' + mySquadId + '/proposals/' + mySafe), {
+        name: nameInput, icon: selectedIcon, color: selectedColor,
+        proposedBy: currentName, createdAt: Date.now(),
+      });
+      ok.textContent = 'Proposal submitted ✓';
+      document.getElementById('prop-name').value = '';
+      loadVoteView();
+    } catch(e){
+      err.textContent = 'Could not submit — check connection and try again.';
+      console.error('Proposal submit error:', e);
+    }
+  };
+
+  async function renderProposals(squadList, mySquad){
+    const el = document.getElementById('proposal-list');
+    const propsSnap = await get(ref(db, 'squadIdentity/' + shopKey + '/' + mySquadId + '/proposals'));
+    if(!propsSnap.exists()){
+      el.innerHTML = '<div class="empty-state">No proposals yet — be the first.</div>';
+      return;
+    }
+    const proposals = Object.entries(propsSnap.val()).map(([propId, p]) => {
+      const votes = p.votes ? Object.keys(p.votes).length : 0;
+      const iVoted = p.votes && p.votes[mySafe];
+      return { propId, ...p, votes };
+    }).sort((a,b) => b.votes - a.votes);
+
+    const leadingId = proposals[0]?.propId;
+
+    el.innerHTML = proposals.map(p => {
+      return `<div class="proposal-card${p.propId===leadingId && p.votes>0 ? ' leading':''}">
+        <div class="proposal-badge" style="background:${p.color}">${p.icon}</div>
+        <div class="proposal-info">
+          <div class="proposal-name">${p.name}</div>
+          <div class="proposal-by">by ${p.proposedBy}</div>
+        </div>
+        <div class="proposal-votes">${p.votes}<br><span style="font-weight:400">vote${p.votes!==1?'s':''}</span></div>
+        <button class="vote-btn" id="vote-btn-${p.propId}" onclick="castVote('${p.propId}')">Vote</button>
+      </div>`;
+    }).join('');
+
+    // Mark my own current vote (needs the raw votes object, not just the count)
+    const raw = propsSnap.val();
+    Object.keys(raw).forEach(propId => {
+      const btn = document.getElementById('vote-btn-' + propId);
+      if(btn && raw[propId].votes && raw[propId].votes[mySafe]){
+        btn.classList.add('voted');
+        btn.textContent = 'Voted ✓';
+      }
+    });
+
+    // If the leading proposal differs from the squad's active identity,
+    // apply it — this is the only place squad name/icon/color actually
+    // change, and it writes into the same list every other page reads.
+    if(proposals.length && proposals[0].votes > 0 && mySquad){
+      const leader = proposals[0];
+      if(leader.name !== mySquad.name || leader.icon !== mySquad.icon || leader.color !== mySquad.color){
+        const updated = squadList.map(s => s.id === mySquadId
+          ? { ...s, name: leader.name, icon: leader.icon, color: leader.color }
+          : s);
+        try { await set(ref(db, 'teamRewards/squads/' + shopKey + '/list'), updated); }
+        catch(e){ console.warn('Could not apply winning vote:', e); }
+      }
+    }
+  }
+
+  window.castVote = async function(propId){
+    try {
+      const path = 'squadIdentity/' + shopKey + '/' + mySquadId + '/proposals';
+      const propsSnap = await get(ref(db, path));
+      if(!propsSnap.exists()) return;
+      const proposals = propsSnap.val();
+
+      // One vote per person — remove any existing vote on other proposals first
+      Object.keys(proposals).forEach(pid => {
+        if(proposals[pid].votes && proposals[pid].votes[mySafe]) delete proposals[pid].votes[mySafe];
+      });
+      if(!proposals[propId].votes) proposals[propId].votes = {};
+      const alreadyVotedThis = document.getElementById('vote-btn-' + propId)?.classList.contains('voted');
+      if(!alreadyVotedThis) proposals[propId].votes[mySafe] = true;
+
+      await set(ref(db, path), proposals);
+      loadVoteView();
+    } catch(e){ console.error('Vote failed:', e); }
+  };
+
+  window.toggleMenu = function(){
+    const overlay = document.getElementById('menu-overlay');
+    const drawer  = document.getElementById('menu-drawer');
+    const open = drawer.style.display === 'flex';
+    overlay.style.display = open ? 'none' : 'block';
+    drawer.style.display  = open ? 'none' : 'flex';
+  };
+  document.addEventListener('keydown', e => {
+    if(e.key === 'Escape'){
+      document.getElementById('menu-overlay').style.display='none';
+      document.getElementById('menu-drawer').style.display='none';
+    }
+  });
+
+  loadNames();
+</script>
+</body>
+</html>

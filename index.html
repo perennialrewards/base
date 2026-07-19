@@ -230,6 +230,15 @@
   .thead.ghf{background:var(--sage-light)}
   .thead.plus{background:#F0EDFA}
   .rep-row{display:grid;padding:12px 16px;align-items:center;border-bottom:0.5px solid var(--cream-dark);transition:background .1s;grid-template-columns:44px 1fr 120px}
+  .squad-row-clickable{cursor:pointer}
+  .squad-detail{display:none;padding:.5rem 16px 1rem;background:rgba(0,0,0,0.015)}
+  .squad-detail.open{display:block}
+  .squad-member-row{display:grid;grid-template-columns:1fr 2fr auto;gap:10px;align-items:center;padding:6px 0}
+  .squad-member-name{font-size:12px;color:var(--charcoal)}
+  .squad-member-bar-bg{height:6px;background:rgba(0,0,0,0.06);border-radius:6px;overflow:hidden}
+  .squad-member-bar-fill{height:100%;border-radius:6px}
+  .squad-member-val{font-size:11px;font-weight:600;color:var(--muted);text-align:right;min-width:36px}
+  .squad-member-empty{font-size:12px;color:var(--muted);padding:8px 0}
   .rep-row:last-child{border-bottom:none}
   .rep-row:hover{background:var(--cream)}
   .rep-row.hl{background:linear-gradient(90deg,var(--teal-light),transparent)}
@@ -545,6 +554,9 @@
     </a>
     <a href="profiles.html" style="display:flex;align-items:center;gap:12px;padding:.875rem 1.25rem;text-decoration:none;color:var(--charcoal);font-size:14px;font-weight:500">
       <span style="font-size:18px">🪪</span> Profiles
+    </a>
+    <a href="squad-vote.html" style="display:flex;align-items:center;gap:12px;padding:.875rem 1.25rem;text-decoration:none;color:#1C1409;font-size:14px;font-weight:500">
+      <span style="font-size:18px">🗳️</span> Squad Vote
     </a>
     <a href="achiever.html" style="display:flex;align-items:center;gap:12px;padding:.875rem 1.25rem;text-decoration:none;color:var(--charcoal);font-size:14px;font-weight:500">
       <span style="font-size:18px">🏅</span> Your Famous Achiever
@@ -957,6 +969,11 @@
   };
 
   // ── Squad leaderboard (Team Rewards) ────────────────────────────
+  window.toggleSquadDetail = function(i){
+    const d = document.getElementById('squad-detail-' + i);
+    if(d) d.classList.toggle('open');
+  };
+
   function renderSquadBoard(data){
     const cfg = window._squadConfig || {};
     const squads = window._squadList || [];
@@ -973,37 +990,52 @@
     const plusArr = data.plus  || [];
     const salesArr= data.sales || [];
 
-    // Score each squad: 9pts/GHF unit + 9pts/Plus unit + 1pt per $100 net sales — matches getExportData formula
+    function scoreFor(nameKey){
+      const g = ghfArr.find(r=>r.name.replace(/\s/g,'_')===nameKey);
+      const p = plusArr.find(r=>r.name.replace(/\s/g,'_')===nameKey);
+      const s = salesArr.find(r=>r.name.replace(/\s/g,'_')===nameKey);
+      const units = (g?.units||g?.ghf||0) + (p?.units||p?.plus||0);
+      const sales = (s?.sales||0);
+      return Math.round(units*9 + sales*0.01);
+    }
+
+    // Score each squad AND every member within it — same formula either way
+    // (9pts/GHF unit + 9pts/Plus unit + 1pt per $100 net sales), so a
+    // squad's total is provably just the sum of its members' rows.
     const scored = squads.map(sq=>{
-      let units=0, sales=0, repCount=0;
-      Object.keys(assign).forEach(nameKey=>{
-        if(assign[nameKey] !== sq.id) return;
-        repCount++;
-        const g = ghfArr.find(r=>r.name.replace(/\s/g,'_')===nameKey);
-        const p = plusArr.find(r=>r.name.replace(/\s/g,'_')===nameKey);
-        const s = salesArr.find(r=>r.name.replace(/\s/g,'_')===nameKey);
-        units += (g?.units||g?.ghf||0) + (p?.units||p?.plus||0);
-        sales += (s?.sales||0);
-      });
-      const score = Math.round(units*9 + sales*0.01);
-      return { ...sq, units, sales, repCount, score };
+      const members = Object.keys(assign)
+        .filter(nameKey => assign[nameKey] === sq.id)
+        .map(nameKey => ({ nameKey, name: nameKey.replace(/_/g,' '), score: scoreFor(nameKey) }))
+        .sort((a,b) => b.score - a.score);
+      const score = members.reduce((s,m) => s + m.score, 0);
+      return { ...sq, members, repCount: members.length, score };
     }).sort((a,b)=>b.score-a.score);
 
     const podium=[scored[1],scored[0],scored[2]].map((sq,i)=>{
       if(!sq) return '<div></div>';
       return '<div class="podium-card'+(i===1?' p1 squads':'')+'">'
-        +'<div class="podium-emoji">'+(i===1?'🥇':i===0?'🥈':'🥉')+'</div>'
+        +'<div class="podium-emoji">'+(sq.icon || (i===1?'🥇':i===0?'🥈':'🥉'))+'</div>'
         +'<div class="podium-name">'+sq.name+'</div>'
         +'<div class="podium-val">'+sq.score.toLocaleString()+' pts</div>'
         +'<div class="podium-sub">'+sq.repCount+' rep'+(sq.repCount!==1?'s':'')+'</div></div>';
     }).join('');
 
     const rows = scored.map((sq,i)=>{
-      return '<div class="rep-row'+(i===0?' hl':'')+'">'
+      const memberRows = sq.members.length ? sq.members.map(m=>{
+        const pct = sq.score > 0 ? Math.round(m.score / sq.score * 100) : 0;
+        return '<div class="squad-member-row">'
+          +'<div class="squad-member-name">'+m.name+'</div>'
+          +'<div class="squad-member-bar-bg"><div class="squad-member-bar-fill" style="width:'+pct+'%;background:'+sq.color+'"></div></div>'
+          +'<div class="squad-member-val">'+m.score.toLocaleString()+'</div>'
+          +'</div>';
+      }).join('') : '<div class="squad-member-empty">No members assigned yet.</div>';
+
+      return '<div class="rep-row squad-row-clickable'+(i===0?' hl':'')+'" onclick="toggleSquadDetail('+i+')">'
         +'<div class="rank">'+rl(i)+'</div>'
-        +'<div class="rep-info"><div class="avatar" style="background:'+sq.color+'22;color:'+sq.color+'">'+renderIni(sq.name)+'</div>'
-        +'<div class="rep-name">'+sq.name+'</div></div>'
-        +'<div class="val">'+sq.score.toLocaleString()+' pts</div></div>';
+        +'<div class="rep-info"><div class="avatar" style="background:'+sq.color+'22;color:'+sq.color+'">'+(sq.icon || renderIni(sq.name))+'</div>'
+        +'<div class="rep-name">'+sq.name+'<span style="font-size:10px;color:var(--muted);font-weight:500;margin-left:6px">'+sq.repCount+' rep'+(sq.repCount!==1?'s':'')+' ▾</span></div></div>'
+        +'<div class="val">'+sq.score.toLocaleString()+' pts</div></div>'
+        +'<div class="squad-detail" id="squad-detail-'+i+'">'+memberRows+'</div>';
     }).join('');
 
     const prizeBanner = cfg.prize
