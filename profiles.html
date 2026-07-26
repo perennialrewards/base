@@ -9,8 +9,8 @@
 <style>
 :root{
   --ink:#1C1409; --brown:#3D2B1A; --cream:#F5ECD4; --cream2:#EDE0C4;
-  --amber:#C17F24; --gold:#E8AC2D; --rust:#A63D2F; --moss:#6B7C3E;
-  --border:rgba(61,43,26,0.15); --muted:#8A7A68; --white:#FFFFFF; --purple:#5B3F8A;
+  --amber:#427670; --gold:#5A9691; --rust:#A63D2F; --moss:#457850;
+  --border:rgba(61,43,26,0.15); --muted:#8A7A68; --white:#FFFFFF; --purple:#6B2F52;
 }
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'Inter',system-ui,sans-serif;background:var(--cream);min-height:100vh;color:var(--ink)}
@@ -76,10 +76,10 @@ textarea.field-input{resize:none}
 .gift-balance-note{font-size:11px;color:var(--muted);margin-bottom:.75rem}
 .generosity-badge{display:inline-flex;align-items:center;gap:5px;font-size:10.5px;font-weight:700;padding:3px 10px;border-radius:12px;margin-top:.5rem}
 .generosity-badge.g0{background:rgba(138,122,104,0.12);color:var(--muted)}
-.generosity-badge.g1{background:rgba(107,124,62,0.14);color:#3D5020}
-.generosity-badge.g2{background:rgba(193,127,36,0.16);color:var(--amber)}
-.generosity-badge.g3{background:rgba(232,172,45,0.2);color:#B8860B}
-.generosity-badge.g4{background:linear-gradient(135deg,#2D1B69,#5B3F8A);color:#fff}
+.generosity-badge.g1{background:rgba(69,120,80,0.14);color:#1F4A2B}
+.generosity-badge.g2{background:rgba(66,118,112,0.16);color:var(--amber)}
+.generosity-badge.g3{background:rgba(90,150,145,0.2);color:#1D3B37}
+.generosity-badge.g4{background:linear-gradient(135deg,#4A1F38,#6B2F52);color:#fff}
 
 /* Gift feed */
 .gift-feed-item{display:flex;align-items:center;gap:10px;padding:.7rem 0;border-bottom:0.5px solid var(--border);font-size:12.5px}
@@ -102,7 +102,7 @@ textarea.field-input{resize:none}
   <div style="padding:1rem 0;flex:1;overflow-y:auto">
     <a href="owner.html" style="display:flex;align-items:center;gap:12px;padding:.875rem 1.25rem;text-decoration:none;color:#fff;font-size:14px;font-weight:600;background:#1C1409">
       <span style="font-size:18px">🔑</span> Owner Portal
-      <span style="margin-left:auto;font-size:9px;font-weight:700;color:#E8AC2D;background:rgba(232,172,45,0.18);padding:2px 7px;border-radius:9px;text-transform:uppercase;letter-spacing:.3px">Priority</span>
+      <span style="margin-left:auto;font-size:9px;font-weight:700;color:#5A9691;background:rgba(90,150,145,0.18);padding:2px 7px;border-radius:9px;text-transform:uppercase;letter-spacing:.3px">Priority</span>
     </a>
     <div style="border-top:0.5px solid rgba(61,43,26,0.15);margin:.5rem 1.25rem"></div>
     <a href="index.html" style="display:flex;align-items:center;gap:12px;padding:.875rem 1.25rem;text-decoration:none;color:#1C1409;font-size:14px;font-weight:500">
@@ -127,14 +127,14 @@ textarea.field-input{resize:none}
       <span style="font-size:18px">🏅</span> Your Famous Achiever
     </a>
     <div style="border-top:0.5px solid rgba(61,43,26,0.15);margin:.5rem 1.25rem"></div>
-    <a href="roster.html" style="display:flex;align-items:center;gap:12px;padding:.875rem 1.25rem;text-decoration:none;color:#5B3F8A;font-size:14px;font-weight:500">
+    <a href="roster.html" style="display:flex;align-items:center;gap:12px;padding:.875rem 1.25rem;text-decoration:none;color:#6B2F52;font-size:14px;font-weight:500">
       <span style="font-size:18px">👥</span> Rep Roster
-      <span style="margin-left:auto;font-size:10px;font-weight:600;color:#5B3F8A;background:#F3F0FA;padding:2px 8px;border-radius:10px">🔒 Manager</span>
+      <span style="margin-left:auto;font-size:10px;font-weight:600;color:#6B2F52;background:#F3E7EE;padding:2px 8px;border-radius:10px">🔒 Manager</span>
     </a>
   </div>
   <div style="padding:1rem 1.25rem;border-top:0.5px solid rgba(61,43,26,0.15);font-size:11px;color:#8A7A68">
     Perennial · Internal use only<br>
-    <span id="loc-indicator" style="color:#5B3F8A;font-weight:600"></span>
+    <span id="loc-indicator" style="color:#6B2F52;font-weight:600"></span>
   </div>
 </div>
 
@@ -410,8 +410,8 @@ textarea.field-input{resize:none}
             <div class="profile-info">
               <div class="profile-name">${rep.name}</div>
               <div class="profile-meta">
-                <span class="mini-badge" style="background:rgba(91,63,138,0.12);color:#5B3F8A">${title}</span>
-                ${rep.squadName ? `<span class="mini-badge" style="background:rgba(193,127,36,0.12);color:#C17F24">${rep.squadName}</span>` : ''}
+                <span class="mini-badge" style="background:rgba(107,47,82,0.12);color:#6B2F52">${title}</span>
+                ${rep.squadName ? `<span class="mini-badge" style="background:rgba(66,118,112,0.12);color:#427670">${rep.squadName}</span>` : ''}
               </div>
             </div>
           </div>
@@ -545,7 +545,7 @@ textarea.field-input{resize:none}
   (function(){
     const loc = new URLSearchParams(window.location.search).get('loc') || 'Perennial';
     const el = document.getElementById('loc-indicator');
-    if(el) el.innerHTML = '📍 ' + loc.replace(/_/g,' ') + ' · <a href="index.html" style="color:#5B3F8A">Switch</a>';
+    if(el) el.innerHTML = '📍 ' + loc.replace(/_/g,' ') + ' · <a href="index.html" style="color:#6B2F52">Switch</a>';
   })();
   window.toggleMenu = function(){
     const overlay = document.getElementById('menu-overlay');

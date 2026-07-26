@@ -59,8 +59,9 @@ window.PERENNIAL = {
     { pts:1500, name:'🌳 Pillar of the Team',cls:'g4' },
   ],
 
-  // The canonical 13-tone autumn leaf palette, used for avatars, squad
-  // colors, and anywhere a rotating set of on-brand colors is needed.
-  LEAF_COLORS: ['#C17F24','#C94B1E','#B85C38','#D4952A','#A63D2F','#E8AC2D','#6B3A2A','#C05C2C','#6B7C3E','#D4A832','#8B2518','#D4721A','#5B3F8A'],
+  // The canonical avatar/rep color palette — teal-gray dominant (structure),
+  // plum secondary (recognition), green rare (kept minimal on purpose,
+  // matching the site-wide weighting so avatars don't read "evenly split").
+  LEAF_COLORS: ['#427670','#2A544F','#1D3B37','#5A9691','#345E59','#6BAAA5','#6B2F52','#8C4570','#4A1F38','#A85C88','#457850','#1F4A2B','#A63D2F'],
 
 };
