@@ -4,7 +4,75 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Perennial — Current Competitions</title>
-<script src="shared-config.js"></script>
+<script>
+// ============================================================
+// Perennial shared config — single source of truth
+// ============================================================
+// Inlined directly into every page (rather than loaded as a
+// separate shared-config.js file) so the site works identically
+// whether it's opened as a raw local file or served over HTTPS —
+// browsers block local files from loading other local files via
+// <script src>, which broke this when it was external.
+// Reference via window.PERENNIAL, or alias locally:
+//   const TIERS = window.PERENNIAL.TIERS;
+// ============================================================
+window.PERENNIAL = {
+
+  // Milestones — Sprout to Evergreen. Lifetime (sales-earned + bonus)
+  // points, permanent, never affected by spending or gifting.
+  TIERS: [
+    { pts:500,  name:'Sprout',    reward:'$5 Gift Card',         emoji:'🌱' },
+    { pts:1000, name:'Sapling',   reward:'$10 Gift Card',        emoji:'🌿' },
+    { pts:2500, name:'Harvest',   reward:'$25 Gift Card',        emoji:'🍂' },
+    { pts:5000, name:'Evergreen', reward:'$50 Gift Card + Swag', emoji:'🌲' },
+  ],
+
+  // Skill Trees — mastery rank, same lifetime-points number as Milestones
+  // but framed as status/title rather than a reward tier.
+  SKILL_TITLES: [
+    { pts:0,    name:'Novice',        cls:'lvl1' },
+    { pts:250,  name:'Budtender',     cls:'lvl2' },
+    { pts:750,  name:'Specialist',    cls:'lvl3' },
+    { pts:2000, name:'Closer',        cls:'lvl4' },
+    { pts:5000, name:'Master Closer', cls:'lvl5' },
+  ],
+
+  // Your Famous Achiever — 8 archetypes. Full objects (used by achiever.html
+  // for the reveal screen) and a titles-only map (used by points.html/
+  // profiles.html, which only ever show the name, never the full breakdown).
+  ARCHETYPES: {
+    visionary: { emoji:'🧭', title:'The Visionary', desc:"You're driven by purpose. A shift feels different when you know it's part of something bigger." },
+    climber:   { emoji:'📈', title:'The Climber',   desc:"You're driven by growth. Every shift is a rep toward becoming the best version of yourself." },
+    innovator: { emoji:'🎨', title:'The Innovator', desc:"You're driven by curiosity. You'd rather find a better way than follow the old one." },
+    collector: { emoji:'💰', title:'The Collector', desc:"You're driven by ownership. Points, titles, badges — you like watching what's yours add up." },
+    connector: { emoji:'🤝', title:'The Connector', desc:"You're driven by people. A good shift is one where the team wins together." },
+    closer:    { emoji:'⏳', title:'The Closer',    desc:"You're driven by the clock. Nothing focuses you like a deadline closing in." },
+    wildcard:  { emoji:'🎲', title:'The Wildcard',  desc:"You're driven by surprise. Predictable is fine. Unexpected is better." },
+    guardian:  { emoji:'🛡️', title:'The Guardian',  desc:"You're driven by consistency. Streaks aren't just numbers — they're a point of pride." },
+  },
+  get ARCHETYPE_TITLES(){
+    const out = {};
+    Object.entries(this.ARCHETYPES).forEach(([k,v]) => { out[k] = v.title; });
+    return out;
+  },
+
+  // Generosity — Peer-to-Peer Recognition badge tiers, based on cumulative
+  // points given away (never received), so it rewards generosity itself.
+  GENEROSITY_TIERS: [
+    { pts:0,    name:'',                     cls:'g0' },
+    { pts:100,  name:'🌰 Seed-Sower',        cls:'g1' },
+    { pts:300,  name:'🤝 Helping Hand',      cls:'g2' },
+    { pts:750,  name:'🌻 Community Builder', cls:'g3' },
+    { pts:1500, name:'🌳 Pillar of the Team',cls:'g4' },
+  ],
+
+  // The canonical avatar/rep color palette — teal-gray dominant (structure),
+  // plum secondary (recognition), green rare (kept minimal on purpose,
+  // matching the site-wide weighting so avatars don't read "evenly split").
+  LEAF_COLORS: ['#427670','#2A544F','#1D3B37','#5A9691','#345E59','#6BAAA5','#6B2F52','#8C4570','#4A1F38','#A85C88','#457850','#1F4A2B','#A63D2F'],
+
+};
+</script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
 <script type="module">
@@ -192,6 +260,8 @@
     --cream-dark: color-mix(in srgb, #F5ECD4 90%, black);
     --charcoal:   #1C1409;
     --gray:       #8A7A68;
+    --muted:      #8A7A68;
+    --green:      #457850;
     --border:     rgba(61,43,26,0.15);
     --white:      #FFFFFF;
   }
@@ -290,10 +360,10 @@
   .tab{padding:9px 8px;font-size:12px;font-weight:500;min-width:80px;border-radius:10px;border:0.5px solid var(--border);background:var(--white);cursor:pointer;color:var(--gray);transition:all .15s;text-align:center;line-height:1.3}
   .tab .ti{font-size:15px;display:block;margin-bottom:2px}
   .tab.active.txn{background:var(--teal);color:var(--white);border-color:var(--teal)}
-  .tab.active.sales{background:#B5830A;color:var(--white);border-color:#B5830A}
-  .tab.active.avg{background:#6B4FA0;color:var(--white);border-color:#6B4FA0}
-  .tab.active.ghf{background:#427670;color:var(--white);border-color:#427670}
-  .tab.active.plus{background:#7B6FAB;color:var(--white);border-color:#7B6FAB}
+  .tab.active.sales{background:var(--teal);color:var(--white);border-color:var(--teal)}
+  .tab.active.avg{background:var(--teal);color:var(--white);border-color:var(--teal)}
+  .tab.active.ghf{background:var(--teal);color:var(--white);border-color:var(--teal)}
+  .tab.active.plus{background:#6B2F52;color:var(--white);border-color:#6B2F52}
 
   /* ── Metrics ────────────────────────────────────────── */
   .metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:1.25rem}
@@ -305,10 +375,10 @@
   .podium{display:grid;grid-template-columns:1fr 1.1fr 1fr;gap:10px;margin-bottom:1.25rem;align-items:end}
   .podium-card{background:var(--white);border-radius:12px;border:0.5px solid var(--border);padding:1rem .875rem;text-align:center}
   .podium-card.p1.txn{border:1.5px solid var(--teal);background:linear-gradient(to bottom,var(--teal-light),var(--white))}
-  .podium-card.p1.sales{border:1.5px solid #B5830A;background:linear-gradient(to bottom,#FEF3C7,var(--white))}
-  .podium-card.p1.avg{border:1.5px solid #6B4FA0;background:linear-gradient(to bottom,#EDE9FE,var(--white))}
+  .podium-card.p1.sales{border:1.5px solid var(--teal);background:linear-gradient(to bottom,var(--teal-light),var(--white))}
+  .podium-card.p1.avg{border:1.5px solid var(--teal);background:linear-gradient(to bottom,var(--teal-light),var(--white))}
   .podium-card.p1.ghf{border:1.5px solid var(--sage);background:linear-gradient(to bottom,var(--sage-light),var(--white))}
-  .podium-card.p1.plus{border:1.5px solid #7B6FAB;background:linear-gradient(to bottom,#EDE9FE,var(--white))}
+  .podium-card.p1.plus{border:1.5px solid #6B2F52;background:linear-gradient(to bottom,#F3E7EE,var(--white))}
   .podium-emoji{font-size:24px;margin-bottom:4px}
   .podium-name{font-size:12px;font-weight:600;color:var(--charcoal);margin-bottom:2px;line-height:1.2}
   .podium-val{font-size:18px;font-weight:700;color:var(--charcoal)}
@@ -485,8 +555,8 @@
 
   /* ── Team challenge ──────────────────────────────────── */
   .challenge-banner{border-radius:14px;overflow:hidden;margin-bottom:1.25rem}
-  .challenge-banner.active{background:linear-gradient(135deg,#0D2B1A,#1A4A2A);border:1px solid rgba(16,185,129,0.3)}
-  .challenge-banner.won{background:linear-gradient(135deg,#B45309,#D97706);border:1px solid rgba(251,191,36,0.4)}
+  .challenge-banner.active{background:linear-gradient(135deg,#1F4A2B,#2E6B3D);border:1px solid rgba(69,120,80,0.3)}
+  .challenge-banner.won{background:linear-gradient(135deg,#1F4A2B,#457850);border:1px solid rgba(69,120,80,0.4)}
   .challenge-banner.setup{background:var(--white);border:1.5px dashed var(--border)}
   .challenge-top{padding:1rem 1.25rem;display:flex;align-items:center;gap:12px}
   .challenge-icon{font-size:28px;flex-shrink:0}
@@ -518,15 +588,15 @@
   .challenge-field label{font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:4px}
   .challenge-field input{width:100%;padding:8px 12px;font-size:13px;border:1px solid var(--border);border-radius:8px;background:var(--cream);color:var(--charcoal);font-family:inherit;outline:none}
   .challenge-field input:focus{border-color:#10B981}
-  .challenge-save-btn{padding:9px 20px;font-size:13px;font-weight:600;color:#fff;background:#1A4A2A;border:none;border-radius:8px;cursor:pointer;font-family:inherit;width:100%}
+  .challenge-save-btn{padding:9px 20px;font-size:13px;font-weight:600;color:#fff;background:#1F4A2B;border:none;border-radius:8px;cursor:pointer;font-family:inherit;width:100%}
   .challenge-save-btn:hover{opacity:.88}
   .challenge-clear-btn{font-size:11px;color:var(--muted);background:none;border:none;cursor:pointer;text-decoration:underline;margin-top:6px;display:block;text-align:center}
 
 
   /* ── Launch campaign ─────────────────────────────────── */
   .campaign-banner{border-radius:14px;overflow:hidden;margin-bottom:1rem;position:relative}
-  .campaign-banner.ghf{background:linear-gradient(135deg,#064E3B,#065F46);border:1px solid rgba(16,185,129,0.35)}
-  .campaign-banner.plus{background:linear-gradient(135deg,#2E1065,#4C1D95);border:1px solid rgba(139,92,246,0.35)}
+  .campaign-banner.ghf{background:linear-gradient(135deg,#1D3B37,#427670);border:1px solid rgba(66,118,112,0.35)}
+  .campaign-banner.plus{background:linear-gradient(135deg,#4A1F38,#6B2F52);border:1px solid rgba(107,47,82,0.35)}
   .campaign-inner{padding:1rem 1.25rem;display:flex;align-items:center;gap:14px}
   .campaign-icon-wrap{width:48px;height:48px;border-radius:12px;background:rgba(255,255,255,0.12);display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0}
   .campaign-body{flex:1}
@@ -534,8 +604,8 @@
   .campaign-title{font-size:15px;font-weight:700;color:#fff;margin-bottom:3px;line-height:1.2}
   .campaign-desc{font-size:12px;color:rgba(255,255,255,0.65);line-height:1.4}
   .campaign-badge{background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.2);border-radius:20px;padding:4px 12px;font-size:12px;font-weight:700;color:#fff;white-space:nowrap;flex-shrink:0}
-  .campaign-badge.ghf{background:rgba(16,185,129,0.25);border-color:rgba(16,185,129,0.4);color:#34D399}
-  .campaign-badge.plus{background:rgba(139,92,246,0.25);border-color:rgba(139,92,246,0.4);color:#A78BFA}
+  .campaign-badge.ghf{background:rgba(69,120,80,0.15);border-color:rgba(69,120,80,0.35);color:#1F4A2B}
+  .campaign-badge.plus{background:rgba(107,47,82,0.15);border-color:rgba(107,47,82,0.35);color:#8C4570}
   .campaign-countdown{font-size:11px;color:rgba(255,255,255,0.5);margin-top:5px}
   .campaign-rep-boost{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:600;padding:2px 8px;border-radius:10px;background:rgba(255,255,255,0.1);color:rgba(255,255,255,0.8);margin-top:4px}
   /* Campaign setup in manager panel */
@@ -543,15 +613,15 @@
   .campaign-setup-title{font-size:12px;font-weight:600;color:var(--charcoal);margin-bottom:.75rem;text-transform:uppercase;letter-spacing:.5px}
   .campaign-form-tabs{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:1rem}
   .campaign-tab-btn{padding:7px;font-size:12px;font-weight:600;border-radius:8px;border:1px solid var(--border);background:var(--cream);cursor:pointer;font-family:inherit;color:var(--muted);transition:all .15s}
-  .campaign-tab-btn.active.ghf{background:#065F46;color:#fff;border-color:#065F46}
-  .campaign-tab-btn.active.plus{background:#4C1D95;color:#fff;border-color:#4C1D95}
+  .campaign-tab-btn.active.ghf{background:#427670;color:#fff;border-color:#427670}
+  .campaign-tab-btn.active.plus{background:#6B2F52;color:#fff;border-color:#6B2F52}
   .campaign-fields{display:flex;flex-direction:column;gap:8px;margin-bottom:10px}
   .campaign-field label{font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:3px}
   .campaign-field input,.campaign-field select{width:100%;padding:8px 12px;font-size:13px;border:1px solid var(--border);border-radius:8px;background:var(--cream);color:var(--charcoal);font-family:inherit;outline:none}
   .campaign-field input:focus,.campaign-field select:focus{border-color:#10B981}
   .campaign-save-btn{padding:9px;font-size:13px;font-weight:600;color:#fff;border:none;border-radius:8px;cursor:pointer;font-family:inherit;width:100%}
-  .campaign-save-btn.ghf{background:#065F46}
-  .campaign-save-btn.plus{background:#4C1D95}
+  .campaign-save-btn.ghf{background:#427670}
+  .campaign-save-btn.plus{background:#6B2F52}
   .campaign-save-btn:hover{opacity:.88}
   .campaign-clear-btn{font-size:11px;color:var(--muted);background:none;border:none;cursor:pointer;text-decoration:underline;margin-top:5px;display:block;text-align:center}
   .campaign-active-summary{background:var(--cream);border:0.5px solid var(--border);border-radius:8px;padding:.75rem;font-size:12px;color:var(--muted);margin-bottom:8px;line-height:1.5}
