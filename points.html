@@ -69,7 +69,7 @@ window.PERENNIAL = {
   // The canonical avatar/rep color palette — teal-gray dominant (structure),
   // plum secondary (recognition), green rare (kept minimal on purpose,
   // matching the site-wide weighting so avatars don't read "evenly split").
-  LEAF_COLORS: ['#427670','#2A544F','#1D3B37','#5A9691','#345E59','#6BAAA5','#6B2F52','#8C4570','#4A1F38','#A85C88','#457850','#1F4A2B','#A63D2F'],
+  LEAF_COLORS: ['#427670','#2A544F','#1D3B37','#5A9691','#345E59','#6BAAA5','#6B2F52','#8C4570','#4A1F38','#A85C88','#457850','#1F4A2B','#2E6B3D'],
 
 };
 </script>
@@ -117,7 +117,7 @@ window.PERENNIAL = {
   select.field-input, input.field-input{width:100%;padding:10px 12px;font-size:14px;border:1.5px solid var(--border);border-radius:9px;background:var(--cream);color:var(--charcoal);font-family:inherit;outline:none}
   input.field-input[type="password"]{font-size:20px;letter-spacing:8px;text-align:center;font-family:monospace}
   .pin-error{font-size:12px;color:#EF4444;min-height:16px;margin-bottom:.5rem}
-  .btn-primary{width:100%;padding:13px;font-size:14px;font-weight:600;color:#fff;background:var(--navy);border:none;border-radius:10px;cursor:pointer;font-family:inherit}
+  .btn-primary{width:100%;padding:13px;font-size:14px;font-weight:600;color:#fff;background:var(--teal);border:none;border-radius:10px;cursor:pointer;font-family:inherit}
   .btn-primary:hover{background:#3D2B1A}
   .page-footer{font-size:11px;color:var(--gray);text-align:center;margin-top:1.25rem}
 
@@ -147,7 +147,7 @@ window.PERENNIAL = {
   .tier-heading{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--gray);margin-bottom:.75rem}
   .current-title{display:inline-block;font-size:13px;font-weight:700;padding:4px 14px;border-radius:14px;margin-bottom:.5rem;letter-spacing:.2px}
   .current-title.lvl1{background:rgba(138,122,104,0.15);color:#8A7A68}
-  .current-title.lvl2{background:rgba(184,92,56,0.15);color:#B85C38}
+  .current-title.lvl2{background:rgba(90,150,145,0.18);color:#2A544F}
   .current-title.lvl3{background:rgba(66,118,112,0.18);color:#427670}
   .current-title.lvl4{background:rgba(90,150,145,0.22);color:#1D3B37}
   .current-title.lvl5{background:linear-gradient(135deg,#4A1F38,#6B2F52);color:#fff}
@@ -239,7 +239,7 @@ window.PERENNIAL = {
     <div style="width:18px;height:2px;background:#fff;border-radius:2px"></div>
     <div style="width:18px;height:2px;background:#fff;border-radius:2px"></div>
   </button>
-  <div class="banner-logo"><img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQwIiBoZWlnaHQ9IjcyIiB2aWV3Qm94PSIwIDAgMjQwIDcyIiBmaWxsPSJub25lIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxnIHRyYW5zZm9ybT0idHJhbnNsYXRlKDM2LDM2KSI+PGVsbGlwc2UgY3g9IjAiIGN5PSItMjgiIHJ4PSI1IiByeT0iOSIgZmlsbD0iI0MxN0YyNCIgdHJhbnNmb3JtPSJyb3RhdGUoMCkiLz48ZWxsaXBzZSBjeD0iMCIgY3k9Ii0yOCIgcng9IjUiIHJ5PSI5IiBmaWxsPSIjQzk0QjFFIiBvcGFjaXR5PSIwLjk1IiB0cmFuc2Zvcm09InJvdGF0ZSgzMCkiLz48ZWxsaXBzZSBjeD0iMCIgY3k9Ii0yOCIgcng9IjUiIHJ5PSI5IiBmaWxsPSIjQjg1QzM4IiBvcGFjaXR5PSIwLjkiIHRyYW5zZm9ybT0icm90YXRlKDYwKSIvPjxlbGxpcHNlIGN4PSIwIiBjeT0iLTI4IiByeD0iNSIgcnk9IjkiIGZpbGw9IiNENDk1MkEiIG9wYWNpdHk9IjAuODUiIHRyYW5zZm9ybT0icm90YXRlKDkwKSIvPjxlbGxpcHNlIGN4PSIwIiBjeT0iLTI4IiByeD0iNSIgcnk9IjkiIGZpbGw9IiNBNjNEMkYiIG9wYWNpdHk9IjAuODUiIHRyYW5zZm9ybT0icm90YXRlKDEyMCkiLz48ZWxsaXBzZSBjeD0iMCIgY3k9Ii0yOCIgcng9IjUiIHJ5PSI5IiBmaWxsPSIjRThBQzJEIiBvcGFjaXR5PSIwLjgiIHRyYW5zZm9ybT0icm90YXRlKDE1MCkiLz48ZWxsaXBzZSBjeD0iMCIgY3k9Ii0yOCIgcng9IjUiIHJ5PSI5IiBmaWxsPSIjNkIzQTJBIiBvcGFjaXR5PSIwLjgiIHRyYW5zZm9ybT0icm90YXRlKDE4MCkiLz48ZWxsaXBzZSBjeD0iMCIgY3k9Ii0yOCIgcng9IjUiIHJ5PSI5IiBmaWxsPSIjQzA1QzJDIiBvcGFjaXR5PSIwLjgiIHRyYW5zZm9ybT0icm90YXRlKDIxMCkiLz48ZWxsaXBzZSBjeD0iMCIgY3k9Ii0yOCIgcng9IjUiIHJ5PSI5IiBmaWxsPSIjNkI3QzNFIiBvcGFjaXR5PSIwLjc1IiB0cmFuc2Zvcm09InJvdGF0ZSgyNDApIi8+PGVsbGlwc2UgY3g9IjAiIGN5PSItMjgiIHJ4PSI1IiByeT0iOSIgZmlsbD0iI0Q0QTgzMiIgb3BhY2l0eT0iMC44IiB0cmFuc2Zvcm09InJvdGF0ZSgyNzApIi8+PGVsbGlwc2UgY3g9IjAiIGN5PSItMjgiIHJ4PSI1IiByeT0iOSIgZmlsbD0iIzhCMjUxOCIgb3BhY2l0eT0iMC44IiB0cmFuc2Zvcm09InJvdGF0ZSgzMDApIi8+PGVsbGlwc2UgY3g9IjAiIGN5PSItMjgiIHJ4PSI1IiByeT0iOSIgZmlsbD0iI0Q0NzIxQSIgb3BhY2l0eT0iMC44NSIgdHJhbnNmb3JtPSJyb3RhdGUoMzMwKSIvPjxjaXJjbGUgY3g9IjAiIGN5PSIwIiByPSIxOCIgc3Ryb2tlPSIjQzE3RjI0IiBzdHJva2Utd2lkdGg9IjAuNSIgZmlsbD0ibm9uZSIgb3BhY2l0eT0iMC4yNSIvPjx0ZXh0IHg9Ii04IiB5PSIxMCIgZm9udC1mYW1pbHk9IkZyYXVuY2VzLEdlb3JnaWEsc2VyaWYiIGZvbnQtc2l6ZT0iMjgiIGZvbnQtd2VpZ2h0PSI2MDAiIGZpbGw9IiNGNUVDRDQiPlA8L3RleHQ+PC9nPjx0ZXh0IHg9IjgyIiB5PSI0NyIgZm9udC1mYW1pbHk9IkZyYXVuY2VzLEdlb3JnaWEsc2VyaWYiIGZvbnQtc2l6ZT0iMzAiIGZvbnQtd2VpZ2h0PSI2MDAiIGZpbGw9IiNGNUVDRDQiIGxldHRlci1zcGFjaW5nPSItMC41Ij5lcmVubmlhbDwvdGV4dD48L3N2Zz4=" alt="Perennial"></div>
+  <div class="banner-logo"><img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQwIiBoZWlnaHQ9IjcyIiB2aWV3Qm94PSIwIDAgMjQwIDcyIiBmaWxsPSJub25lIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxnIHRyYW5zZm9ybT0idHJhbnNsYXRlKDM2LDM2KSI+PGVsbGlwc2UgY3g9IjAiIGN5PSItMjgiIHJ4PSI1IiByeT0iOSIgZmlsbD0iIzQyNzY3MCIgdHJhbnNmb3JtPSJyb3RhdGUoMCkiLz48ZWxsaXBzZSBjeD0iMCIgY3k9Ii0yOCIgcng9IjUiIHJ5PSI5IiBmaWxsPSIjNkIyRjUyIiB0cmFuc2Zvcm09InJvdGF0ZSgzMCkiLz48ZWxsaXBzZSBjeD0iMCIgY3k9Ii0yOCIgcng9IjUiIHJ5PSI5IiBmaWxsPSIjMkE1NDRGIiB0cmFuc2Zvcm09InJvdGF0ZSg2MCkiLz48ZWxsaXBzZSBjeD0iMCIgY3k9Ii0yOCIgcng9IjUiIHJ5PSI5IiBmaWxsPSIjNDU3ODUwIiB0cmFuc2Zvcm09InJvdGF0ZSg5MCkiLz48ZWxsaXBzZSBjeD0iMCIgY3k9Ii0yOCIgcng9IjUiIHJ5PSI5IiBmaWxsPSIjMzQ1RTU5IiB0cmFuc2Zvcm09InJvdGF0ZSgxMjApIi8+PGVsbGlwc2UgY3g9IjAiIGN5PSItMjgiIHJ4PSI1IiByeT0iOSIgZmlsbD0iIzhDNDU3MCIgdHJhbnNmb3JtPSJyb3RhdGUoMTUwKSIvPjxlbGxpcHNlIGN4PSIwIiBjeT0iLTI4IiByeD0iNSIgcnk9IjkiIGZpbGw9IiMxRDNCMzciIHRyYW5zZm9ybT0icm90YXRlKDE4MCkiLz48ZWxsaXBzZSBjeD0iMCIgY3k9Ii0yOCIgcng9IjUiIHJ5PSI5IiBmaWxsPSIjNUE5NjkxIiB0cmFuc2Zvcm09InJvdGF0ZSgyMTApIi8+PGVsbGlwc2UgY3g9IjAiIGN5PSItMjgiIHJ4PSI1IiByeT0iOSIgZmlsbD0iIzFGNEEyQiIgdHJhbnNmb3JtPSJyb3RhdGUoMjQwKSIvPjxlbGxpcHNlIGN4PSIwIiBjeT0iLTI4IiByeD0iNSIgcnk9IjkiIGZpbGw9IiM2QkFBQTUiIHRyYW5zZm9ybT0icm90YXRlKDI3MCkiLz48ZWxsaXBzZSBjeD0iMCIgY3k9Ii0yOCIgcng9IjUiIHJ5PSI5IiBmaWxsPSIjNEExRjM4IiB0cmFuc2Zvcm09InJvdGF0ZSgzMDApIi8+PGVsbGlwc2UgY3g9IjAiIGN5PSItMjgiIHJ4PSI1IiByeT0iOSIgZmlsbD0iI0E4NUM4OCIgdHJhbnNmb3JtPSJyb3RhdGUoMzMwKSIvPjxjaXJjbGUgY3g9IjAiIGN5PSIwIiByPSIxOCIgc3Ryb2tlPSIjNDI3NjcwIiBzdHJva2Utd2lkdGg9IjAuNSIgZmlsbD0ibm9uZSIgb3BhY2l0eT0iMC4yNSIvPjx0ZXh0IHg9Ii04IiB5PSIxMCIgZm9udC1mYW1pbHk9IkZyYXVuY2VzLEdlb3JnaWEsc2VyaWYiIGZvbnQtc2l6ZT0iMjgiIGZvbnQtd2VpZ2h0PSI2MDAiIGZpbGw9IiNGNUVDRDQiPlA8L3RleHQ+PC9nPjx0ZXh0IHg9IjgyIiB5PSI0NyIgZm9udC1mYW1pbHk9IkZyYXVuY2VzLEdlb3JnaWEsc2VyaWYiIGZvbnQtc2l6ZT0iMzAiIGZvbnQtd2VpZ2h0PSI2MDAiIGZpbGw9IiNGNUVDRDQiIGxldHRlci1zcGFjaW5nPSItMC41Ij5lcmVubmlhbDwvdGV4dD48L3N2Zz4=" alt="Perennial"></div>
   <div class="banner-title">Perennial</div>
   <div class="banner-sub">My Points</div>
 </div>
