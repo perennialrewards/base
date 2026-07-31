@@ -69,21 +69,21 @@ window.PERENNIAL = {
   // The canonical avatar/rep color palette — teal-gray dominant (structure),
   // plum secondary (recognition), green rare (kept minimal on purpose,
   // matching the site-wide weighting so avatars don't read "evenly split").
-  LEAF_COLORS: ['#427670','#2A544F','#1D3B37','#5A9691','#345E59','#6BAAA5','#6B2F52','#8C4570','#4A1F38','#A85C88','#457850','#1F4A2B','#2E6B3D'],
+  LEAF_COLORS: ['#427670','#2A544F','#1D3B37','#5A9691','#345E59','#6BAAA5','#7A3760','#96507C','#5A2545','#B56894','#457850','#1F4A2B','#2E6B3D'],
 
 };
 </script>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,600;1,9..144,400&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
   *{box-sizing:border-box;margin:0;padding:0}
-  body{font-family:'Inter',system-ui,sans-serif;background:#EDF1EF;min-height:100vh;color:#152220}
+  body{font-family:'Inter',system-ui,sans-serif;background:#F1F5F3;min-height:100vh;color:#1A2826}
   :root{
-    --navy:#152220;--teal:#427670;--cream:#EDF1EF;--white:#FFFFFF;
-    --border:rgba(36,48,45,0.15);--gray:#7C8985;--charcoal:#152220;--purple:#6B2F52;
+    --navy:#1A2826;--teal:#427670;--cream:#F1F5F3;--white:#FFFFFF;
+    --border:rgba(36,48,45,0.15);--gray:#7C8985;--charcoal:#1A2826;--purple:#7A3760;
   }
 
   /* Banner */
-  .banner{width:100%;background:var(--navy);background-image:linear-gradient(rgba(21,34,32,0.92),rgba(21,34,32,0.97));background-size:cover;background-position:center 40%;padding:2rem 1.25rem 2.5rem;text-align:center;position:relative;border-radius:0 0 32px 32px}
+  .banner{width:100%;background:var(--navy);background-image:linear-gradient(rgba(26,40,38,0.92),rgba(26,40,38,0.97));background-size:cover;background-position:center 40%;padding:2rem 1.25rem 2.5rem;text-align:center;position:relative;border-radius:0 0 32px 32px}
   .banner-logo img{height:52px;width:auto;margin-bottom:.75rem}
   .banner-title{font-family:'Fraunces',serif;font-size:1.75rem;font-weight:700;color:#fff;margin-bottom:.25rem}
   .banner-sub{font-family:'Fraunces',serif;font-size:1.1rem;color:#fff;font-style:italic;opacity:.85}
@@ -95,7 +95,7 @@ window.PERENNIAL = {
 
   /* PIN wall */
   .pin-card{background:var(--white);border:0.5px solid var(--border);border-radius:16px;padding:2rem 1.5rem;margin-bottom:1rem}
-  .flex-balance-wrap{text-align:center;padding:1.25rem 1rem;background:linear-gradient(135deg,#4A1F38,#6B2F52);border-radius:14px;margin-bottom:1.25rem;color:#fff}
+  .flex-balance-wrap{text-align:center;padding:1.25rem 1rem;background:linear-gradient(135deg,#5A2545,#7A3760);border-radius:14px;margin-bottom:1.25rem;color:#fff}
   .flex-balance-label{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:1px;opacity:.75;margin-bottom:4px}
   .flex-balance-num{font-family:'Fraunces',serif;font-size:2.4rem;line-height:1}
   .flex-balance-sub{font-size:11px;opacity:.7;margin-top:4px}
@@ -128,11 +128,11 @@ window.PERENNIAL = {
   .pts-label{font-size:13px;color:var(--gray);margin-top:6px;margin-bottom:1.5rem}
 
   /* Hero — spendable balance, now the biggest number on the page */
-  .spend-hero{background:linear-gradient(135deg,#4A1F38,#6B2F52);border:none}
-  .spend-hero .pts-name{color:rgba(237,241,239,0.6)}
-  .spend-hero .hero-balance-label{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:1px;color:rgba(237,241,239,0.65);margin-top:.5rem}
+  .spend-hero{background:linear-gradient(135deg,#5A2545,#7A3760);border:none}
+  .spend-hero .pts-name{color:rgba(241,245,243,0.6)}
+  .spend-hero .hero-balance-label{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:1px;color:rgba(241,245,243,0.65);margin-top:.5rem}
   .spend-hero .pts-number{color:#fff}
-  .spend-hero .pts-label{color:rgba(237,241,239,0.7);margin-bottom:0}
+  .spend-hero .pts-label{color:rgba(241,245,243,0.7);margin-bottom:0}
   .spend-hero .current-title{background:rgba(255,255,255,0.15) !important;color:#fff !important;backdrop-filter:blur(2px)}
 
   /* Milestone Points — demoted, prestige-only, clearly not spendable */
@@ -150,13 +150,13 @@ window.PERENNIAL = {
   .current-title.lvl2{background:rgba(90,150,145,0.18);color:#2A544F}
   .current-title.lvl3{background:rgba(66,118,112,0.18);color:#427670}
   .current-title.lvl4{background:rgba(90,150,145,0.22);color:#1D3B37}
-  .current-title.lvl5{background:linear-gradient(135deg,#4A1F38,#6B2F52);color:#fff}
+  .current-title.lvl5{background:linear-gradient(135deg,#5A2545,#7A3760);color:#fff}
   .title-step{display:flex;align-items:center;gap:10px;padding:6px 0}
   .title-step-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;background:var(--border)}
-  .title-step.done .title-step-dot{background:#6B2F52}
+  .title-step.done .title-step-dot{background:#7A3760}
   .title-step-label{font-size:12.5px;color:var(--gray);flex:1}
   .title-step.done .title-step-label{color:var(--charcoal);font-weight:600}
-  .title-step.current .title-step-label{color:#6B2F52;font-weight:700}
+  .title-step.current .title-step-label{color:#7A3760;font-weight:700}
   .title-step-pts{font-size:11px;color:var(--gray)}
   .tier-row{display:flex;align-items:center;gap:10px;margin-bottom:.625rem}
   .tier-emoji{font-size:18px;width:28px;text-align:center}
@@ -168,7 +168,7 @@ window.PERENNIAL = {
   .tier-unlocked{font-size:11px;font-weight:600;color:#059669;background:#D1FAE5;padding:2px 8px;border-radius:8px;white-space:nowrap}
 
   /* Motivation quiz recommendation tag */
-  .motivation-tag{display:none;background:var(--purple);background:linear-gradient(135deg,#4A1F38,#6B2F52);border-radius:10px;padding:.75rem 1rem;margin-top:1rem;text-align:left}
+  .motivation-tag{display:none;background:var(--purple);background:linear-gradient(135deg,#5A2545,#7A3760);border-radius:10px;padding:.75rem 1rem;margin-top:1rem;text-align:left}
   .motivation-tag-eyebrow{font-size:10px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:rgba(255,255,255,0.65);margin-bottom:3px}
   .motivation-tag-body{font-size:12.5px;color:#fff;line-height:1.4}
   .motivation-tag-body a{color:#fff;text-decoration:underline}
@@ -190,46 +190,46 @@ window.PERENNIAL = {
 <!-- Side menu -->
 <div id="menu-overlay" onclick="toggleMenu()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:300"></div>
 <div id="menu-drawer" style="display:none;position:fixed;top:0;left:0;width:260px;height:100%;background:#fff;z-index:400;box-shadow:4px 0 20px rgba(0,0,0,0.15);flex-direction:column">
-  <div style="background:#152220;padding:1.5rem 1.25rem 1.25rem">
+  <div style="background:#1A2826;padding:1.5rem 1.25rem 1.25rem">
     <div style="font-size:14px;font-weight:600;color:#fff">Perennial</div>
     <div style="font-size:12px;color:rgba(255,255,255,0.5);margin-top:2px">Rewards Program</div>
   </div>
   <div style="padding:1rem 0;flex:1;overflow-y:auto">
-    <a href="owner.html" style="display:flex;align-items:center;gap:12px;padding:.875rem 1.25rem;text-decoration:none;color:#fff;font-size:14px;font-weight:600;background:#152220">
+    <a href="owner.html" style="display:flex;align-items:center;gap:12px;padding:.875rem 1.25rem;text-decoration:none;color:#fff;font-size:14px;font-weight:600;background:#1A2826">
       <span style="font-size:18px">🔑</span> Owner Portal
       <span style="margin-left:auto;font-size:9px;font-weight:700;color:#5A9691;background:rgba(90,150,145,0.18);padding:2px 7px;border-radius:9px;text-transform:uppercase;letter-spacing:.3px">Priority</span>
     </a>
     <div style="border-top:0.5px solid rgba(36,48,45,0.15);margin:.5rem 1.25rem"></div>
-    <a href="index.html" style="display:flex;align-items:center;gap:12px;padding:.875rem 1.25rem;text-decoration:none;color:#152220;font-size:14px;font-weight:500">
+    <a href="index.html" style="display:flex;align-items:center;gap:12px;padding:.875rem 1.25rem;text-decoration:none;color:#1A2826;font-size:14px;font-weight:500">
       <span style="font-size:18px">🏆</span> Current Competitions
     </a>
-    <a href="locations.html" style="display:flex;align-items:center;gap:12px;padding:.875rem 1.25rem;text-decoration:none;color:#152220;font-size:14px;font-weight:500">
+    <a href="locations.html" style="display:flex;align-items:center;gap:12px;padding:.875rem 1.25rem;text-decoration:none;color:#1A2826;font-size:14px;font-weight:500">
       <span style="font-size:18px">🌎</span> Group Leaderboard
     </a>
-    <a href="points.html" style="display:flex;align-items:center;gap:12px;padding:.875rem 1.25rem;text-decoration:none;color:#152220;font-size:14px;font-weight:500;background:#EDF1EF">
+    <a href="points.html" style="display:flex;align-items:center;gap:12px;padding:.875rem 1.25rem;text-decoration:none;color:#1A2826;font-size:14px;font-weight:500;background:#F1F5F3">
       <span style="font-size:18px">⭐</span> My Rewards
     </a>
-    <a href="trophies.html" style="display:flex;align-items:center;gap:12px;padding:.875rem 1.25rem;text-decoration:none;color:#152220;font-size:14px;font-weight:500">
+    <a href="trophies.html" style="display:flex;align-items:center;gap:12px;padding:.875rem 1.25rem;text-decoration:none;color:#1A2826;font-size:14px;font-weight:500">
       <span style="font-size:18px">🥇</span> Trophies
     </a>
-    <a href="profiles.html" style="display:flex;align-items:center;gap:12px;padding:.875rem 1.25rem;text-decoration:none;color:#152220;font-size:14px;font-weight:500">
+    <a href="profiles.html" style="display:flex;align-items:center;gap:12px;padding:.875rem 1.25rem;text-decoration:none;color:#1A2826;font-size:14px;font-weight:500">
       <span style="font-size:18px">🪪</span> Profiles
     </a>
-    <a href="squad-vote.html" style="display:flex;align-items:center;gap:12px;padding:.875rem 1.25rem;text-decoration:none;color:#152220;font-size:14px;font-weight:500">
+    <a href="squad-vote.html" style="display:flex;align-items:center;gap:12px;padding:.875rem 1.25rem;text-decoration:none;color:#1A2826;font-size:14px;font-weight:500">
       <span style="font-size:18px">🗳️</span> Squad Vote
     </a>
-    <a href="achiever.html" style="display:flex;align-items:center;gap:12px;padding:.875rem 1.25rem;text-decoration:none;color:#152220;font-size:14px;font-weight:500">
+    <a href="achiever.html" style="display:flex;align-items:center;gap:12px;padding:.875rem 1.25rem;text-decoration:none;color:#1A2826;font-size:14px;font-weight:500">
       <span style="font-size:18px">🏅</span> Your Famous Achiever
     </a>
     <div style="border-top:0.5px solid rgba(36,48,45,0.15);margin:.5rem 1.25rem"></div>
-    <a href="roster.html" style="display:flex;align-items:center;gap:12px;padding:.875rem 1.25rem;text-decoration:none;color:#6B2F52;font-size:14px;font-weight:500">
+    <a href="roster.html" style="display:flex;align-items:center;gap:12px;padding:.875rem 1.25rem;text-decoration:none;color:#7A3760;font-size:14px;font-weight:500">
       <span style="font-size:18px">👥</span> Rep Roster
-      <span style="margin-left:auto;font-size:10px;font-weight:600;color:#6B2F52;background:#F3E7EE;padding:2px 8px;border-radius:10px">🔒 Manager</span>
+      <span style="margin-left:auto;font-size:10px;font-weight:600;color:#7A3760;background:#F3E7EE;padding:2px 8px;border-radius:10px">🔒 Manager</span>
     </a>
   </div>
   <div style="padding:1rem 1.25rem;border-top:0.5px solid rgba(36,48,45,0.15);font-size:11px;color:#7C8985">
     Perennial · Internal use only<br>
-    <span id="loc-indicator" style="color:#6B2F52;font-weight:600"></span>
+    <span id="loc-indicator" style="color:#7A3760;font-weight:600"></span>
   </div>
 </div>
 
@@ -239,7 +239,7 @@ window.PERENNIAL = {
     <div style="width:18px;height:2px;background:#fff;border-radius:2px"></div>
     <div style="width:18px;height:2px;background:#fff;border-radius:2px"></div>
   </button>
-  <div class="banner-logo"><img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQwIiBoZWlnaHQ9IjcyIiB2aWV3Qm94PSIwIDAgMjQwIDcyIiBmaWxsPSJub25lIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxnIHRyYW5zZm9ybT0idHJhbnNsYXRlKDM2LDM2KSI+PGVsbGlwc2UgY3g9IjAiIGN5PSItMjgiIHJ4PSI1IiByeT0iOSIgZmlsbD0iIzQyNzY3MCIgdHJhbnNmb3JtPSJyb3RhdGUoMCkiLz48ZWxsaXBzZSBjeD0iMCIgY3k9Ii0yOCIgcng9IjUiIHJ5PSI5IiBmaWxsPSIjNkIyRjUyIiB0cmFuc2Zvcm09InJvdGF0ZSgzMCkiLz48ZWxsaXBzZSBjeD0iMCIgY3k9Ii0yOCIgcng9IjUiIHJ5PSI5IiBmaWxsPSIjMkE1NDRGIiB0cmFuc2Zvcm09InJvdGF0ZSg2MCkiLz48ZWxsaXBzZSBjeD0iMCIgY3k9Ii0yOCIgcng9IjUiIHJ5PSI5IiBmaWxsPSIjNDU3ODUwIiB0cmFuc2Zvcm09InJvdGF0ZSg5MCkiLz48ZWxsaXBzZSBjeD0iMCIgY3k9Ii0yOCIgcng9IjUiIHJ5PSI5IiBmaWxsPSIjMzQ1RTU5IiB0cmFuc2Zvcm09InJvdGF0ZSgxMjApIi8+PGVsbGlwc2UgY3g9IjAiIGN5PSItMjgiIHJ4PSI1IiByeT0iOSIgZmlsbD0iIzhDNDU3MCIgdHJhbnNmb3JtPSJyb3RhdGUoMTUwKSIvPjxlbGxpcHNlIGN4PSIwIiBjeT0iLTI4IiByeD0iNSIgcnk9IjkiIGZpbGw9IiMxRDNCMzciIHRyYW5zZm9ybT0icm90YXRlKDE4MCkiLz48ZWxsaXBzZSBjeD0iMCIgY3k9Ii0yOCIgcng9IjUiIHJ5PSI5IiBmaWxsPSIjNUE5NjkxIiB0cmFuc2Zvcm09InJvdGF0ZSgyMTApIi8+PGVsbGlwc2UgY3g9IjAiIGN5PSItMjgiIHJ4PSI1IiByeT0iOSIgZmlsbD0iIzFGNEEyQiIgdHJhbnNmb3JtPSJyb3RhdGUoMjQwKSIvPjxlbGxpcHNlIGN4PSIwIiBjeT0iLTI4IiByeD0iNSIgcnk9IjkiIGZpbGw9IiM2QkFBQTUiIHRyYW5zZm9ybT0icm90YXRlKDI3MCkiLz48ZWxsaXBzZSBjeD0iMCIgY3k9Ii0yOCIgcng9IjUiIHJ5PSI5IiBmaWxsPSIjNEExRjM4IiB0cmFuc2Zvcm09InJvdGF0ZSgzMDApIi8+PGVsbGlwc2UgY3g9IjAiIGN5PSItMjgiIHJ4PSI1IiByeT0iOSIgZmlsbD0iI0E4NUM4OCIgdHJhbnNmb3JtPSJyb3RhdGUoMzMwKSIvPjxjaXJjbGUgY3g9IjAiIGN5PSIwIiByPSIxOCIgc3Ryb2tlPSIjNDI3NjcwIiBzdHJva2Utd2lkdGg9IjAuNSIgZmlsbD0ibm9uZSIgb3BhY2l0eT0iMC4yNSIvPjx0ZXh0IHg9Ii04IiB5PSIxMCIgZm9udC1mYW1pbHk9IkZyYXVuY2VzLEdlb3JnaWEsc2VyaWYiIGZvbnQtc2l6ZT0iMjgiIGZvbnQtd2VpZ2h0PSI2MDAiIGZpbGw9IiNFREYxRUYiPlA8L3RleHQ+PC9nPjx0ZXh0IHg9IjgyIiB5PSI0NyIgZm9udC1mYW1pbHk9IkZyYXVuY2VzLEdlb3JnaWEsc2VyaWYiIGZvbnQtc2l6ZT0iMzAiIGZvbnQtd2VpZ2h0PSI2MDAiIGZpbGw9IiNFREYxRUYiIGxldHRlci1zcGFjaW5nPSItMC41Ij5lcmVubmlhbDwvdGV4dD48L3N2Zz4=" alt="Perennial"></div>
+  <div class="banner-logo"><img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQwIiBoZWlnaHQ9IjcyIiB2aWV3Qm94PSIwIDAgMjQwIDcyIiBmaWxsPSJub25lIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxnIHRyYW5zZm9ybT0idHJhbnNsYXRlKDM2LDM2KSI+PGVsbGlwc2UgY3g9IjAiIGN5PSItMjgiIHJ4PSI1IiByeT0iOSIgZmlsbD0iIzQyNzY3MCIgdHJhbnNmb3JtPSJyb3RhdGUoMCkiLz48ZWxsaXBzZSBjeD0iMCIgY3k9Ii0yOCIgcng9IjUiIHJ5PSI5IiBmaWxsPSIjN0EzNzYwIiB0cmFuc2Zvcm09InJvdGF0ZSgzMCkiLz48ZWxsaXBzZSBjeD0iMCIgY3k9Ii0yOCIgcng9IjUiIHJ5PSI5IiBmaWxsPSIjMkE1NDRGIiB0cmFuc2Zvcm09InJvdGF0ZSg2MCkiLz48ZWxsaXBzZSBjeD0iMCIgY3k9Ii0yOCIgcng9IjUiIHJ5PSI5IiBmaWxsPSIjNDU3ODUwIiB0cmFuc2Zvcm09InJvdGF0ZSg5MCkiLz48ZWxsaXBzZSBjeD0iMCIgY3k9Ii0yOCIgcng9IjUiIHJ5PSI5IiBmaWxsPSIjOTY1MDdDIiB0cmFuc2Zvcm09InJvdGF0ZSgxMjApIi8+PGVsbGlwc2UgY3g9IjAiIGN5PSItMjgiIHJ4PSI1IiByeT0iOSIgZmlsbD0iIzM0NUU1OSIgdHJhbnNmb3JtPSJyb3RhdGUoMTUwKSIvPjxlbGxpcHNlIGN4PSIwIiBjeT0iLTI4IiByeD0iNSIgcnk9IjkiIGZpbGw9IiMxRDNCMzciIHRyYW5zZm9ybT0icm90YXRlKDE4MCkiLz48ZWxsaXBzZSBjeD0iMCIgY3k9Ii0yOCIgcng9IjUiIHJ5PSI5IiBmaWxsPSIjNUEyNTQ1IiB0cmFuc2Zvcm09InJvdGF0ZSgyMTApIi8+PGVsbGlwc2UgY3g9IjAiIGN5PSItMjgiIHJ4PSI1IiByeT0iOSIgZmlsbD0iIzFGNEEyQiIgdHJhbnNmb3JtPSJyb3RhdGUoMjQwKSIvPjxlbGxpcHNlIGN4PSIwIiBjeT0iLTI4IiByeD0iNSIgcnk9IjkiIGZpbGw9IiM1QTk2OTEiIHRyYW5zZm9ybT0icm90YXRlKDI3MCkiLz48ZWxsaXBzZSBjeD0iMCIgY3k9Ii0yOCIgcng9IjUiIHJ5PSI5IiBmaWxsPSIjQjU2ODk0IiB0cmFuc2Zvcm09InJvdGF0ZSgzMDApIi8+PGVsbGlwc2UgY3g9IjAiIGN5PSItMjgiIHJ4PSI1IiByeT0iOSIgZmlsbD0iIzZCQUFBNSIgdHJhbnNmb3JtPSJyb3RhdGUoMzMwKSIvPjxjaXJjbGUgY3g9IjAiIGN5PSIwIiByPSIxOCIgc3Ryb2tlPSIjNDI3NjcwIiBzdHJva2Utd2lkdGg9IjAuNSIgZmlsbD0ibm9uZSIgb3BhY2l0eT0iMC4yNSIvPjx0ZXh0IHg9Ii04IiB5PSIxMCIgZm9udC1mYW1pbHk9IkZyYXVuY2VzLEdlb3JnaWEsc2VyaWYiIGZvbnQtc2l6ZT0iMjgiIGZvbnQtd2VpZ2h0PSI2MDAiIGZpbGw9IiNGMUY1RjMiPlA8L3RleHQ+PC9nPjx0ZXh0IHg9IjgyIiB5PSI0NyIgZm9udC1mYW1pbHk9IkZyYXVuY2VzLEdlb3JnaWEsc2VyaWYiIGZvbnQtc2l6ZT0iMzAiIGZvbnQtd2VpZ2h0PSI2MDAiIGZpbGw9IiNGMUY1RjMiIGxldHRlci1zcGFjaW5nPSItMC41Ij5lcmVubmlhbDwvdGV4dD48L3N2Zz4=" alt="Perennial"></div>
   <div class="banner-title">Perennial</div>
   <div class="banner-sub">My Points</div>
 </div>
@@ -274,7 +274,7 @@ window.PERENNIAL = {
       <div class="hero-balance-label">Available to spend</div>
       <div class="pts-number" id="flex-balance">0</div>
       <div class="pts-label" id="flex-balance-sub">pts</div>
-      <div style="margin-top:.75rem"><a href="#" onclick="clearSession();return false" style="font-size:11px;color:rgba(237,241,239,0.6);text-decoration:underline">Not you? Sign out</a></div>
+      <div style="margin-top:.75rem"><a href="#" onclick="clearSession();return false" style="font-size:11px;color:rgba(241,245,243,0.6);text-decoration:underline">Not you? Sign out</a></div>
     </div>
 
     <!-- Milestone Points — secondary, prestige-only, not spendable -->
@@ -300,7 +300,7 @@ window.PERENNIAL = {
       </div>
     </div>
     <!-- Mystery Box -->
-    <div id="mystery-box-section" class="pin-card" style="display:none;margin-bottom:1rem;background:linear-gradient(135deg,#4A1F38,#6B2F52);color:#fff;text-align:center;padding:1.75rem 1.5rem">
+    <div id="mystery-box-section" class="pin-card" style="display:none;margin-bottom:1rem;background:linear-gradient(135deg,#5A2545,#7A3760);color:#fff;text-align:center;padding:1.75rem 1.5rem">
       <div id="mb-locked-view">
         <div style="font-size:36px;margin-bottom:.5rem" id="mb-emoji">🎲</div>
         <div style="font-size:15px;font-weight:600;margin-bottom:4px" id="mb-goal-label">Mystery Box</div>
@@ -313,7 +313,7 @@ window.PERENNIAL = {
       <div id="mb-ready-view" style="display:none">
         <div style="font-size:40px;margin-bottom:.5rem">🎁</div>
         <div style="font-size:16px;font-weight:600;margin-bottom:.4rem">Goal hit! Your mystery box is ready.</div>
-        <button onclick="openMysteryBox()" style="width:100%;padding:12px;font-size:14px;font-weight:600;color:#152220;background:linear-gradient(135deg,#5A9691,#427670);border:none;border-radius:10px;cursor:pointer;font-family:inherit">Open box</button>
+        <button onclick="openMysteryBox()" style="width:100%;padding:12px;font-size:14px;font-weight:600;color:#1A2826;background:linear-gradient(135deg,#5A9691,#427670);border:none;border-radius:10px;cursor:pointer;font-family:inherit">Open box</button>
       </div>
       <div id="mb-result-view" style="display:none">
         <div style="font-size:44px;margin-bottom:.5rem" id="mb-result-emoji">🏆</div>
@@ -602,7 +602,7 @@ window.PERENNIAL = {
   (function(){
     const loc = new URLSearchParams(window.location.search).get('loc') || 'Perennial';
     const el = document.getElementById('loc-indicator');
-    if(el) el.innerHTML = '📍 ' + loc.replace(/_/g,' ') + ' · <a href="index.html" style="color:#6B2F52">Switch</a>';
+    if(el) el.innerHTML = '📍 ' + loc.replace(/_/g,' ') + ' · <a href="index.html" style="color:#7A3760">Switch</a>';
   })();
   window.toggleMenu = function(){
     var overlay = document.getElementById('menu-overlay');
@@ -732,9 +732,9 @@ window.PERENNIAL = {
         const countdown = item.isFlash
           ? `<div style="font-size:9.5px;color:#1D3B37;font-weight:700;margin-top:2px">⏳ ${flashTimeLeft(item.endTime)}</div>` : '';
         const exclTag = item.exclusive
-          ? `<div style="font-size:8.5px;font-weight:700;color:#6B2F52;text-transform:uppercase;letter-spacing:.3px;margin-top:2px">Exclusive</div>` : '';
+          ? `<div style="font-size:8.5px;font-weight:700;color:#7A3760;text-transform:uppercase;letter-spacing:.3px;margin-top:2px">Exclusive</div>` : '';
         return `<div class="flex-item${locked ? ' locked' : ''}"
-                     style="${sel ? 'border-color:#6B2F52;border-width:2px;' : flashBorder}"
+                     style="${sel ? 'border-color:#7A3760;border-width:2px;' : flashBorder}"
                      onclick="${locked ? '' : "selectFlexItem('" + item.id + "')"}">
           <div class="flex-item-emoji">${item.emoji}</div>
           <div class="flex-item-name">${item.name}</div>

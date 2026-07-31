@@ -69,21 +69,21 @@ window.PERENNIAL = {
   // The canonical avatar/rep color palette — teal-gray dominant (structure),
   // plum secondary (recognition), green rare (kept minimal on purpose,
   // matching the site-wide weighting so avatars don't read "evenly split").
-  LEAF_COLORS: ['#427670','#2A544F','#1D3B37','#5A9691','#345E59','#6BAAA5','#6B2F52','#8C4570','#4A1F38','#A85C88','#457850','#1F4A2B','#2E6B3D'],
+  LEAF_COLORS: ['#427670','#2A544F','#1D3B37','#5A9691','#345E59','#6BAAA5','#7A3760','#96507C','#5A2545','#B56894','#457850','#1F4A2B','#2E6B3D'],
 
 };
 </script>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,600;1,9..144,400&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 :root{
-  --primary: #152220;
+  --primary: #1A2826;
   --accent:  #427670;
-  --bg:      #EDF1EF;
+  --bg:      #F1F5F3;
   --surface: #FFFFFF;
   --border:  rgba(36,48,45,0.15);
-  --text:    #152220;
+  --text:    #1A2826;
   --muted:   #7C8985;
-  --purple:  #6B2F52;
+  --purple:  #7A3760;
   --purple-light: #F3E7EE;
   --green:   #10B981;
   --green-light: #D4EDDA;
@@ -168,7 +168,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-h
 
 /* ── NOTIFY SECTION ── */
 .notify-section{background:var(--surface);border:0.5px solid var(--border);border-radius:14px;overflow:hidden;margin-top:1.5rem}
-.notify-header{background:linear-gradient(135deg,#4A1F38,#6B2F52);padding:.875rem 1.25rem;display:flex;align-items:center;justify-content:space-between}
+.notify-header{background:linear-gradient(135deg,#5A2545,#7A3760);padding:.875rem 1.25rem;display:flex;align-items:center;justify-content:space-between}
 .notify-header-title{font-size:13px;font-weight:600;color:#fff}
 .notify-badge{font-size:11px;color:rgba(255,255,255,0.7);background:rgba(255,255,255,0.1);padding:3px 10px;border-radius:20px}
 .notify-body{padding:1.25rem}
@@ -176,7 +176,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-h
 .notify-preview-subject{font-weight:600;color:var(--purple);margin-bottom:6px;font-size:12px;text-transform:uppercase;letter-spacing:.5px}
 .notify-input{width:100%;padding:9px 12px;font-size:13px;border:1px solid var(--border);border-radius:8px;background:var(--bg);color:var(--text);font-family:inherit;outline:none;margin-bottom:10px}
 .notify-input:focus{border-color:var(--purple)}
-.notify-btn{width:100%;padding:11px;font-size:14px;font-weight:600;color:#fff;background:linear-gradient(135deg,#4A1F38,#6B2F52);border:none;border-radius:9px;cursor:pointer;font-family:inherit}
+.notify-btn{width:100%;padding:11px;font-size:14px;font-weight:600;color:#fff;background:linear-gradient(135deg,#5A2545,#7A3760);border:none;border-radius:9px;cursor:pointer;font-family:inherit}
 .notify-btn:hover{opacity:.88}
 .notify-btn:disabled{opacity:.5;cursor:not-allowed}
 .notify-status{font-size:12px;color:var(--muted);text-align:center;margin-top:8px;min-height:16px}
@@ -207,13 +207,13 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-h
 .mb-pool-row input{padding:7px 8px;font-size:12px;border:1px solid var(--border);border-radius:6px;background:var(--bg);color:var(--text);font-family:inherit;outline:none}
 .mb-save-btn{width:100%;margin-top:10px;font-size:12.5px;font-weight:600;color:#fff;background:var(--purple);border:none;padding:9px;border-radius:8px;cursor:pointer;font-family:inherit}
 .mb-current-note{font-size:11px;color:var(--muted);background:var(--bg);border-radius:8px;padding:.6rem .75rem;margin-bottom:10px;line-height:1.5}
-.squads-header{background:linear-gradient(135deg,#4A1F38,#6B2F52);padding:.875rem 1.25rem;display:flex;align-items:center;justify-content:space-between}
+.squads-header{background:linear-gradient(135deg,#5A2545,#7A3760);padding:.875rem 1.25rem;display:flex;align-items:center;justify-content:space-between}
 .squads-header-title{font-size:13px;font-weight:600;color:#fff}
 .squads-toggle{display:flex;align-items:center;gap:8px;font-size:12px;color:rgba(255,255,255,0.85)}
 .squads-switch{position:relative;width:36px;height:20px;background:rgba(255,255,255,0.25);border-radius:20px;cursor:pointer;transition:background .15s;border:none}
 .squads-switch.on{background:#fff}
 .squads-switch::after{content:'';position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;background:#fff;transition:left .15s}
-.squads-switch.on::after{left:18px;background:#6B2F52}
+.squads-switch.on::after{left:18px;background:#7A3760}
 .squads-body{padding:1.25rem;display:none}
 .squads-body.visible{display:block}
 .squad-row{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:0.5px solid var(--border)}
@@ -238,7 +238,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-h
   .ham-overlay.visible{opacity:1;pointer-events:all}
   .ham-drawer{position:fixed;top:0;left:0;width:280px;height:100%;background:#fff;z-index:400;transform:translateX(-100%);transition:transform .3s cubic-bezier(.4,0,.2,1);display:flex;flex-direction:column;box-shadow:4px 0 24px rgba(0,0,0,0.12)}
   .ham-drawer.open{transform:translateX(0)}
-  .ham-drawer-header{background:var(--nav-primary,#152220);padding:1.25rem 1.25rem 1rem;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+  .ham-drawer-header{background:var(--nav-primary,#1A2826);padding:1.25rem 1.25rem 1rem;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
   .ham-drawer-logo{font-family:'Fraunces',serif;font-size:18px;font-weight:600;color:#fff;display:flex;align-items:center;gap:6px}
   .ham-drawer-logo-dot{width:6px;height:6px;border-radius:50%;background:var(--nav-accent,#427670);flex-shrink:0}
   .ham-drawer-shop{font-size:11px;color:rgba(255,255,255,0.45);margin-top:2px}
@@ -246,20 +246,20 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-h
   .ham-close-btn:hover{background:rgba(255,255,255,0.2)}
   .ham-nav{flex:1;overflow-y:auto;padding:.75rem 0}
   .ham-section-label{font-size:10px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:#7C8985;padding:.5rem 1.25rem .375rem;margin-top:.5rem}
-  .ham-nav-item{display:flex;align-items:center;gap:12px;padding:.875rem 1.25rem;text-decoration:none;color:#152220;transition:background .12s;cursor:pointer;border:none;background:none;width:100%;font-family:inherit;text-align:left}
-  .ham-nav-item:hover{background:#EDF1EF}
-  .ham-nav-item.active{background:#F3E7EE;color:#6B2F52}
-  .ham-nav-item.active .ham-nav-icon{background:#6B2F52}
-  .ham-nav-icon{width:34px;height:34px;border-radius:9px;background:#152220;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0}
+  .ham-nav-item{display:flex;align-items:center;gap:12px;padding:.875rem 1.25rem;text-decoration:none;color:#1A2826;transition:background .12s;cursor:pointer;border:none;background:none;width:100%;font-family:inherit;text-align:left}
+  .ham-nav-item:hover{background:#F1F5F3}
+  .ham-nav-item.active{background:#F3E7EE;color:#7A3760}
+  .ham-nav-item.active .ham-nav-icon{background:#7A3760}
+  .ham-nav-icon{width:34px;height:34px;border-radius:9px;background:#1A2826;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0}
   .ham-nav-text{flex:1}
   .ham-nav-label{font-size:14px;font-weight:500;color:inherit}
   .ham-nav-sub{font-size:11px;color:#7C8985;margin-top:1px}
-  .ham-nav-badge{font-size:10px;font-weight:600;color:#6B2F52;background:#F3E7EE;padding:2px 8px;border-radius:10px;white-space:nowrap}
-  .ham-nav-item.mgr-item .ham-nav-label{color:#6B2F52}
+  .ham-nav-badge{font-size:10px;font-weight:600;color:#7A3760;background:#F3E7EE;padding:2px 8px;border-radius:10px;white-space:nowrap}
+  .ham-nav-item.mgr-item .ham-nav-label{color:#7A3760}
   .ham-divider{height:1px;background:#F0EEE8;margin:.5rem 0}
   .ham-footer{padding:1rem 1.25rem;border-top:1px solid #F0EEE8;flex-shrink:0}
   .ham-footer-brand{font-size:11px;color:#7C8985}
-  .ham-footer-brand span{color:#6B2F52;font-weight:600}
+  .ham-footer-brand span{color:#7A3760;font-weight:600}
 </style>
 </head>
 <script type="module">
@@ -325,10 +325,10 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-h
     <button class="ham-close-btn" onclick="closeDrawer()">X</button>
   </div>
   <nav class="ham-nav">
-    <a class="ham-nav-item" id="ham-owner" href="https://perennialrewards.github.io/base/owner.html" style="background:#152220">
+    <a class="ham-nav-item" id="ham-owner" href="https://perennialrewards.github.io/base/owner.html" style="background:#1A2826">
       <div class="ham-nav-icon" style="background:rgba(90,150,145,0.15)">&#128273;</div>
-      <div class="ham-nav-text"><div class="ham-nav-label" style="color:#fff">Owner Portal</div><div class="ham-nav-sub" style="color:rgba(237,241,239,0.5)">Cross-shop dashboard &amp; exports</div></div>
-      <div class="ham-nav-badge" style="background:#5A9691;color:#152220">Priority</div>
+      <div class="ham-nav-text"><div class="ham-nav-label" style="color:#fff">Owner Portal</div><div class="ham-nav-sub" style="color:rgba(241,245,243,0.5)">Cross-shop dashboard &amp; exports</div></div>
+      <div class="ham-nav-badge" style="background:#5A9691;color:#1A2826">Priority</div>
     </a>
     <div class="ham-divider"></div>
     <a class="ham-nav-item" id="ham-hub" href="https://perennialrewards.github.io/base/">
@@ -368,7 +368,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-h
   </nav>
   <div class="ham-footer">
     <div class="ham-footer-brand">Shop Rewards Program</div>
-    <div id="loc-indicator" style="font-size:11px;color:#6B2F52;font-weight:600;margin-top:4px"></div>
+    <div id="loc-indicator" style="font-size:11px;color:#7A3760;font-weight:600;margin-top:4px"></div>
   </div>
 </div>
 
@@ -378,7 +378,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-h
 <div class="banner" style="position:relative">
   <button class="ham-btn" id="ham-btn" onclick="openDrawer()" aria-label="Open menu"><div class="ham-line"></div><div class="ham-line"></div><div class="ham-line"></div></button>
   <div class="banner-left">
-    <div class="banner-logo"><img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQwIiBoZWlnaHQ9IjcyIiB2aWV3Qm94PSIwIDAgMjQwIDcyIiBmaWxsPSJub25lIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxnIHRyYW5zZm9ybT0idHJhbnNsYXRlKDM2LDM2KSI+PGVsbGlwc2UgY3g9IjAiIGN5PSItMjgiIHJ4PSI1IiByeT0iOSIgZmlsbD0iIzQyNzY3MCIgdHJhbnNmb3JtPSJyb3RhdGUoMCkiLz48ZWxsaXBzZSBjeD0iMCIgY3k9Ii0yOCIgcng9IjUiIHJ5PSI5IiBmaWxsPSIjNkIyRjUyIiB0cmFuc2Zvcm09InJvdGF0ZSgzMCkiLz48ZWxsaXBzZSBjeD0iMCIgY3k9Ii0yOCIgcng9IjUiIHJ5PSI5IiBmaWxsPSIjMkE1NDRGIiB0cmFuc2Zvcm09InJvdGF0ZSg2MCkiLz48ZWxsaXBzZSBjeD0iMCIgY3k9Ii0yOCIgcng9IjUiIHJ5PSI5IiBmaWxsPSIjNDU3ODUwIiB0cmFuc2Zvcm09InJvdGF0ZSg5MCkiLz48ZWxsaXBzZSBjeD0iMCIgY3k9Ii0yOCIgcng9IjUiIHJ5PSI5IiBmaWxsPSIjMzQ1RTU5IiB0cmFuc2Zvcm09InJvdGF0ZSgxMjApIi8+PGVsbGlwc2UgY3g9IjAiIGN5PSItMjgiIHJ4PSI1IiByeT0iOSIgZmlsbD0iIzhDNDU3MCIgdHJhbnNmb3JtPSJyb3RhdGUoMTUwKSIvPjxlbGxpcHNlIGN4PSIwIiBjeT0iLTI4IiByeD0iNSIgcnk9IjkiIGZpbGw9IiMxRDNCMzciIHRyYW5zZm9ybT0icm90YXRlKDE4MCkiLz48ZWxsaXBzZSBjeD0iMCIgY3k9Ii0yOCIgcng9IjUiIHJ5PSI5IiBmaWxsPSIjNUE5NjkxIiB0cmFuc2Zvcm09InJvdGF0ZSgyMTApIi8+PGVsbGlwc2UgY3g9IjAiIGN5PSItMjgiIHJ4PSI1IiByeT0iOSIgZmlsbD0iIzFGNEEyQiIgdHJhbnNmb3JtPSJyb3RhdGUoMjQwKSIvPjxlbGxpcHNlIGN4PSIwIiBjeT0iLTI4IiByeD0iNSIgcnk9IjkiIGZpbGw9IiM2QkFBQTUiIHRyYW5zZm9ybT0icm90YXRlKDI3MCkiLz48ZWxsaXBzZSBjeD0iMCIgY3k9Ii0yOCIgcng9IjUiIHJ5PSI5IiBmaWxsPSIjNEExRjM4IiB0cmFuc2Zvcm09InJvdGF0ZSgzMDApIi8+PGVsbGlwc2UgY3g9IjAiIGN5PSItMjgiIHJ4PSI1IiByeT0iOSIgZmlsbD0iI0E4NUM4OCIgdHJhbnNmb3JtPSJyb3RhdGUoMzMwKSIvPjxjaXJjbGUgY3g9IjAiIGN5PSIwIiByPSIxOCIgc3Ryb2tlPSIjNDI3NjcwIiBzdHJva2Utd2lkdGg9IjAuNSIgZmlsbD0ibm9uZSIgb3BhY2l0eT0iMC4yNSIvPjx0ZXh0IHg9Ii04IiB5PSIxMCIgZm9udC1mYW1pbHk9IkZyYXVuY2VzLEdlb3JnaWEsc2VyaWYiIGZvbnQtc2l6ZT0iMjgiIGZvbnQtd2VpZ2h0PSI2MDAiIGZpbGw9IiNFREYxRUYiPlA8L3RleHQ+PC9nPjx0ZXh0IHg9IjgyIiB5PSI0NyIgZm9udC1mYW1pbHk9IkZyYXVuY2VzLEdlb3JnaWEsc2VyaWYiIGZvbnQtc2l6ZT0iMzAiIGZvbnQtd2VpZ2h0PSI2MDAiIGZpbGw9IiNFREYxRUYiIGxldHRlci1zcGFjaW5nPSItMC41Ij5lcmVubmlhbDwvdGV4dD48L3N2Zz4=" alt="Perennial"></div>
+    <div class="banner-logo"><img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQwIiBoZWlnaHQ9IjcyIiB2aWV3Qm94PSIwIDAgMjQwIDcyIiBmaWxsPSJub25lIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxnIHRyYW5zZm9ybT0idHJhbnNsYXRlKDM2LDM2KSI+PGVsbGlwc2UgY3g9IjAiIGN5PSItMjgiIHJ4PSI1IiByeT0iOSIgZmlsbD0iIzQyNzY3MCIgdHJhbnNmb3JtPSJyb3RhdGUoMCkiLz48ZWxsaXBzZSBjeD0iMCIgY3k9Ii0yOCIgcng9IjUiIHJ5PSI5IiBmaWxsPSIjN0EzNzYwIiB0cmFuc2Zvcm09InJvdGF0ZSgzMCkiLz48ZWxsaXBzZSBjeD0iMCIgY3k9Ii0yOCIgcng9IjUiIHJ5PSI5IiBmaWxsPSIjMkE1NDRGIiB0cmFuc2Zvcm09InJvdGF0ZSg2MCkiLz48ZWxsaXBzZSBjeD0iMCIgY3k9Ii0yOCIgcng9IjUiIHJ5PSI5IiBmaWxsPSIjNDU3ODUwIiB0cmFuc2Zvcm09InJvdGF0ZSg5MCkiLz48ZWxsaXBzZSBjeD0iMCIgY3k9Ii0yOCIgcng9IjUiIHJ5PSI5IiBmaWxsPSIjOTY1MDdDIiB0cmFuc2Zvcm09InJvdGF0ZSgxMjApIi8+PGVsbGlwc2UgY3g9IjAiIGN5PSItMjgiIHJ4PSI1IiByeT0iOSIgZmlsbD0iIzM0NUU1OSIgdHJhbnNmb3JtPSJyb3RhdGUoMTUwKSIvPjxlbGxpcHNlIGN4PSIwIiBjeT0iLTI4IiByeD0iNSIgcnk9IjkiIGZpbGw9IiMxRDNCMzciIHRyYW5zZm9ybT0icm90YXRlKDE4MCkiLz48ZWxsaXBzZSBjeD0iMCIgY3k9Ii0yOCIgcng9IjUiIHJ5PSI5IiBmaWxsPSIjNUEyNTQ1IiB0cmFuc2Zvcm09InJvdGF0ZSgyMTApIi8+PGVsbGlwc2UgY3g9IjAiIGN5PSItMjgiIHJ4PSI1IiByeT0iOSIgZmlsbD0iIzFGNEEyQiIgdHJhbnNmb3JtPSJyb3RhdGUoMjQwKSIvPjxlbGxpcHNlIGN4PSIwIiBjeT0iLTI4IiByeD0iNSIgcnk9IjkiIGZpbGw9IiM1QTk2OTEiIHRyYW5zZm9ybT0icm90YXRlKDI3MCkiLz48ZWxsaXBzZSBjeD0iMCIgY3k9Ii0yOCIgcng9IjUiIHJ5PSI5IiBmaWxsPSIjQjU2ODk0IiB0cmFuc2Zvcm09InJvdGF0ZSgzMDApIi8+PGVsbGlwc2UgY3g9IjAiIGN5PSItMjgiIHJ4PSI1IiByeT0iOSIgZmlsbD0iIzZCQUFBNSIgdHJhbnNmb3JtPSJyb3RhdGUoMzMwKSIvPjxjaXJjbGUgY3g9IjAiIGN5PSIwIiByPSIxOCIgc3Ryb2tlPSIjNDI3NjcwIiBzdHJva2Utd2lkdGg9IjAuNSIgZmlsbD0ibm9uZSIgb3BhY2l0eT0iMC4yNSIvPjx0ZXh0IHg9Ii04IiB5PSIxMCIgZm9udC1mYW1pbHk9IkZyYXVuY2VzLEdlb3JnaWEsc2VyaWYiIGZvbnQtc2l6ZT0iMjgiIGZvbnQtd2VpZ2h0PSI2MDAiIGZpbGw9IiNGMUY1RjMiPlA8L3RleHQ+PC9nPjx0ZXh0IHg9IjgyIiB5PSI0NyIgZm9udC1mYW1pbHk9IkZyYXVuY2VzLEdlb3JnaWEsc2VyaWYiIGZvbnQtc2l6ZT0iMzAiIGZvbnQtd2VpZ2h0PSI2MDAiIGZpbGw9IiNGMUY1RjMiIGxldHRlci1zcGFjaW5nPSItMC41Ij5lcmVubmlhbDwvdGV4dD48L3N2Zz4=" alt="Perennial"></div>
     <div>
       <div class="banner-title">Rep Roster</div>
       <div class="banner-sub">Perennial · Rewards Manager</div>
@@ -480,7 +480,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-h
 
   <!-- Mystery Box -->
   <div class="squads-section">
-    <div class="squads-header" style="background:linear-gradient(135deg,#4A1F38,#6B2F52)">
+    <div class="squads-header" style="background:linear-gradient(135deg,#5A2545,#7A3760)">
       <div class="squads-header-title">🎲 Mystery Box</div>
     </div>
     <div class="squads-body visible">
@@ -536,7 +536,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-h
         The <strong>Perennial</strong> leaderboard has been updated with the latest data.<br><br>
         👀 <strong>Your current rank: [#X of Y]</strong><br>
         Check the leaderboard to see where you stand and how close you are to your next reward.<br><br>
-        <a href="https://perennialrewards.github.io/base/" style="color:#6B2F52">👉 View the leaderboard →</a><br><br>
+        <a href="https://perennialrewards.github.io/base/" style="color:#7A3760">👉 View the leaderboard →</a><br><br>
         Keep pushing — rewards are waiting! 🎁<br><br>
         — The Rewards Team
       </div>
@@ -988,7 +988,7 @@ async function sendNotifications(){
 (function(){
   const loc = new URLSearchParams(window.location.search).get('loc') || 'Perennial';
   const el = document.getElementById('loc-indicator');
-  if(el) el.innerHTML = '📍 ' + loc.replace(/_/g,' ') + ' · <a href="index.html" style="color:#6B2F52">Switch</a>';
+  if(el) el.innerHTML = '📍 ' + loc.replace(/_/g,' ') + ' · <a href="index.html" style="color:#7A3760">Switch</a>';
 })();
 function openDrawer(){
   document.getElementById('ham-drawer').classList.add('open');
