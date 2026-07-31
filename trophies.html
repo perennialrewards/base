@@ -76,10 +76,10 @@ window.PERENNIAL = {
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,600;1,9..144,400&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:'Inter',system-ui,sans-serif;background:#F5ECD4;min-height:100vh;color:#1C1409}
+body{font-family:'Inter',system-ui,sans-serif;background:#EDF1EF;min-height:100vh;color:#152220}
 
 /* Banner */
-.banner{width:100%;background:#1C1409;padding:2rem 1.25rem 2.5rem;text-align:center;position:relative;border-radius:0 0 32px 32px}
+.banner{width:100%;background:#152220;padding:2rem 1.25rem 2.5rem;text-align:center;position:relative;border-radius:0 0 32px 32px}
 .banner-logo img{height:52px;width:auto;margin-bottom:.75rem}
 .banner-title{font-family:'Fraunces',serif;font-size:1.75rem;font-weight:700;color:#fff;margin-bottom:.25rem}
 .banner-sub{font-family:'Fraunces',serif;font-size:1.1rem;color:#fff;font-style:italic;opacity:.85}
@@ -88,49 +88,49 @@ body{font-family:'Inter',system-ui,sans-serif;background:#F5ECD4;min-height:100v
 
 /* Page */
 .page{max-width:560px;margin:0 auto;padding:1.25rem 1.25rem 3rem}
-.page-loading{text-align:center;padding:3rem 1rem;color:#8A7A68;font-size:13px}
+.page-loading{text-align:center;padding:3rem 1rem;color:#7C8985;font-size:13px}
 
 /* Legend */
 .legend{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-bottom:1.5rem}
-.legend-chip{display:flex;align-items:center;gap:6px;font-size:11px;color:#8A7A68;background:#FFFFFF;border:1px solid rgba(61,43,26,0.15);border-radius:20px;padding:5px 12px}
+.legend-chip{display:flex;align-items:center;gap:6px;font-size:11px;color:#7C8985;background:#FFFFFF;border:1px solid rgba(36,48,45,0.15);border-radius:20px;padding:5px 12px}
 .legend-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
 
 /* Rep card */
-.rep-card{background:#FFFFFF;border:1px solid rgba(61,43,26,0.15);border-radius:16px;padding:1.1rem 1.25rem;margin-bottom:.875rem;display:flex;align-items:center;gap:14px}
+.rep-card{background:#FFFFFF;border:1px solid rgba(36,48,45,0.15);border-radius:16px;padding:1.1rem 1.25rem;margin-bottom:.875rem;display:flex;align-items:center;gap:14px}
 .rep-card.top{border-color:#427670;border-width:1.5px;box-shadow:0 4px 16px rgba(66,118,112,0.15)}
 .rep-avatar{width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;flex-shrink:0}
 .rep-info{flex:1;min-width:0}
-.rep-name{font-size:14.5px;font-weight:600;color:#1C1409}
+.rep-name{font-size:14.5px;font-weight:600;color:#152220}
 .rep-name-row{display:flex;align-items:center;gap:8px}
 .current-tier-tag{font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;text-transform:uppercase;letter-spacing:.4px}
 .current-tier-tag.t1{background:rgba(90,150,145,0.18);color:#2A544F}
 .current-tier-tag.t2{background:rgba(66,118,112,0.15);color:#427670}
 .current-tier-tag.t3{background:rgba(90,150,145,0.2);color:#1D3B37}
 .current-tier-tag.t4{background:rgba(107,47,82,0.15);color:#6B2F52}
-.rep-pts{font-size:12px;color:#8A7A68;margin-top:1px}
+.rep-pts{font-size:12px;color:#7C8985;margin-top:1px}
 .rep-badges{display:flex;gap:6px;flex-shrink:0}
-.badge{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:15px;border:2px solid rgba(61,43,26,0.12);background:#F5ECD4;opacity:.35;filter:grayscale(1)}
+.badge{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:15px;border:2px solid rgba(36,48,45,0.12);background:#EDF1EF;opacity:.35;filter:grayscale(1)}
 .badge.unlocked{opacity:1;filter:none;border-color:transparent}
 .badge.t1.unlocked{background:linear-gradient(135deg,#5A9691,#345E59);box-shadow:0 2px 8px rgba(90,150,145,0.35)}
 .badge.t2.unlocked{background:linear-gradient(135deg,#5A9691,#427670);box-shadow:0 2px 8px rgba(66,118,112,0.35)}
 .badge.t3.unlocked{background:linear-gradient(135deg,#5A9691,#427670);box-shadow:0 2px 8px rgba(90,150,145,0.4)}
 .badge.t4.unlocked{background:linear-gradient(135deg,#4A1F38,#6B2F52);box-shadow:0 2px 10px rgba(107,47,82,0.4)}
 
-.empty-state{text-align:center;padding:3rem 1rem;color:#8A7A68;font-size:13px}
-.section-title{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:#8A7A68;margin:1.5rem 0 .75rem}
+.empty-state{text-align:center;padding:3rem 1rem;color:#7C8985;font-size:13px}
+.section-title{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:#7C8985;margin:1.5rem 0 .75rem}
 .shop-ach-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.shop-ach-chip{background:#FFFFFF;border:0.5px solid rgba(61,43,26,0.15);border-radius:12px;padding:.75rem .875rem;display:flex;align-items:center;gap:9px}
+.shop-ach-chip{background:#FFFFFF;border:0.5px solid rgba(36,48,45,0.15);border-radius:12px;padding:.75rem .875rem;display:flex;align-items:center;gap:9px}
 .shop-ach-emoji{font-size:18px;flex-shrink:0}
-.shop-ach-label{font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:.3px;color:#8A7A68}
-.shop-ach-name{font-size:12px;font-weight:600;color:#1C1409;margin-top:1px}
-.hof-item{display:flex;align-items:center;gap:12px;background:#FFFFFF;border:0.5px solid rgba(61,43,26,0.15);border-radius:12px;padding:.85rem 1rem;margin-bottom:.6rem}
+.shop-ach-label{font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:.3px;color:#7C8985}
+.shop-ach-name{font-size:12px;font-weight:600;color:#152220;margin-top:1px}
+.hof-item{display:flex;align-items:center;gap:12px;background:#FFFFFF;border:0.5px solid rgba(36,48,45,0.15);border-radius:12px;padding:.85rem 1rem;margin-bottom:.6rem}
 .hof-badge{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
 .hof-info{flex:1}
-.hof-name{font-size:13px;font-weight:600;color:#1C1409}
-.hof-period{font-size:10.5px;color:#8A7A68;margin-top:1px}
+.hof-name{font-size:13px;font-weight:600;color:#152220}
+.hof-period{font-size:10.5px;color:#7C8985;margin-top:1px}
 .hof-score{font-size:12px;font-weight:700;color:#6B2F52}
 
-.page-footer{font-size:11px;color:#8A7A68;text-align:center;margin-top:1.5rem}
+.page-footer{font-size:11px;color:#7C8985;text-align:center;margin-top:1.5rem}
 
 /* Side menu (matches index.html / points.html / roster.html) */
 </style>
@@ -139,44 +139,44 @@ body{font-family:'Inter',system-ui,sans-serif;background:#F5ECD4;min-height:100v
 
 <div id="menu-overlay" onclick="toggleMenu()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:300"></div>
 <div id="menu-drawer" style="display:none;position:fixed;top:0;left:0;width:260px;height:100%;background:#fff;z-index:400;box-shadow:4px 0 20px rgba(0,0,0,0.15);flex-direction:column">
-  <div style="background:#1C1409;padding:1.5rem 1.25rem 1.25rem">
+  <div style="background:#152220;padding:1.5rem 1.25rem 1.25rem">
     <div style="font-size:14px;font-weight:600;color:#fff">Perennial</div>
     <div style="font-size:12px;color:rgba(255,255,255,0.5);margin-top:2px">Rewards Program</div>
   </div>
   <div style="padding:1rem 0;flex:1;overflow-y:auto">
-    <a href="owner.html" style="display:flex;align-items:center;gap:12px;padding:.875rem 1.25rem;text-decoration:none;color:#fff;font-size:14px;font-weight:600;background:#1C1409">
+    <a href="owner.html" style="display:flex;align-items:center;gap:12px;padding:.875rem 1.25rem;text-decoration:none;color:#fff;font-size:14px;font-weight:600;background:#152220">
       <span style="font-size:18px">🔑</span> Owner Portal
       <span style="margin-left:auto;font-size:9px;font-weight:700;color:#5A9691;background:rgba(90,150,145,0.18);padding:2px 7px;border-radius:9px;text-transform:uppercase;letter-spacing:.3px">Priority</span>
     </a>
-    <div style="border-top:0.5px solid rgba(61,43,26,0.15);margin:.5rem 1.25rem"></div>
-    <a href="index.html" style="display:flex;align-items:center;gap:12px;padding:.875rem 1.25rem;text-decoration:none;color:#1C1409;font-size:14px;font-weight:500">
+    <div style="border-top:0.5px solid rgba(36,48,45,0.15);margin:.5rem 1.25rem"></div>
+    <a href="index.html" style="display:flex;align-items:center;gap:12px;padding:.875rem 1.25rem;text-decoration:none;color:#152220;font-size:14px;font-weight:500">
       <span style="font-size:18px">🏆</span> Current Competitions
     </a>
-    <a href="locations.html" style="display:flex;align-items:center;gap:12px;padding:.875rem 1.25rem;text-decoration:none;color:#1C1409;font-size:14px;font-weight:500">
+    <a href="locations.html" style="display:flex;align-items:center;gap:12px;padding:.875rem 1.25rem;text-decoration:none;color:#152220;font-size:14px;font-weight:500">
       <span style="font-size:18px">🌎</span> Group Leaderboard
     </a>
-    <a href="points.html" style="display:flex;align-items:center;gap:12px;padding:.875rem 1.25rem;text-decoration:none;color:#1C1409;font-size:14px;font-weight:500">
+    <a href="points.html" style="display:flex;align-items:center;gap:12px;padding:.875rem 1.25rem;text-decoration:none;color:#152220;font-size:14px;font-weight:500">
       <span style="font-size:18px">⭐</span> My Rewards
     </a>
-    <a href="trophies.html" style="display:flex;align-items:center;gap:12px;padding:.875rem 1.25rem;text-decoration:none;color:#1C1409;font-size:14px;font-weight:500;background:#F5ECD4">
+    <a href="trophies.html" style="display:flex;align-items:center;gap:12px;padding:.875rem 1.25rem;text-decoration:none;color:#152220;font-size:14px;font-weight:500;background:#EDF1EF">
       <span style="font-size:18px">🥇</span> Trophies
     </a>
-    <a href="profiles.html" style="display:flex;align-items:center;gap:12px;padding:.875rem 1.25rem;text-decoration:none;color:#1C1409;font-size:14px;font-weight:500">
+    <a href="profiles.html" style="display:flex;align-items:center;gap:12px;padding:.875rem 1.25rem;text-decoration:none;color:#152220;font-size:14px;font-weight:500">
       <span style="font-size:18px">🪪</span> Profiles
     </a>
-    <a href="squad-vote.html" style="display:flex;align-items:center;gap:12px;padding:.875rem 1.25rem;text-decoration:none;color:#1C1409;font-size:14px;font-weight:500">
+    <a href="squad-vote.html" style="display:flex;align-items:center;gap:12px;padding:.875rem 1.25rem;text-decoration:none;color:#152220;font-size:14px;font-weight:500">
       <span style="font-size:18px">🗳️</span> Squad Vote
     </a>
-    <a href="achiever.html" style="display:flex;align-items:center;gap:12px;padding:.875rem 1.25rem;text-decoration:none;color:#1C1409;font-size:14px;font-weight:500">
+    <a href="achiever.html" style="display:flex;align-items:center;gap:12px;padding:.875rem 1.25rem;text-decoration:none;color:#152220;font-size:14px;font-weight:500">
       <span style="font-size:18px">🏅</span> Your Famous Achiever
     </a>
-    <div style="border-top:0.5px solid rgba(61,43,26,0.15);margin:.5rem 1.25rem"></div>
+    <div style="border-top:0.5px solid rgba(36,48,45,0.15);margin:.5rem 1.25rem"></div>
     <a href="roster.html" style="display:flex;align-items:center;gap:12px;padding:.875rem 1.25rem;text-decoration:none;color:#6B2F52;font-size:14px;font-weight:500">
       <span style="font-size:18px">👥</span> Rep Roster
       <span style="margin-left:auto;font-size:10px;font-weight:600;color:#6B2F52;background:#F3E7EE;padding:2px 8px;border-radius:10px">🔒 Manager</span>
     </a>
   </div>
-  <div style="padding:1rem 1.25rem;border-top:0.5px solid rgba(61,43,26,0.15);font-size:11px;color:#8A7A68">
+  <div style="padding:1rem 1.25rem;border-top:0.5px solid rgba(36,48,45,0.15);font-size:11px;color:#7C8985">
     Perennial · Internal use only<br>
     <span id="loc-indicator" style="color:#6B2F52;font-weight:600"></span>
   </div>
@@ -188,7 +188,7 @@ body{font-family:'Inter',system-ui,sans-serif;background:#F5ECD4;min-height:100v
     <div style="width:18px;height:2px;background:#fff;border-radius:2px"></div>
     <div style="width:18px;height:2px;background:#fff;border-radius:2px"></div>
   </button>
-  <div class="banner-logo"><img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQwIiBoZWlnaHQ9IjcyIiB2aWV3Qm94PSIwIDAgMjQwIDcyIiBmaWxsPSJub25lIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxnIHRyYW5zZm9ybT0idHJhbnNsYXRlKDM2LDM2KSI+PGVsbGlwc2UgY3g9IjAiIGN5PSItMjgiIHJ4PSI1IiByeT0iOSIgZmlsbD0iIzQyNzY3MCIgdHJhbnNmb3JtPSJyb3RhdGUoMCkiLz48ZWxsaXBzZSBjeD0iMCIgY3k9Ii0yOCIgcng9IjUiIHJ5PSI5IiBmaWxsPSIjNkIyRjUyIiB0cmFuc2Zvcm09InJvdGF0ZSgzMCkiLz48ZWxsaXBzZSBjeD0iMCIgY3k9Ii0yOCIgcng9IjUiIHJ5PSI5IiBmaWxsPSIjMkE1NDRGIiB0cmFuc2Zvcm09InJvdGF0ZSg2MCkiLz48ZWxsaXBzZSBjeD0iMCIgY3k9Ii0yOCIgcng9IjUiIHJ5PSI5IiBmaWxsPSIjNDU3ODUwIiB0cmFuc2Zvcm09InJvdGF0ZSg5MCkiLz48ZWxsaXBzZSBjeD0iMCIgY3k9Ii0yOCIgcng9IjUiIHJ5PSI5IiBmaWxsPSIjMzQ1RTU5IiB0cmFuc2Zvcm09InJvdGF0ZSgxMjApIi8+PGVsbGlwc2UgY3g9IjAiIGN5PSItMjgiIHJ4PSI1IiByeT0iOSIgZmlsbD0iIzhDNDU3MCIgdHJhbnNmb3JtPSJyb3RhdGUoMTUwKSIvPjxlbGxpcHNlIGN4PSIwIiBjeT0iLTI4IiByeD0iNSIgcnk9IjkiIGZpbGw9IiMxRDNCMzciIHRyYW5zZm9ybT0icm90YXRlKDE4MCkiLz48ZWxsaXBzZSBjeD0iMCIgY3k9Ii0yOCIgcng9IjUiIHJ5PSI5IiBmaWxsPSIjNUE5NjkxIiB0cmFuc2Zvcm09InJvdGF0ZSgyMTApIi8+PGVsbGlwc2UgY3g9IjAiIGN5PSItMjgiIHJ4PSI1IiByeT0iOSIgZmlsbD0iIzFGNEEyQiIgdHJhbnNmb3JtPSJyb3RhdGUoMjQwKSIvPjxlbGxpcHNlIGN4PSIwIiBjeT0iLTI4IiByeD0iNSIgcnk9IjkiIGZpbGw9IiM2QkFBQTUiIHRyYW5zZm9ybT0icm90YXRlKDI3MCkiLz48ZWxsaXBzZSBjeD0iMCIgY3k9Ii0yOCIgcng9IjUiIHJ5PSI5IiBmaWxsPSIjNEExRjM4IiB0cmFuc2Zvcm09InJvdGF0ZSgzMDApIi8+PGVsbGlwc2UgY3g9IjAiIGN5PSItMjgiIHJ4PSI1IiByeT0iOSIgZmlsbD0iI0E4NUM4OCIgdHJhbnNmb3JtPSJyb3RhdGUoMzMwKSIvPjxjaXJjbGUgY3g9IjAiIGN5PSIwIiByPSIxOCIgc3Ryb2tlPSIjNDI3NjcwIiBzdHJva2Utd2lkdGg9IjAuNSIgZmlsbD0ibm9uZSIgb3BhY2l0eT0iMC4yNSIvPjx0ZXh0IHg9Ii04IiB5PSIxMCIgZm9udC1mYW1pbHk9IkZyYXVuY2VzLEdlb3JnaWEsc2VyaWYiIGZvbnQtc2l6ZT0iMjgiIGZvbnQtd2VpZ2h0PSI2MDAiIGZpbGw9IiNGNUVDRDQiPlA8L3RleHQ+PC9nPjx0ZXh0IHg9IjgyIiB5PSI0NyIgZm9udC1mYW1pbHk9IkZyYXVuY2VzLEdlb3JnaWEsc2VyaWYiIGZvbnQtc2l6ZT0iMzAiIGZvbnQtd2VpZ2h0PSI2MDAiIGZpbGw9IiNGNUVDRDQiIGxldHRlci1zcGFjaW5nPSItMC41Ij5lcmVubmlhbDwvdGV4dD48L3N2Zz4=" alt="Perennial"></div>
+  <div class="banner-logo"><img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQwIiBoZWlnaHQ9IjcyIiB2aWV3Qm94PSIwIDAgMjQwIDcyIiBmaWxsPSJub25lIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxnIHRyYW5zZm9ybT0idHJhbnNsYXRlKDM2LDM2KSI+PGVsbGlwc2UgY3g9IjAiIGN5PSItMjgiIHJ4PSI1IiByeT0iOSIgZmlsbD0iIzQyNzY3MCIgdHJhbnNmb3JtPSJyb3RhdGUoMCkiLz48ZWxsaXBzZSBjeD0iMCIgY3k9Ii0yOCIgcng9IjUiIHJ5PSI5IiBmaWxsPSIjNkIyRjUyIiB0cmFuc2Zvcm09InJvdGF0ZSgzMCkiLz48ZWxsaXBzZSBjeD0iMCIgY3k9Ii0yOCIgcng9IjUiIHJ5PSI5IiBmaWxsPSIjMkE1NDRGIiB0cmFuc2Zvcm09InJvdGF0ZSg2MCkiLz48ZWxsaXBzZSBjeD0iMCIgY3k9Ii0yOCIgcng9IjUiIHJ5PSI5IiBmaWxsPSIjNDU3ODUwIiB0cmFuc2Zvcm09InJvdGF0ZSg5MCkiLz48ZWxsaXBzZSBjeD0iMCIgY3k9Ii0yOCIgcng9IjUiIHJ5PSI5IiBmaWxsPSIjMzQ1RTU5IiB0cmFuc2Zvcm09InJvdGF0ZSgxMjApIi8+PGVsbGlwc2UgY3g9IjAiIGN5PSItMjgiIHJ4PSI1IiByeT0iOSIgZmlsbD0iIzhDNDU3MCIgdHJhbnNmb3JtPSJyb3RhdGUoMTUwKSIvPjxlbGxpcHNlIGN4PSIwIiBjeT0iLTI4IiByeD0iNSIgcnk9IjkiIGZpbGw9IiMxRDNCMzciIHRyYW5zZm9ybT0icm90YXRlKDE4MCkiLz48ZWxsaXBzZSBjeD0iMCIgY3k9Ii0yOCIgcng9IjUiIHJ5PSI5IiBmaWxsPSIjNUE5NjkxIiB0cmFuc2Zvcm09InJvdGF0ZSgyMTApIi8+PGVsbGlwc2UgY3g9IjAiIGN5PSItMjgiIHJ4PSI1IiByeT0iOSIgZmlsbD0iIzFGNEEyQiIgdHJhbnNmb3JtPSJyb3RhdGUoMjQwKSIvPjxlbGxpcHNlIGN4PSIwIiBjeT0iLTI4IiByeD0iNSIgcnk9IjkiIGZpbGw9IiM2QkFBQTUiIHRyYW5zZm9ybT0icm90YXRlKDI3MCkiLz48ZWxsaXBzZSBjeD0iMCIgY3k9Ii0yOCIgcng9IjUiIHJ5PSI5IiBmaWxsPSIjNEExRjM4IiB0cmFuc2Zvcm09InJvdGF0ZSgzMDApIi8+PGVsbGlwc2UgY3g9IjAiIGN5PSItMjgiIHJ4PSI1IiByeT0iOSIgZmlsbD0iI0E4NUM4OCIgdHJhbnNmb3JtPSJyb3RhdGUoMzMwKSIvPjxjaXJjbGUgY3g9IjAiIGN5PSIwIiByPSIxOCIgc3Ryb2tlPSIjNDI3NjcwIiBzdHJva2Utd2lkdGg9IjAuNSIgZmlsbD0ibm9uZSIgb3BhY2l0eT0iMC4yNSIvPjx0ZXh0IHg9Ii04IiB5PSIxMCIgZm9udC1mYW1pbHk9IkZyYXVuY2VzLEdlb3JnaWEsc2VyaWYiIGZvbnQtc2l6ZT0iMjgiIGZvbnQtd2VpZ2h0PSI2MDAiIGZpbGw9IiNFREYxRUYiPlA8L3RleHQ+PC9nPjx0ZXh0IHg9IjgyIiB5PSI0NyIgZm9udC1mYW1pbHk9IkZyYXVuY2VzLEdlb3JnaWEsc2VyaWYiIGZvbnQtc2l6ZT0iMzAiIGZvbnQtd2VpZ2h0PSI2MDAiIGZpbGw9IiNFREYxRUYiIGxldHRlci1zcGFjaW5nPSItMC41Ij5lcmVubmlhbDwvdGV4dD48L3N2Zz4=" alt="Perennial"></div>
   <div class="banner-title">Trophies</div>
   <div class="banner-sub">Every rep's milestones, in one place</div>
 </div>

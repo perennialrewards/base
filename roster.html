@@ -76,13 +76,13 @@ window.PERENNIAL = {
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,600;1,9..144,400&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 :root{
-  --primary: #1C1409;
+  --primary: #152220;
   --accent:  #427670;
-  --bg:      #F5ECD4;
+  --bg:      #EDF1EF;
   --surface: #FFFFFF;
-  --border:  rgba(61,43,26,0.15);
-  --text:    #1C1409;
-  --muted:   #8A7A68;
+  --border:  rgba(36,48,45,0.15);
+  --text:    #152220;
+  --muted:   #7C8985;
   --purple:  #6B2F52;
   --purple-light: #F3E7EE;
   --green:   #10B981;
@@ -197,7 +197,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-h
 .fr-item-meta{font-size:11px;color:var(--muted)}
 .fr-item-status{font-size:9.5px;font-weight:700;padding:2px 8px;border-radius:8px;white-space:nowrap}
 .fr-item-status.active{background:rgba(69,120,80,0.14);color:#1F4A2B}
-.fr-item-status.expired{background:rgba(138,122,104,0.12);color:var(--muted)}
+.fr-item-status.expired{background:rgba(124,137,133,0.12);color:var(--muted)}
 .fr-del-btn{font-size:11px;color:#EF4444;background:rgba(239,68,68,0.08);border:none;padding:5px 10px;border-radius:6px;cursor:pointer;font-family:inherit;margin-left:6px}
 .fr-add-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px}
 .fr-add-row.full{grid-template-columns:1fr}
@@ -238,27 +238,27 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-h
   .ham-overlay.visible{opacity:1;pointer-events:all}
   .ham-drawer{position:fixed;top:0;left:0;width:280px;height:100%;background:#fff;z-index:400;transform:translateX(-100%);transition:transform .3s cubic-bezier(.4,0,.2,1);display:flex;flex-direction:column;box-shadow:4px 0 24px rgba(0,0,0,0.12)}
   .ham-drawer.open{transform:translateX(0)}
-  .ham-drawer-header{background:var(--nav-primary,#1C1409);padding:1.25rem 1.25rem 1rem;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+  .ham-drawer-header{background:var(--nav-primary,#152220);padding:1.25rem 1.25rem 1rem;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
   .ham-drawer-logo{font-family:'Fraunces',serif;font-size:18px;font-weight:600;color:#fff;display:flex;align-items:center;gap:6px}
   .ham-drawer-logo-dot{width:6px;height:6px;border-radius:50%;background:var(--nav-accent,#427670);flex-shrink:0}
   .ham-drawer-shop{font-size:11px;color:rgba(255,255,255,0.45);margin-top:2px}
   .ham-close-btn{width:32px;height:32px;border-radius:8px;background:rgba(255,255,255,0.1);border:none;cursor:pointer;color:#fff;font-size:16px;display:flex;align-items:center;justify-content:center}
   .ham-close-btn:hover{background:rgba(255,255,255,0.2)}
   .ham-nav{flex:1;overflow-y:auto;padding:.75rem 0}
-  .ham-section-label{font-size:10px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:#8A7A68;padding:.5rem 1.25rem .375rem;margin-top:.5rem}
-  .ham-nav-item{display:flex;align-items:center;gap:12px;padding:.875rem 1.25rem;text-decoration:none;color:#1C1409;transition:background .12s;cursor:pointer;border:none;background:none;width:100%;font-family:inherit;text-align:left}
-  .ham-nav-item:hover{background:#F5ECD4}
+  .ham-section-label{font-size:10px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:#7C8985;padding:.5rem 1.25rem .375rem;margin-top:.5rem}
+  .ham-nav-item{display:flex;align-items:center;gap:12px;padding:.875rem 1.25rem;text-decoration:none;color:#152220;transition:background .12s;cursor:pointer;border:none;background:none;width:100%;font-family:inherit;text-align:left}
+  .ham-nav-item:hover{background:#EDF1EF}
   .ham-nav-item.active{background:#F3E7EE;color:#6B2F52}
   .ham-nav-item.active .ham-nav-icon{background:#6B2F52}
-  .ham-nav-icon{width:34px;height:34px;border-radius:9px;background:#1C1409;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0}
+  .ham-nav-icon{width:34px;height:34px;border-radius:9px;background:#152220;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0}
   .ham-nav-text{flex:1}
   .ham-nav-label{font-size:14px;font-weight:500;color:inherit}
-  .ham-nav-sub{font-size:11px;color:#8A7A68;margin-top:1px}
+  .ham-nav-sub{font-size:11px;color:#7C8985;margin-top:1px}
   .ham-nav-badge{font-size:10px;font-weight:600;color:#6B2F52;background:#F3E7EE;padding:2px 8px;border-radius:10px;white-space:nowrap}
   .ham-nav-item.mgr-item .ham-nav-label{color:#6B2F52}
   .ham-divider{height:1px;background:#F0EEE8;margin:.5rem 0}
   .ham-footer{padding:1rem 1.25rem;border-top:1px solid #F0EEE8;flex-shrink:0}
-  .ham-footer-brand{font-size:11px;color:#8A7A68}
+  .ham-footer-brand{font-size:11px;color:#7C8985}
   .ham-footer-brand span{color:#6B2F52;font-weight:600}
 </style>
 </head>
@@ -325,10 +325,10 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-h
     <button class="ham-close-btn" onclick="closeDrawer()">X</button>
   </div>
   <nav class="ham-nav">
-    <a class="ham-nav-item" id="ham-owner" href="https://perennialrewards.github.io/base/owner.html" style="background:#1C1409">
+    <a class="ham-nav-item" id="ham-owner" href="https://perennialrewards.github.io/base/owner.html" style="background:#152220">
       <div class="ham-nav-icon" style="background:rgba(90,150,145,0.15)">&#128273;</div>
-      <div class="ham-nav-text"><div class="ham-nav-label" style="color:#fff">Owner Portal</div><div class="ham-nav-sub" style="color:rgba(245,236,212,0.5)">Cross-shop dashboard &amp; exports</div></div>
-      <div class="ham-nav-badge" style="background:#5A9691;color:#1C1409">Priority</div>
+      <div class="ham-nav-text"><div class="ham-nav-label" style="color:#fff">Owner Portal</div><div class="ham-nav-sub" style="color:rgba(237,241,239,0.5)">Cross-shop dashboard &amp; exports</div></div>
+      <div class="ham-nav-badge" style="background:#5A9691;color:#152220">Priority</div>
     </a>
     <div class="ham-divider"></div>
     <a class="ham-nav-item" id="ham-hub" href="https://perennialrewards.github.io/base/">
@@ -378,7 +378,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-h
 <div class="banner" style="position:relative">
   <button class="ham-btn" id="ham-btn" onclick="openDrawer()" aria-label="Open menu"><div class="ham-line"></div><div class="ham-line"></div><div class="ham-line"></div></button>
   <div class="banner-left">
-    <div class="banner-logo"><img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQwIiBoZWlnaHQ9IjcyIiB2aWV3Qm94PSIwIDAgMjQwIDcyIiBmaWxsPSJub25lIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxnIHRyYW5zZm9ybT0idHJhbnNsYXRlKDM2LDM2KSI+PGVsbGlwc2UgY3g9IjAiIGN5PSItMjgiIHJ4PSI1IiByeT0iOSIgZmlsbD0iIzQyNzY3MCIgdHJhbnNmb3JtPSJyb3RhdGUoMCkiLz48ZWxsaXBzZSBjeD0iMCIgY3k9Ii0yOCIgcng9IjUiIHJ5PSI5IiBmaWxsPSIjNkIyRjUyIiB0cmFuc2Zvcm09InJvdGF0ZSgzMCkiLz48ZWxsaXBzZSBjeD0iMCIgY3k9Ii0yOCIgcng9IjUiIHJ5PSI5IiBmaWxsPSIjMkE1NDRGIiB0cmFuc2Zvcm09InJvdGF0ZSg2MCkiLz48ZWxsaXBzZSBjeD0iMCIgY3k9Ii0yOCIgcng9IjUiIHJ5PSI5IiBmaWxsPSIjNDU3ODUwIiB0cmFuc2Zvcm09InJvdGF0ZSg5MCkiLz48ZWxsaXBzZSBjeD0iMCIgY3k9Ii0yOCIgcng9IjUiIHJ5PSI5IiBmaWxsPSIjMzQ1RTU5IiB0cmFuc2Zvcm09InJvdGF0ZSgxMjApIi8+PGVsbGlwc2UgY3g9IjAiIGN5PSItMjgiIHJ4PSI1IiByeT0iOSIgZmlsbD0iIzhDNDU3MCIgdHJhbnNmb3JtPSJyb3RhdGUoMTUwKSIvPjxlbGxpcHNlIGN4PSIwIiBjeT0iLTI4IiByeD0iNSIgcnk9IjkiIGZpbGw9IiMxRDNCMzciIHRyYW5zZm9ybT0icm90YXRlKDE4MCkiLz48ZWxsaXBzZSBjeD0iMCIgY3k9Ii0yOCIgcng9IjUiIHJ5PSI5IiBmaWxsPSIjNUE5NjkxIiB0cmFuc2Zvcm09InJvdGF0ZSgyMTApIi8+PGVsbGlwc2UgY3g9IjAiIGN5PSItMjgiIHJ4PSI1IiByeT0iOSIgZmlsbD0iIzFGNEEyQiIgdHJhbnNmb3JtPSJyb3RhdGUoMjQwKSIvPjxlbGxpcHNlIGN4PSIwIiBjeT0iLTI4IiByeD0iNSIgcnk9IjkiIGZpbGw9IiM2QkFBQTUiIHRyYW5zZm9ybT0icm90YXRlKDI3MCkiLz48ZWxsaXBzZSBjeD0iMCIgY3k9Ii0yOCIgcng9IjUiIHJ5PSI5IiBmaWxsPSIjNEExRjM4IiB0cmFuc2Zvcm09InJvdGF0ZSgzMDApIi8+PGVsbGlwc2UgY3g9IjAiIGN5PSItMjgiIHJ4PSI1IiByeT0iOSIgZmlsbD0iI0E4NUM4OCIgdHJhbnNmb3JtPSJyb3RhdGUoMzMwKSIvPjxjaXJjbGUgY3g9IjAiIGN5PSIwIiByPSIxOCIgc3Ryb2tlPSIjNDI3NjcwIiBzdHJva2Utd2lkdGg9IjAuNSIgZmlsbD0ibm9uZSIgb3BhY2l0eT0iMC4yNSIvPjx0ZXh0IHg9Ii04IiB5PSIxMCIgZm9udC1mYW1pbHk9IkZyYXVuY2VzLEdlb3JnaWEsc2VyaWYiIGZvbnQtc2l6ZT0iMjgiIGZvbnQtd2VpZ2h0PSI2MDAiIGZpbGw9IiNGNUVDRDQiPlA8L3RleHQ+PC9nPjx0ZXh0IHg9IjgyIiB5PSI0NyIgZm9udC1mYW1pbHk9IkZyYXVuY2VzLEdlb3JnaWEsc2VyaWYiIGZvbnQtc2l6ZT0iMzAiIGZvbnQtd2VpZ2h0PSI2MDAiIGZpbGw9IiNGNUVDRDQiIGxldHRlci1zcGFjaW5nPSItMC41Ij5lcmVubmlhbDwvdGV4dD48L3N2Zz4=" alt="Perennial"></div>
+    <div class="banner-logo"><img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQwIiBoZWlnaHQ9IjcyIiB2aWV3Qm94PSIwIDAgMjQwIDcyIiBmaWxsPSJub25lIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxnIHRyYW5zZm9ybT0idHJhbnNsYXRlKDM2LDM2KSI+PGVsbGlwc2UgY3g9IjAiIGN5PSItMjgiIHJ4PSI1IiByeT0iOSIgZmlsbD0iIzQyNzY3MCIgdHJhbnNmb3JtPSJyb3RhdGUoMCkiLz48ZWxsaXBzZSBjeD0iMCIgY3k9Ii0yOCIgcng9IjUiIHJ5PSI5IiBmaWxsPSIjNkIyRjUyIiB0cmFuc2Zvcm09InJvdGF0ZSgzMCkiLz48ZWxsaXBzZSBjeD0iMCIgY3k9Ii0yOCIgcng9IjUiIHJ5PSI5IiBmaWxsPSIjMkE1NDRGIiB0cmFuc2Zvcm09InJvdGF0ZSg2MCkiLz48ZWxsaXBzZSBjeD0iMCIgY3k9Ii0yOCIgcng9IjUiIHJ5PSI5IiBmaWxsPSIjNDU3ODUwIiB0cmFuc2Zvcm09InJvdGF0ZSg5MCkiLz48ZWxsaXBzZSBjeD0iMCIgY3k9Ii0yOCIgcng9IjUiIHJ5PSI5IiBmaWxsPSIjMzQ1RTU5IiB0cmFuc2Zvcm09InJvdGF0ZSgxMjApIi8+PGVsbGlwc2UgY3g9IjAiIGN5PSItMjgiIHJ4PSI1IiByeT0iOSIgZmlsbD0iIzhDNDU3MCIgdHJhbnNmb3JtPSJyb3RhdGUoMTUwKSIvPjxlbGxpcHNlIGN4PSIwIiBjeT0iLTI4IiByeD0iNSIgcnk9IjkiIGZpbGw9IiMxRDNCMzciIHRyYW5zZm9ybT0icm90YXRlKDE4MCkiLz48ZWxsaXBzZSBjeD0iMCIgY3k9Ii0yOCIgcng9IjUiIHJ5PSI5IiBmaWxsPSIjNUE5NjkxIiB0cmFuc2Zvcm09InJvdGF0ZSgyMTApIi8+PGVsbGlwc2UgY3g9IjAiIGN5PSItMjgiIHJ4PSI1IiByeT0iOSIgZmlsbD0iIzFGNEEyQiIgdHJhbnNmb3JtPSJyb3RhdGUoMjQwKSIvPjxlbGxpcHNlIGN4PSIwIiBjeT0iLTI4IiByeD0iNSIgcnk9IjkiIGZpbGw9IiM2QkFBQTUiIHRyYW5zZm9ybT0icm90YXRlKDI3MCkiLz48ZWxsaXBzZSBjeD0iMCIgY3k9Ii0yOCIgcng9IjUiIHJ5PSI5IiBmaWxsPSIjNEExRjM4IiB0cmFuc2Zvcm09InJvdGF0ZSgzMDApIi8+PGVsbGlwc2UgY3g9IjAiIGN5PSItMjgiIHJ4PSI1IiByeT0iOSIgZmlsbD0iI0E4NUM4OCIgdHJhbnNmb3JtPSJyb3RhdGUoMzMwKSIvPjxjaXJjbGUgY3g9IjAiIGN5PSIwIiByPSIxOCIgc3Ryb2tlPSIjNDI3NjcwIiBzdHJva2Utd2lkdGg9IjAuNSIgZmlsbD0ibm9uZSIgb3BhY2l0eT0iMC4yNSIvPjx0ZXh0IHg9Ii04IiB5PSIxMCIgZm9udC1mYW1pbHk9IkZyYXVuY2VzLEdlb3JnaWEsc2VyaWYiIGZvbnQtc2l6ZT0iMjgiIGZvbnQtd2VpZ2h0PSI2MDAiIGZpbGw9IiNFREYxRUYiPlA8L3RleHQ+PC9nPjx0ZXh0IHg9IjgyIiB5PSI0NyIgZm9udC1mYW1pbHk9IkZyYXVuY2VzLEdlb3JnaWEsc2VyaWYiIGZvbnQtc2l6ZT0iMzAiIGZvbnQtd2VpZ2h0PSI2MDAiIGZpbGw9IiNFREYxRUYiIGxldHRlci1zcGFjaW5nPSItMC41Ij5lcmVubmlhbDwvdGV4dD48L3N2Zz4=" alt="Perennial"></div>
     <div>
       <div class="banner-title">Rep Roster</div>
       <div class="banner-sub">Perennial · Rewards Manager</div>

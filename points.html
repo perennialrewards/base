@@ -76,14 +76,14 @@ window.PERENNIAL = {
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,600;1,9..144,400&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
   *{box-sizing:border-box;margin:0;padding:0}
-  body{font-family:'Inter',system-ui,sans-serif;background:#F5ECD4;min-height:100vh;color:#1C1409}
+  body{font-family:'Inter',system-ui,sans-serif;background:#EDF1EF;min-height:100vh;color:#152220}
   :root{
-    --navy:#1C1409;--teal:#427670;--cream:#F5ECD4;--white:#FFFFFF;
-    --border:rgba(61,43,26,0.15);--gray:#8A7A68;--charcoal:#1C1409;--purple:#6B2F52;
+    --navy:#152220;--teal:#427670;--cream:#EDF1EF;--white:#FFFFFF;
+    --border:rgba(36,48,45,0.15);--gray:#7C8985;--charcoal:#152220;--purple:#6B2F52;
   }
 
   /* Banner */
-  .banner{width:100%;background:var(--navy);background-image:linear-gradient(rgba(28,20,9,0.92),rgba(28,20,9,0.97));background-size:cover;background-position:center 40%;padding:2rem 1.25rem 2.5rem;text-align:center;position:relative;border-radius:0 0 32px 32px}
+  .banner{width:100%;background:var(--navy);background-image:linear-gradient(rgba(21,34,32,0.92),rgba(21,34,32,0.97));background-size:cover;background-position:center 40%;padding:2rem 1.25rem 2.5rem;text-align:center;position:relative;border-radius:0 0 32px 32px}
   .banner-logo img{height:52px;width:auto;margin-bottom:.75rem}
   .banner-title{font-family:'Fraunces',serif;font-size:1.75rem;font-weight:700;color:#fff;margin-bottom:.25rem}
   .banner-sub{font-family:'Fraunces',serif;font-size:1.1rem;color:#fff;font-style:italic;opacity:.85}
@@ -118,7 +118,7 @@ window.PERENNIAL = {
   input.field-input[type="password"]{font-size:20px;letter-spacing:8px;text-align:center;font-family:monospace}
   .pin-error{font-size:12px;color:#EF4444;min-height:16px;margin-bottom:.5rem}
   .btn-primary{width:100%;padding:13px;font-size:14px;font-weight:600;color:#fff;background:var(--teal);border:none;border-radius:10px;cursor:pointer;font-family:inherit}
-  .btn-primary:hover{background:#3D2B1A}
+  .btn-primary:hover{background:#24302D}
   .page-footer{font-size:11px;color:var(--gray);text-align:center;margin-top:1.25rem}
 
   /* Personal view */
@@ -129,10 +129,10 @@ window.PERENNIAL = {
 
   /* Hero — spendable balance, now the biggest number on the page */
   .spend-hero{background:linear-gradient(135deg,#4A1F38,#6B2F52);border:none}
-  .spend-hero .pts-name{color:rgba(245,236,212,0.6)}
-  .spend-hero .hero-balance-label{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:1px;color:rgba(245,236,212,0.65);margin-top:.5rem}
+  .spend-hero .pts-name{color:rgba(237,241,239,0.6)}
+  .spend-hero .hero-balance-label{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:1px;color:rgba(237,241,239,0.65);margin-top:.5rem}
   .spend-hero .pts-number{color:#fff}
-  .spend-hero .pts-label{color:rgba(245,236,212,0.7);margin-bottom:0}
+  .spend-hero .pts-label{color:rgba(237,241,239,0.7);margin-bottom:0}
   .spend-hero .current-title{background:rgba(255,255,255,0.15) !important;color:#fff !important;backdrop-filter:blur(2px)}
 
   /* Milestone Points — demoted, prestige-only, clearly not spendable */
@@ -146,7 +146,7 @@ window.PERENNIAL = {
   .tier-section{background:var(--cream);border-radius:12px;padding:1rem;margin-top:1rem;text-align:left}
   .tier-heading{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--gray);margin-bottom:.75rem}
   .current-title{display:inline-block;font-size:13px;font-weight:700;padding:4px 14px;border-radius:14px;margin-bottom:.5rem;letter-spacing:.2px}
-  .current-title.lvl1{background:rgba(138,122,104,0.15);color:#8A7A68}
+  .current-title.lvl1{background:rgba(124,137,133,0.15);color:#7C8985}
   .current-title.lvl2{background:rgba(90,150,145,0.18);color:#2A544F}
   .current-title.lvl3{background:rgba(66,118,112,0.18);color:#427670}
   .current-title.lvl4{background:rgba(90,150,145,0.22);color:#1D3B37}
@@ -163,7 +163,7 @@ window.PERENNIAL = {
   .tier-info{flex:1}
   .tier-name{font-size:13px;font-weight:600;color:var(--charcoal)}
   .tier-pts{font-size:11px;color:var(--gray)}
-  .tier-bar-bg{height:5px;background:rgba(61,43,26,0.15);border-radius:3px;margin-top:4px;overflow:hidden}
+  .tier-bar-bg{height:5px;background:rgba(36,48,45,0.15);border-radius:3px;margin-top:4px;overflow:hidden}
   .tier-bar-fill{height:100%;background:var(--purple);border-radius:3px;transition:width .6s}
   .tier-unlocked{font-size:11px;font-weight:600;color:#059669;background:#D1FAE5;padding:2px 8px;border-radius:8px;white-space:nowrap}
 
@@ -190,44 +190,44 @@ window.PERENNIAL = {
 <!-- Side menu -->
 <div id="menu-overlay" onclick="toggleMenu()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:300"></div>
 <div id="menu-drawer" style="display:none;position:fixed;top:0;left:0;width:260px;height:100%;background:#fff;z-index:400;box-shadow:4px 0 20px rgba(0,0,0,0.15);flex-direction:column">
-  <div style="background:#1C1409;padding:1.5rem 1.25rem 1.25rem">
+  <div style="background:#152220;padding:1.5rem 1.25rem 1.25rem">
     <div style="font-size:14px;font-weight:600;color:#fff">Perennial</div>
     <div style="font-size:12px;color:rgba(255,255,255,0.5);margin-top:2px">Rewards Program</div>
   </div>
   <div style="padding:1rem 0;flex:1;overflow-y:auto">
-    <a href="owner.html" style="display:flex;align-items:center;gap:12px;padding:.875rem 1.25rem;text-decoration:none;color:#fff;font-size:14px;font-weight:600;background:#1C1409">
+    <a href="owner.html" style="display:flex;align-items:center;gap:12px;padding:.875rem 1.25rem;text-decoration:none;color:#fff;font-size:14px;font-weight:600;background:#152220">
       <span style="font-size:18px">🔑</span> Owner Portal
       <span style="margin-left:auto;font-size:9px;font-weight:700;color:#5A9691;background:rgba(90,150,145,0.18);padding:2px 7px;border-radius:9px;text-transform:uppercase;letter-spacing:.3px">Priority</span>
     </a>
-    <div style="border-top:0.5px solid rgba(61,43,26,0.15);margin:.5rem 1.25rem"></div>
-    <a href="index.html" style="display:flex;align-items:center;gap:12px;padding:.875rem 1.25rem;text-decoration:none;color:#1C1409;font-size:14px;font-weight:500">
+    <div style="border-top:0.5px solid rgba(36,48,45,0.15);margin:.5rem 1.25rem"></div>
+    <a href="index.html" style="display:flex;align-items:center;gap:12px;padding:.875rem 1.25rem;text-decoration:none;color:#152220;font-size:14px;font-weight:500">
       <span style="font-size:18px">🏆</span> Current Competitions
     </a>
-    <a href="locations.html" style="display:flex;align-items:center;gap:12px;padding:.875rem 1.25rem;text-decoration:none;color:#1C1409;font-size:14px;font-weight:500">
+    <a href="locations.html" style="display:flex;align-items:center;gap:12px;padding:.875rem 1.25rem;text-decoration:none;color:#152220;font-size:14px;font-weight:500">
       <span style="font-size:18px">🌎</span> Group Leaderboard
     </a>
-    <a href="points.html" style="display:flex;align-items:center;gap:12px;padding:.875rem 1.25rem;text-decoration:none;color:#1C1409;font-size:14px;font-weight:500;background:#F5ECD4">
+    <a href="points.html" style="display:flex;align-items:center;gap:12px;padding:.875rem 1.25rem;text-decoration:none;color:#152220;font-size:14px;font-weight:500;background:#EDF1EF">
       <span style="font-size:18px">⭐</span> My Rewards
     </a>
-    <a href="trophies.html" style="display:flex;align-items:center;gap:12px;padding:.875rem 1.25rem;text-decoration:none;color:#1C1409;font-size:14px;font-weight:500">
+    <a href="trophies.html" style="display:flex;align-items:center;gap:12px;padding:.875rem 1.25rem;text-decoration:none;color:#152220;font-size:14px;font-weight:500">
       <span style="font-size:18px">🥇</span> Trophies
     </a>
-    <a href="profiles.html" style="display:flex;align-items:center;gap:12px;padding:.875rem 1.25rem;text-decoration:none;color:#1C1409;font-size:14px;font-weight:500">
+    <a href="profiles.html" style="display:flex;align-items:center;gap:12px;padding:.875rem 1.25rem;text-decoration:none;color:#152220;font-size:14px;font-weight:500">
       <span style="font-size:18px">🪪</span> Profiles
     </a>
-    <a href="squad-vote.html" style="display:flex;align-items:center;gap:12px;padding:.875rem 1.25rem;text-decoration:none;color:#1C1409;font-size:14px;font-weight:500">
+    <a href="squad-vote.html" style="display:flex;align-items:center;gap:12px;padding:.875rem 1.25rem;text-decoration:none;color:#152220;font-size:14px;font-weight:500">
       <span style="font-size:18px">🗳️</span> Squad Vote
     </a>
-    <a href="achiever.html" style="display:flex;align-items:center;gap:12px;padding:.875rem 1.25rem;text-decoration:none;color:#1C1409;font-size:14px;font-weight:500">
+    <a href="achiever.html" style="display:flex;align-items:center;gap:12px;padding:.875rem 1.25rem;text-decoration:none;color:#152220;font-size:14px;font-weight:500">
       <span style="font-size:18px">🏅</span> Your Famous Achiever
     </a>
-    <div style="border-top:0.5px solid rgba(61,43,26,0.15);margin:.5rem 1.25rem"></div>
+    <div style="border-top:0.5px solid rgba(36,48,45,0.15);margin:.5rem 1.25rem"></div>
     <a href="roster.html" style="display:flex;align-items:center;gap:12px;padding:.875rem 1.25rem;text-decoration:none;color:#6B2F52;font-size:14px;font-weight:500">
       <span style="font-size:18px">👥</span> Rep Roster
       <span style="margin-left:auto;font-size:10px;font-weight:600;color:#6B2F52;background:#F3E7EE;padding:2px 8px;border-radius:10px">🔒 Manager</span>
     </a>
   </div>
-  <div style="padding:1rem 1.25rem;border-top:0.5px solid rgba(61,43,26,0.15);font-size:11px;color:#8A7A68">
+  <div style="padding:1rem 1.25rem;border-top:0.5px solid rgba(36,48,45,0.15);font-size:11px;color:#7C8985">
     Perennial · Internal use only<br>
     <span id="loc-indicator" style="color:#6B2F52;font-weight:600"></span>
   </div>
@@ -239,7 +239,7 @@ window.PERENNIAL = {
     <div style="width:18px;height:2px;background:#fff;border-radius:2px"></div>
     <div style="width:18px;height:2px;background:#fff;border-radius:2px"></div>
   </button>
-  <div class="banner-logo"><img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQwIiBoZWlnaHQ9IjcyIiB2aWV3Qm94PSIwIDAgMjQwIDcyIiBmaWxsPSJub25lIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxnIHRyYW5zZm9ybT0idHJhbnNsYXRlKDM2LDM2KSI+PGVsbGlwc2UgY3g9IjAiIGN5PSItMjgiIHJ4PSI1IiByeT0iOSIgZmlsbD0iIzQyNzY3MCIgdHJhbnNmb3JtPSJyb3RhdGUoMCkiLz48ZWxsaXBzZSBjeD0iMCIgY3k9Ii0yOCIgcng9IjUiIHJ5PSI5IiBmaWxsPSIjNkIyRjUyIiB0cmFuc2Zvcm09InJvdGF0ZSgzMCkiLz48ZWxsaXBzZSBjeD0iMCIgY3k9Ii0yOCIgcng9IjUiIHJ5PSI5IiBmaWxsPSIjMkE1NDRGIiB0cmFuc2Zvcm09InJvdGF0ZSg2MCkiLz48ZWxsaXBzZSBjeD0iMCIgY3k9Ii0yOCIgcng9IjUiIHJ5PSI5IiBmaWxsPSIjNDU3ODUwIiB0cmFuc2Zvcm09InJvdGF0ZSg5MCkiLz48ZWxsaXBzZSBjeD0iMCIgY3k9Ii0yOCIgcng9IjUiIHJ5PSI5IiBmaWxsPSIjMzQ1RTU5IiB0cmFuc2Zvcm09InJvdGF0ZSgxMjApIi8+PGVsbGlwc2UgY3g9IjAiIGN5PSItMjgiIHJ4PSI1IiByeT0iOSIgZmlsbD0iIzhDNDU3MCIgdHJhbnNmb3JtPSJyb3RhdGUoMTUwKSIvPjxlbGxpcHNlIGN4PSIwIiBjeT0iLTI4IiByeD0iNSIgcnk9IjkiIGZpbGw9IiMxRDNCMzciIHRyYW5zZm9ybT0icm90YXRlKDE4MCkiLz48ZWxsaXBzZSBjeD0iMCIgY3k9Ii0yOCIgcng9IjUiIHJ5PSI5IiBmaWxsPSIjNUE5NjkxIiB0cmFuc2Zvcm09InJvdGF0ZSgyMTApIi8+PGVsbGlwc2UgY3g9IjAiIGN5PSItMjgiIHJ4PSI1IiByeT0iOSIgZmlsbD0iIzFGNEEyQiIgdHJhbnNmb3JtPSJyb3RhdGUoMjQwKSIvPjxlbGxpcHNlIGN4PSIwIiBjeT0iLTI4IiByeD0iNSIgcnk9IjkiIGZpbGw9IiM2QkFBQTUiIHRyYW5zZm9ybT0icm90YXRlKDI3MCkiLz48ZWxsaXBzZSBjeD0iMCIgY3k9Ii0yOCIgcng9IjUiIHJ5PSI5IiBmaWxsPSIjNEExRjM4IiB0cmFuc2Zvcm09InJvdGF0ZSgzMDApIi8+PGVsbGlwc2UgY3g9IjAiIGN5PSItMjgiIHJ4PSI1IiByeT0iOSIgZmlsbD0iI0E4NUM4OCIgdHJhbnNmb3JtPSJyb3RhdGUoMzMwKSIvPjxjaXJjbGUgY3g9IjAiIGN5PSIwIiByPSIxOCIgc3Ryb2tlPSIjNDI3NjcwIiBzdHJva2Utd2lkdGg9IjAuNSIgZmlsbD0ibm9uZSIgb3BhY2l0eT0iMC4yNSIvPjx0ZXh0IHg9Ii04IiB5PSIxMCIgZm9udC1mYW1pbHk9IkZyYXVuY2VzLEdlb3JnaWEsc2VyaWYiIGZvbnQtc2l6ZT0iMjgiIGZvbnQtd2VpZ2h0PSI2MDAiIGZpbGw9IiNGNUVDRDQiPlA8L3RleHQ+PC9nPjx0ZXh0IHg9IjgyIiB5PSI0NyIgZm9udC1mYW1pbHk9IkZyYXVuY2VzLEdlb3JnaWEsc2VyaWYiIGZvbnQtc2l6ZT0iMzAiIGZvbnQtd2VpZ2h0PSI2MDAiIGZpbGw9IiNGNUVDRDQiIGxldHRlci1zcGFjaW5nPSItMC41Ij5lcmVubmlhbDwvdGV4dD48L3N2Zz4=" alt="Perennial"></div>
+  <div class="banner-logo"><img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQwIiBoZWlnaHQ9IjcyIiB2aWV3Qm94PSIwIDAgMjQwIDcyIiBmaWxsPSJub25lIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxnIHRyYW5zZm9ybT0idHJhbnNsYXRlKDM2LDM2KSI+PGVsbGlwc2UgY3g9IjAiIGN5PSItMjgiIHJ4PSI1IiByeT0iOSIgZmlsbD0iIzQyNzY3MCIgdHJhbnNmb3JtPSJyb3RhdGUoMCkiLz48ZWxsaXBzZSBjeD0iMCIgY3k9Ii0yOCIgcng9IjUiIHJ5PSI5IiBmaWxsPSIjNkIyRjUyIiB0cmFuc2Zvcm09InJvdGF0ZSgzMCkiLz48ZWxsaXBzZSBjeD0iMCIgY3k9Ii0yOCIgcng9IjUiIHJ5PSI5IiBmaWxsPSIjMkE1NDRGIiB0cmFuc2Zvcm09InJvdGF0ZSg2MCkiLz48ZWxsaXBzZSBjeD0iMCIgY3k9Ii0yOCIgcng9IjUiIHJ5PSI5IiBmaWxsPSIjNDU3ODUwIiB0cmFuc2Zvcm09InJvdGF0ZSg5MCkiLz48ZWxsaXBzZSBjeD0iMCIgY3k9Ii0yOCIgcng9IjUiIHJ5PSI5IiBmaWxsPSIjMzQ1RTU5IiB0cmFuc2Zvcm09InJvdGF0ZSgxMjApIi8+PGVsbGlwc2UgY3g9IjAiIGN5PSItMjgiIHJ4PSI1IiByeT0iOSIgZmlsbD0iIzhDNDU3MCIgdHJhbnNmb3JtPSJyb3RhdGUoMTUwKSIvPjxlbGxpcHNlIGN4PSIwIiBjeT0iLTI4IiByeD0iNSIgcnk9IjkiIGZpbGw9IiMxRDNCMzciIHRyYW5zZm9ybT0icm90YXRlKDE4MCkiLz48ZWxsaXBzZSBjeD0iMCIgY3k9Ii0yOCIgcng9IjUiIHJ5PSI5IiBmaWxsPSIjNUE5NjkxIiB0cmFuc2Zvcm09InJvdGF0ZSgyMTApIi8+PGVsbGlwc2UgY3g9IjAiIGN5PSItMjgiIHJ4PSI1IiByeT0iOSIgZmlsbD0iIzFGNEEyQiIgdHJhbnNmb3JtPSJyb3RhdGUoMjQwKSIvPjxlbGxpcHNlIGN4PSIwIiBjeT0iLTI4IiByeD0iNSIgcnk9IjkiIGZpbGw9IiM2QkFBQTUiIHRyYW5zZm9ybT0icm90YXRlKDI3MCkiLz48ZWxsaXBzZSBjeD0iMCIgY3k9Ii0yOCIgcng9IjUiIHJ5PSI5IiBmaWxsPSIjNEExRjM4IiB0cmFuc2Zvcm09InJvdGF0ZSgzMDApIi8+PGVsbGlwc2UgY3g9IjAiIGN5PSItMjgiIHJ4PSI1IiByeT0iOSIgZmlsbD0iI0E4NUM4OCIgdHJhbnNmb3JtPSJyb3RhdGUoMzMwKSIvPjxjaXJjbGUgY3g9IjAiIGN5PSIwIiByPSIxOCIgc3Ryb2tlPSIjNDI3NjcwIiBzdHJva2Utd2lkdGg9IjAuNSIgZmlsbD0ibm9uZSIgb3BhY2l0eT0iMC4yNSIvPjx0ZXh0IHg9Ii04IiB5PSIxMCIgZm9udC1mYW1pbHk9IkZyYXVuY2VzLEdlb3JnaWEsc2VyaWYiIGZvbnQtc2l6ZT0iMjgiIGZvbnQtd2VpZ2h0PSI2MDAiIGZpbGw9IiNFREYxRUYiPlA8L3RleHQ+PC9nPjx0ZXh0IHg9IjgyIiB5PSI0NyIgZm9udC1mYW1pbHk9IkZyYXVuY2VzLEdlb3JnaWEsc2VyaWYiIGZvbnQtc2l6ZT0iMzAiIGZvbnQtd2VpZ2h0PSI2MDAiIGZpbGw9IiNFREYxRUYiIGxldHRlci1zcGFjaW5nPSItMC41Ij5lcmVubmlhbDwvdGV4dD48L3N2Zz4=" alt="Perennial"></div>
   <div class="banner-title">Perennial</div>
   <div class="banner-sub">My Points</div>
 </div>
@@ -274,7 +274,7 @@ window.PERENNIAL = {
       <div class="hero-balance-label">Available to spend</div>
       <div class="pts-number" id="flex-balance">0</div>
       <div class="pts-label" id="flex-balance-sub">pts</div>
-      <div style="margin-top:.75rem"><a href="#" onclick="clearSession();return false" style="font-size:11px;color:rgba(245,236,212,0.6);text-decoration:underline">Not you? Sign out</a></div>
+      <div style="margin-top:.75rem"><a href="#" onclick="clearSession();return false" style="font-size:11px;color:rgba(237,241,239,0.6);text-decoration:underline">Not you? Sign out</a></div>
     </div>
 
     <!-- Milestone Points — secondary, prestige-only, not spendable -->
@@ -313,7 +313,7 @@ window.PERENNIAL = {
       <div id="mb-ready-view" style="display:none">
         <div style="font-size:40px;margin-bottom:.5rem">🎁</div>
         <div style="font-size:16px;font-weight:600;margin-bottom:.4rem">Goal hit! Your mystery box is ready.</div>
-        <button onclick="openMysteryBox()" style="width:100%;padding:12px;font-size:14px;font-weight:600;color:#1C1409;background:linear-gradient(135deg,#5A9691,#427670);border:none;border-radius:10px;cursor:pointer;font-family:inherit">Open box</button>
+        <button onclick="openMysteryBox()" style="width:100%;padding:12px;font-size:14px;font-weight:600;color:#152220;background:linear-gradient(135deg,#5A9691,#427670);border:none;border-radius:10px;cursor:pointer;font-family:inherit">Open box</button>
       </div>
       <div id="mb-result-view" style="display:none">
         <div style="font-size:44px;margin-bottom:.5rem" id="mb-result-emoji">🏆</div>
